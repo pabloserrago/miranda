@@ -23,6 +23,8 @@ struct ContentView: View {
     @FocusState private var isInputFocused: Bool
     @State private var drawerState: DrawerState = .small
     @GestureState private var drawerDragOffset: CGFloat = 0
+    @State private var draggedCard: Card? = nil
+    @State private var draggedCardOffset: CGSize = .zero
     
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = true
@@ -184,13 +186,31 @@ struct ContentView: View {
                                                             priorityCardIds.removeAll { $0 == priorityCard.id }
                                                     saveState()
                                                 }
-                                            }
-                                        )
+                                                    },
+                                                    onLongPress: {
+                                                        // Start dragging
+                                                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                        generator.impactOccurred()
+                                                        draggedCard = priorityCard
+                                                    }
+                                                )
                                                 .padding(.horizontal, 20)
+                                                .opacity(draggedCard?.id == priorityCard.id ? 0.5 : 1.0)
+                                                .scaleEffect(draggedCard?.id == priorityCard.id ? 1.05 : 1.0)
+                                                .zIndex(draggedCard?.id == priorityCard.id ? 1 : 0)
+                                                .onDrop(of: [.text], delegate: CardDropDelegate(
+                                                    destinationIndex: index,
+                                                    draggedCard: $draggedCard,
+                                                    priorityCardIds: $priorityCardIds,
+                                                    cards: cards,
+                                                    onReorder: {
+                                                        saveState()
+                                                    }
+                                                ))
                                             } else {
                                                 // Show empty slot with circular lightbulb button
                                                 EmptyPrioritySlot(
-                                                    height: min(cardHeight - 50, 300),
+                                                    height: cardHeight,
                                                     slotNumber: index + 1,
                                                     onTap: {
                                                         showPriorityPicker = true
@@ -201,6 +221,14 @@ struct ContentView: View {
                                         }
                                     }
                                     .frame(maxHeight: availableHeight)
+                                    .onTapGesture {
+                                        // Cancel drag if tapping outside
+                                        if draggedCard != nil {
+                                            withAnimation {
+                                                draggedCard = nil
+                                            }
+                                        }
+                                    }
                                 } else if cards.count > 0 {
                                     Spacer()
                                     HeroPlaceholderView(
@@ -1011,9 +1039,11 @@ struct HeroCardView: View {
     let onTap: () -> Void
     let onComplete: () -> Void
     let onRemovePriority: () -> Void
+    let onLongPress: () -> Void
     
     @State private var offset: CGFloat = 0
     @State private var isDragging: Bool = false
+    @State private var isLongPressing: Bool = false
     @State private var scale: CGFloat = 0.9
     @State private var opacity: Double = 0
     
@@ -1068,8 +1098,15 @@ struct HeroCardView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if offset == 0 && !isDragging {
+                        if offset == 0 && !isDragging && !isLongPressing {
                             onTap()
+                        }
+                    }
+                    .onLongPressGesture(minimumDuration: 0.5) {
+                        onLongPress()
+                        isLongPressing = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isLongPressing = false
                         }
                     }
                     
@@ -1094,13 +1131,13 @@ struct HeroCardView: View {
             }
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
-            .gesture(
+            .simultaneousGesture(
                 DragGesture(minimumDistance: 10)
                     .onChanged { gesture in
                         isDragging = true
                         let translation = gesture.translation.width
                         
-                        if translation > 0 {
+                        if translation > 0 && !isLongPressing {
                             // Right swipe only (remove from priority)
                             offset = min(translation, 100)
                         }
@@ -1134,6 +1171,10 @@ struct HeroCardView: View {
         .frame(height: height)
         .scaleEffect(scale)
         .opacity(opacity)
+        .onDrag {
+            // Provide drag data
+            return NSItemProvider(object: card.id.uuidString as NSString)
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
                 scale = 1.0
@@ -1149,6 +1190,44 @@ struct HeroCardView: View {
                 opacity = 1.0
             }
         }
+    }
+}
+
+// MARK: - Card Drop Delegate
+
+struct CardDropDelegate: DropDelegate {
+    let destinationIndex: Int
+    @Binding var draggedCard: Card?
+    @Binding var priorityCardIds: [UUID]
+    let cards: [Card]
+    let onReorder: () -> Void
+    
+    func performDrop(info: DropInfo) -> Bool {
+        guard let draggedCard = draggedCard,
+              let sourceIndex = priorityCardIds.firstIndex(of: draggedCard.id) else {
+            return false
+        }
+        
+        // Reorder the priority IDs
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+            priorityCardIds.move(fromOffsets: IndexSet(integer: sourceIndex), toOffset: destinationIndex > sourceIndex ? destinationIndex + 1 : destinationIndex)
+            self.draggedCard = nil
+        }
+        
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        onReorder()
+        return true
+    }
+    
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        return DropProposal(operation: .move)
+    }
+    
+    func dropEntered(info: DropInfo) {
+        // Visual feedback when hovering over drop target
     }
 }
 
