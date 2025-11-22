@@ -102,7 +102,7 @@ struct ContentView: View {
                     .zIndex(100)
             }
             
-                if showOneMust, let currentCard = selectedCard {
+            if showOneMust, let currentCard = selectedCard {
                 // Full-screen "One Must" card
                 OneMustCardView(
                     card: currentCard,
@@ -137,18 +137,28 @@ struct ContentView: View {
                 GeometryReader { geometry in
                     ZStack(alignment: .bottom) {
                         // Main content area
-                        ZStack {
+                ZStack {
                             Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
-                                .ignoresSafeArea()
-                            
-                            VStack(spacing: 0) {
-                                // "Keep this in sight" label
+                        .ignoresSafeArea()
+                    
+                        VStack(spacing: 0) {
+                                // "Keep this in sight" label with priority count
                                 if !priorityCardIds.isEmpty {
+                                    HStack(spacing: 8) {
                                     Text("Keep this in sight")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .padding(.top, 20)
-                                        .padding(.bottom, 12)
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                        // Priority counter (e.g., "1 of 3")
+                                        Text("\(priorityCardIds.count) of 3")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                    .padding(.horizontal, 24)
+                                    .padding(.top, 20)
+                                    .padding(.bottom, 12)
                                 }
                                 
                                 if !priorityCardIds.isEmpty {
@@ -165,44 +175,45 @@ struct ContentView: View {
                                                 // Show filled priority card
                                                 let priorityCard = priorityCards[index]
                                                 VStack(spacing: 8) {
-                                                    HeroCardView(
-                                                        card: priorityCard,
+                                        HeroCardView(
+                                            card: priorityCard,
                                                         height: min(cardHeight - 50, 300),
-                                                        onTap: {
-                                                            selectedCard = priorityCard
-                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                                showOneMust = true
-                                                            }
-                                                        },
-                                                        onComplete: {
-                                                            completeCard(priorityCard)
-                                                        },
-                                                        onRemovePriority: {
-                                                            withAnimation {
+                                            onTap: {
+                                                selectedCard = priorityCard
+                                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                    showOneMust = true
+                                                }
+                                            },
+                                            onComplete: {
+                                                completeCard(priorityCard)
+                                            },
+                                            onRemovePriority: {
+                                                withAnimation {
                                                                 priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                                saveState()
-                                                            }
-                                                        }
-                                                    )
-                                                    
-                                                    // Complete button
-                                                    Button(action: {
-                                                        completePriorityCard(priorityCard)
-                                                    }) {
-                                                        Text("Complete")
+                                                    saveState()
+                                                }
+                                            }
+                                        )
+                                        
+                                        // Complete button
+                                        Button(action: {
+                                            completePriorityCard(priorityCard)
+                                        }) {
+                                            Text("Complete")
                                                             .font(.system(size: 14, weight: .semibold))
                                                             .foregroundColor(.white)
                                                             .padding(.horizontal, 32)
                                                             .padding(.vertical, 10)
                                                             .background(Color.white.opacity(0.15))
-                                                            .clipShape(Capsule())
-                                                    }
+                                                .clipShape(Capsule())
+                                        }
                                                 }
                                                 .padding(.horizontal, 20)
                                             } else {
                                                 // Show empty slot with circular lightbulb button
                                                 EmptyPrioritySlot(
                                                     height: min(cardHeight - 50, 300),
+                                                    slotNumber: index + 1,
                                                     onTap: {
                                                         showPriorityPicker = true
                                                     }
@@ -226,35 +237,35 @@ struct ContentView: View {
                                     Spacer()
                                     HeroPlaceholderView(height: 320, onSetPriority: nil)
                                         .padding(.horizontal, 24)
-                                    Spacer()
+                                Spacer()
                                 }
                                 
                                 // Space for drawer at bottom (25% by default)
                                 Color.clear
                                     .frame(height: DrawerState.small.height(screenHeight: geometry.size.height))
+                    }
+                    
+                    // Fixed top bar - floating buttons
+                    VStack {
+                        // Settings button (tortoise) - always on left
+                        HStack {
+                            Button(action: {
+                                showSettings = true
+                            }) {
+                                Image(systemName: "tortoise.fill")
+                                    .font(.system(size: 20))
+                                            .foregroundColor(.black)
+                                    .frame(width: 40, height: 40)
+                                            .background(Color.white)
+                                    .clipShape(Circle())
                             }
                             
-                            // Fixed top bar - floating buttons
-                            VStack {
-                                // Settings button (tortoise) - always on left
-                                HStack {
-                                    Button(action: {
-                                        showSettings = true
-                                    }) {
-                                        Image(systemName: "tortoise.fill")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.black)
-                                            .frame(width: 40, height: 40)
-                                            .background(Color.white)
-                                            .clipShape(Circle())
-                                    }
-                                    
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 20)
-                                .padding(.top, 16)
-                                
-                                Spacer()
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        
+                        Spacer()
                             }
                         }
                         
@@ -382,9 +393,9 @@ struct ContentView: View {
                             Color(uiColor: .systemBackground)
                         )
                         .cornerRadius(20, corners: [.topLeft, .topRight])
-                    }
                 }
             }
+        }
         }
         .onAppear {
             loadState()
@@ -873,6 +884,7 @@ struct RecentCapturesDrawer: View {
 
 struct EmptyPrioritySlot: View {
     let height: CGFloat
+    let slotNumber: Int
     let onTap: () -> Void
     
     var body: some View {
@@ -886,15 +898,24 @@ struct EmptyPrioritySlot: View {
                             .foregroundColor(.white.opacity(0.15))
                     )
                 
-                // Circular lightbulb button in center
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: min(80, height * 0.3), height: min(80, height * 0.3))
+                VStack(spacing: height > 200 ? 12 : 6) {
+                    // Circular lightbulb button in center
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.1))
+                            .frame(width: min(80, height * 0.3), height: min(80, height * 0.3))
+                        
+                        Image(systemName: "lightbulb")
+                            .font(.system(size: min(32, height * 0.12), weight: .medium))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
                     
-                    Image(systemName: "lightbulb")
-                        .font(.system(size: min(32, height * 0.12), weight: .medium))
-                        .foregroundColor(.white.opacity(0.4))
+                    // Slot indicator
+                    if height > 150 {
+                        Text("Priority \(slotNumber)")
+                            .font(.system(size: min(13, height * 0.04), weight: .medium))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
                 }
             }
         }
@@ -923,13 +944,18 @@ struct HeroPlaceholderView: View {
                     .font(.system(size: 50))
                     .foregroundColor(.white.opacity(0.3))
                 
-                Text("No priority set")
+                Text("No priorities set")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white.opacity(0.7))
                 
+                Text("Set up to 3 priorities")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.bottom, 4)
+                
                 Text("Swipe right on a capture to turn it on")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.5))
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.4))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
                 
