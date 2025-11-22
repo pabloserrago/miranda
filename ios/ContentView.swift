@@ -195,9 +195,11 @@ struct ContentView: View {
                                                     }
                                                 )
                                                 .padding(.horizontal, 20)
-                                                .opacity(draggedCard?.id == priorityCard.id ? 0.5 : 1.0)
-                                                .scaleEffect(draggedCard?.id == priorityCard.id ? 1.05 : 1.0)
-                                                .zIndex(draggedCard?.id == priorityCard.id ? 1 : 0)
+                                                .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
+                                                .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
+                                                .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
+                                                .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
+                                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
                                                 .onDrop(of: [.text], delegate: CardDropDelegate(
                                                     destinationIndex: index,
                                                     draggedCard: $draggedCard,
@@ -1080,7 +1082,17 @@ struct HeroCardView: View {
                 RoundedRectangle(cornerRadius: min(40, height * 0.1))
                     .fill(Color.yellow)
                 
-                HStack(alignment: .center, spacing: 16) {
+                HStack(alignment: .center, spacing: 12) {
+                    // Drag handle indicator (subtle dots)
+                    VStack(spacing: 3) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            Circle()
+                                .fill(Color.black.opacity(0.15))
+                                .frame(width: 4, height: 4)
+                        }
+                    }
+                    .padding(.leading, 4)
+                    
                     // Left side: emoji and text
                     HStack(alignment: .center, spacing: 12) {
                     if let emoji = card.emoji {
@@ -1102,13 +1114,11 @@ struct HeroCardView: View {
                             onTap()
                         }
                     }
-                    .onLongPressGesture(minimumDuration: 0.5) {
+                    .onLongPressGesture(minimumDuration: 0.4, perform: {
                         onLongPress()
-                        isLongPressing = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            isLongPressing = false
-                        }
-                    }
+                    }, onPressingChanged: { isPressing in
+                        isLongPressing = isPressing
+                    })
                     
                     // Right side: complete button
                     Button(action: {
@@ -1169,10 +1179,12 @@ struct HeroCardView: View {
             )
         }
         .frame(height: height)
-        .scaleEffect(scale)
+        .scaleEffect(isLongPressing ? 1.03 : scale)
         .opacity(opacity)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isLongPressing)
         .onDrag {
             // Provide drag data
+            onLongPress() // Ensure draggedCard is set
             return NSItemProvider(object: card.id.uuidString as NSString)
         }
         .onAppear {
@@ -1205,20 +1217,29 @@ struct CardDropDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
         guard let draggedCard = draggedCard,
               let sourceIndex = priorityCardIds.firstIndex(of: draggedCard.id) else {
+            self.draggedCard = nil
             return false
         }
         
-        // Reorder the priority IDs
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-            priorityCardIds.move(fromOffsets: IndexSet(integer: sourceIndex), toOffset: destinationIndex > sourceIndex ? destinationIndex + 1 : destinationIndex)
+        if sourceIndex != destinationIndex {
+            // Reorder the priority IDs
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                let id = priorityCardIds.remove(at: sourceIndex)
+                priorityCardIds.insert(id, at: destinationIndex)
+            }
+            
+            // Strong haptic feedback on successful reorder
+            let generator = UIImpactFeedbackGenerator(style: .heavy)
+            generator.impactOccurred()
+            
+            onReorder()
+        }
+        
+        // Clear dragged card
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.draggedCard = nil
         }
         
-        // Haptic feedback
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-        
-        onReorder()
         return true
     }
     
@@ -1227,7 +1248,25 @@ struct CardDropDelegate: DropDelegate {
     }
     
     func dropEntered(info: DropInfo) {
-        // Visual feedback when hovering over drop target
+        guard let draggedCard = draggedCard,
+              let sourceIndex = priorityCardIds.firstIndex(of: draggedCard.id),
+              sourceIndex != destinationIndex else {
+            return
+        }
+        
+        // Medium haptic feedback when hovering over new position
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+        
+        // Live reorder as you drag (smooth preview)
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+            let id = priorityCardIds.remove(at: sourceIndex)
+            priorityCardIds.insert(id, at: destinationIndex)
+        }
+    }
+    
+    func dropExited(info: DropInfo) {
+        // Optional: could add subtle feedback when leaving a drop zone
     }
 }
 
