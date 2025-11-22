@@ -1012,53 +1012,124 @@ struct HeroCardView: View {
     let onComplete: () -> Void
     let onRemovePriority: () -> Void
     
+    @State private var offset: CGFloat = 0
+    @State private var isDragging: Bool = false
     @State private var scale: CGFloat = 0.9
     @State private var opacity: Double = 0
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: min(40, height * 0.1))
-                .fill(Color.yellow)
-            
-            HStack(alignment: .center, spacing: 16) {
-                // Left side: emoji and text
-                HStack(alignment: .center, spacing: 12) {
-                    if let emoji = card.emoji {
-                        Text(emoji)
-                            .font(.system(size: max(min(60, height * 0.25), 32)))
-                    }
-                    
-                    Text(card.simplifiedText)
-                        .font(.system(size: max(min(20, height * 0.1), 15), weight: .bold))
-                            .foregroundColor(.black)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(height > 200 ? 4 : 2)
-                        .minimumScaleFactor(0.8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    onTap()
-                }
-            
-                // Right side: complete button
+            // Remove priority button (right swipe reveals this)
+            HStack {
                 Button(action: {
-                    onComplete()
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onRemovePriority()
+                    }
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color.black.opacity(0.15))
-                            .frame(width: max(min(60, height * 0.25), 44), height: max(min(60, height * 0.25), 44))
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 70, height: 70)
                         
-                        Image(systemName: "checkmark")
-                            .font(.system(size: max(min(28, height * 0.12), 20), weight: .bold))
-                            .foregroundColor(.black)
+                        Image(systemName: "lightbulb.slash.fill")
+                            .font(.system(size: 26, weight: .heavy))
+                            .foregroundColor(.white)
                     }
                 }
-                .buttonStyle(PlainButtonStyle())
+                .padding(.leading, 20)
+                Spacer()
             }
-            .padding(.horizontal, max(min(32, height * 0.1), 20))
-            .padding(.vertical, max(min(24, height * 0.08), 16))
+            .opacity(offset > 15 ? 1 : 0)
+            .animation(.easeOut(duration: 0.2), value: offset)
+            
+            // Main card
+            ZStack {
+                RoundedRectangle(cornerRadius: min(40, height * 0.1))
+                    .fill(Color.yellow)
+                
+                HStack(alignment: .center, spacing: 16) {
+                    // Left side: emoji and text
+                    HStack(alignment: .center, spacing: 12) {
+                    if let emoji = card.emoji {
+                        Text(emoji)
+                                .font(.system(size: max(min(60, height * 0.25), 32)))
+                    }
+                    
+                    Text(card.simplifiedText)
+                            .font(.system(size: max(min(20, height * 0.1), 15), weight: .bold))
+                        .foregroundColor(.black)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(height > 200 ? 4 : 2)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if offset == 0 && !isDragging {
+                            onTap()
+                        }
+                    }
+                    
+                    // Right side: complete button
+                    Button(action: {
+                        onComplete()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.black.opacity(0.15))
+                                .frame(width: max(min(60, height * 0.25), 44), height: max(min(60, height * 0.25), 44))
+                            
+                            Image(systemName: "checkmark")
+                                .font(.system(size: max(min(28, height * 0.12), 20), weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, max(min(32, height * 0.1), 20))
+                .padding(.vertical, max(min(24, height * 0.08), 16))
+            }
+            .offset(x: offset)
+            .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { gesture in
+                        isDragging = true
+                        let translation = gesture.translation.width
+                        
+                        if translation > 0 {
+                            // Right swipe only (remove from priority)
+                            offset = min(translation, 100)
+                        }
+                    }
+                    .onEnded { gesture in
+                        isDragging = false
+                        let translation = gesture.translation.width
+                        
+                        if translation > 140 {
+                            // Full right swipe - remove priority directly
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                onRemovePriority()
+                            }
+                        } else if translation > 50 {
+                            // Partial right swipe - reveal button
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = 100
+                            }
+                        } else {
+                            // Too short - spring back
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
+                        }
+                    }
+            )
         }
         .frame(height: height)
         .scaleEffect(scale)
