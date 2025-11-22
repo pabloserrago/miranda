@@ -1,24 +1,1601 @@
-//
-//  ContentView.swift
-//  ios
-//
-//  Created by Pablo Serrano on 10/27/25.
-//
-
 import SwiftUI
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+    @State private var cards: [Card] = []
+    @State private var priorityCardIds: [UUID] = [] // Up to 3 priorities
+    @State private var showOneMust: Bool = false
+    @State private var selectedCard: Card? = nil
+    @State private var showCompletionAnimation: Bool = false
+    @State private var showAnalytics: Bool = false
+    @State private var showSettings: Bool = false
+    @State private var showCreateModal: Bool = false
+    @State private var newCardText: String = ""
+    @State private var isNewCard: Bool = false
+    @State private var showAllCards: Bool = false
+    @State private var startWithDictation: Bool = false
+    @State private var showDoNowDialog: Bool = false
+    @State private var pendingCard: Card? = nil
+    @State private var showPriorityPicker: Bool = false
+    @State private var showCompleteTortoise: Bool = false
+    @FocusState private var isInputFocused: Bool
+    @State private var drawerState: DrawerState = .small
+    @GestureState private var drawerDragOffset: CGFloat = 0
+    
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
+    @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = true
+    
+    private let maxVisibleCards = 6
+    
+    enum DrawerState {
+        case small   // 25%
+        case medium  // 50%
+        case large   // 100%
+        
+        func height(screenHeight: CGFloat) -> CGFloat {
+            switch self {
+            case .small:
+                return screenHeight * 0.25
+            case .medium:
+                return screenHeight * 0.50
+            case .large:
+                return screenHeight * 1.0
+            }
         }
-        .padding()
+    }
+    
+    // Computed property to sort cards with priorities first (in order), then by date (newest first)
+    private var sortedCards: [Card] {
+        cards.sorted { card1, card2 in
+            let index1 = priorityCardIds.firstIndex(of: card1.id)
+            let index2 = priorityCardIds.firstIndex(of: card2.id)
+            
+            // Both are priorities - sort by priority order
+            if let idx1 = index1, let idx2 = index2 {
+                return idx1 < idx2
+            }
+            
+            // card1 is priority, card2 is not
+            if index1 != nil { return true }
+            
+            // card2 is priority, card1 is not
+            if index2 != nil { return false }
+            
+            // Neither are priorities - sort by timestamp (newest first)
+            return card1.timestamp > card2.timestamp
+        }
+    }
+    
+    // Get priority cards in order
+    private var priorityCards: [Card] {
+        priorityCardIds.compactMap { id in
+            cards.first { $0.id == id }
+        }
+    }
+    
+    private let emojiMap: [String: String] = {
+        guard let url = Bundle.main.url(forResource: "EmojiMap", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let map = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return [:]
+        }
+        return map
+    }()
+    
+    private let actionTransformations: [String: String] = {
+        guard let url = Bundle.main.url(forResource: "ActionTransformations", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let map = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return [:]
+        }
+        return map
+    }()
+    
+    var body: some View {
+        ZStack {
+            // Tortoise completion animation
+            if showCompleteTortoise {
+                TortoiseCompletionView()
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(100)
+            }
+            
+                if showOneMust, let currentCard = selectedCard {
+                // Full-screen "One Must" card
+                OneMustCardView(
+                    card: currentCard,
+                    isNewCard: isNewCard,
+                    isPriority: priorityCardIds.contains(currentCard.id),
+                    onDismiss: {
+                        showOneMust = false
+                        selectedCard = nil
+                        isNewCard = false
+                    },
+                    onSetPriority: {
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                        addToPriorities(currentCard.id)
+                        saveState()
+                    },
+                    onRemovePriority: priorityCardIds.contains(currentCard.id) ? {
+                        withAnimation {
+                            priorityCardIds.removeAll { $0 == currentCard.id }
+                            saveState()
+                        }
+                        showOneMust = false
+                        selectedCard = nil
+                    } : nil
+                )
+                .transition(.scale.combined(with: .opacity))
+                .onAppear {
+                    Analytics.shared.trackCardViewed()
+                }
+            } else {
+                // Main interface with GeometryReader for drawer
+                GeometryReader { geometry in
+                    ZStack(alignment: .bottom) {
+                        // Main content area
+                        ZStack {
+                            Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
+                                .ignoresSafeArea()
+                            
+                            VStack(spacing: 20) {
+                                // "Keep this in sight" label
+                                if !priorityCards.isEmpty {
+                                    Text("Keep this in sight")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .padding(.top, 40)
+                                }
+                                
+                                Spacer()
+                                
+                                if !priorityCards.isEmpty {
+                                    // Show priority cards (up to 3)
+                                    ScrollView(.vertical, showsIndicators: false) {
+                                        VStack(spacing: 16) {
+                                            ForEach(priorityCards) { priorityCard in
+                                                VStack(spacing: 12) {
+                                                    HeroCardView(
+                                                        card: priorityCard,
+                                                        height: 380,
+                                                        onTap: {
+                                                            selectedCard = priorityCard
+                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                                showOneMust = true
+                                                            }
+                                                        },
+                                                        onComplete: {
+                                                            completeCard(priorityCard)
+                                                        },
+                                                        onRemovePriority: {
+                                                            withAnimation {
+                                                                priorityCardIds.removeAll { $0 == priorityCard.id }
+                                                                saveState()
+                                                            }
+                                                        }
+                                                    )
+                                                    
+                                                    // Complete button for each card
+                                                    Button(action: {
+                                                        completePriorityCard(priorityCard)
+                                                    }) {
+                                                        Text("Complete")
+                                                            .font(.system(size: 16, weight: .semibold))
+                                                            .foregroundColor(.white)
+                                                            .padding(.horizontal, 40)
+                                                            .padding(.vertical, 14)
+                                                            .background(Color.white.opacity(0.15))
+                                                            .clipShape(Capsule())
+                                                    }
+                                                }
+                                                .padding(.horizontal, 24)
+                                            }
+                                        }
+                                        .padding(.bottom, 20)
+                                    }
+                                } else if cards.count > 0 {
+                                    HeroPlaceholderView(
+                                        height: 420,
+                                        onSetPriority: {
+                                            showPriorityPicker = true
+                                        }
+                                    )
+                                    .padding(.horizontal, 24)
+                                    .padding(.top, 60)
+                                } else {
+                                    HeroPlaceholderView(height: 420, onSetPriority: nil)
+                                        .padding(.horizontal, 24)
+                                        .padding(.top, 60)
+                                }
+                                
+                                Spacer()
+                                
+                                // Space for drawer at bottom (25% by default)
+                                Color.clear
+                                    .frame(height: DrawerState.small.height(screenHeight: geometry.size.height))
+                            }
+                            
+                            // Fixed top bar - floating buttons
+                            VStack {
+                                // Settings button (tortoise) - always on left
+                                HStack {
+                                    Button(action: {
+                                        showSettings = true
+                                    }) {
+                                        Image(systemName: "tortoise.fill")
+                                            .font(.system(size: 20))
+                                            .foregroundColor(.black)
+                                            .frame(width: 40, height: 40)
+                                            .background(Color.white)
+                                            .clipShape(Circle())
+                                    }
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 16)
+                                
+                                Spacer()
+                            }
+                        }
+                        
+                        // Recent captures drawer - three-state system (overlays at bottom)
+                        VStack(spacing: 0) {
+                            // Drag handle and header (draggable area)
+                            VStack(spacing: 0) {
+                                // Drag handle
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(Color.secondary.opacity(0.3))
+                                    .frame(width: 40, height: 5)
+                                    .padding(.top, 12)
+                                
+                                // Header with action buttons
+                                HStack {
+                                    Text("Recent")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    HStack(spacing: 12) {
+                                        // Audio button (if enabled)
+                                        if audioInputEnabled {
+                                            Button(action: {
+                                                newCardText = ""
+                                                startWithDictation = true
+                                                showCreateModal = true
+                                            }) {
+                                                Image(systemName: "mic.fill")
+                                                    .font(.system(size: 22, weight: .semibold))
+                                                    .foregroundColor(.black)
+                                                    .frame(width: 56, height: 56)
+                                                    .background(Color(uiColor: .secondarySystemBackground))
+                                                    .clipShape(Circle())
+                                            }
+                                        }
+                                        
+                                        // Add button
+                                        Button(action: {
+                                            newCardText = ""
+                                            startWithDictation = false
+                                            showCreateModal = true
+                                        }) {
+                                            Image(systemName: "plus")
+                                                .font(.system(size: 22, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .frame(width: 56, height: 56)
+                                                .background(Color.black)
+                                                .clipShape(Circle())
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.top, 16)
+                                .padding(.bottom, 12)
+                            }
+                            .contentShape(Rectangle())
+                            .highPriorityGesture(
+                                DragGesture(minimumDistance: 10)
+                                    .onEnded { value in
+                                        let translation = value.translation.height
+                                        let velocity = value.predictedEndTranslation.height
+                                        
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                            if velocity > 50 || translation > 30 {
+                                                // Swipe down - always go to small (25%)
+                                                drawerState = .small
+                                            } else if velocity < -50 || translation < -30 {
+                                                // Swipe up - go to next state
+                                                switch drawerState {
+                                                case .small:
+                                                    drawerState = .medium  // Go to 50%
+                                                case .medium:
+                                                    drawerState = .large   // Go to 100%
+                                                case .large:
+                                                    // Already at max, stay at 100%
+                                                    break
+                                                }
+                                            }
+                                        }
+                                    }
+                            )
+                            
+                            // Cards list or empty state (exclude priority cards)
+                            let nonPriorityCards = sortedCards.filter { !priorityCardIds.contains($0.id) }
+                            if nonPriorityCards.isEmpty {
+                                // No recent captures
+                                Text("No Recent Captures")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(.secondary.opacity(0.6))
+                                    .padding(.vertical, 20)
+                            } else {
+                                ScrollView {
+                                    VStack(spacing: 12) {
+                                        ForEach(Array(nonPriorityCards.enumerated()), id: \.element.id) { index, card in
+                                            SwipeableCardRow(
+                                                card: card,
+                                                onTap: {
+                                                    selectedCard = card
+                                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                        showOneMust = true
+                                                    }
+                                                },
+                                                onComplete: {
+                                                    completeCard(card)
+                                                },
+                                                onSetPriority: {
+                                                    let generator = UINotificationFeedbackGenerator()
+                                                    generator.notificationOccurred(.success)
+                                                    addToPriorities(card.id)
+                                                    saveState()
+                                                }
+                                            )
+                                            .padding(.horizontal, 20)
+                                        }
+                                    }
+                                    .padding(.bottom, 40)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: drawerState.height(screenHeight: geometry.size.height))
+                        .background(
+                            Color(uiColor: .systemBackground)
+                        )
+                        .cornerRadius(20, corners: [.topLeft, .topRight])
+                    }
+                }
+            }
+        }
+        .onAppear {
+            loadState()
+            Analytics.shared.trackAppOpened()
+            // Reset drawer state on app open
+            drawerState = .small
+            
+            // If no captures, open create modal automatically
+            if cards.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showCreateModal = true
+                }
+            }
+        }
+        .onChange(of: cards) { _, _ in
+            saveState()
+        }
+        .onChange(of: priorityCardIds) { _, _ in
+            saveState()
+        }
+        .sheet(isPresented: $showAnalytics) {
+            AnalyticsDebugView()
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView(
+                onShowAnalytics: {
+                    showSettings = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showAnalytics = true
+                    }
+                },
+                onDeleteAll: {
+                    clearAllCards()
+                },
+                currentPriorityCard: priorityCards.first,
+                lastCapture: cards.max(by: { $0.timestamp < $1.timestamp }),
+                hasCaptures: !cards.isEmpty
+            )
+        }
+        .sheet(isPresented: $showCreateModal) {
+            CreateCardModal(
+                text: $newCardText,
+                startWithDictation: startWithDictation,
+                onSave: {
+                    createCard()
+                },
+                onCancel: {
+                    newCardText = ""
+                    showCreateModal = false
+                    startWithDictation = false
+                }
+            )
+        }
+        .sheet(isPresented: $showPriorityPicker) {
+            PriorityPickerView(
+                cards: cards.sorted { $0.timestamp > $1.timestamp }.filter { !priorityCardIds.contains($0.id) },
+                onSelect: { card in
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                    addToPriorities(card.id)
+                    saveState()
+                    showPriorityPicker = false
+                }
+            )
+        }
+        .alert("Do you want to focus on achieving this?", isPresented: $showDoNowDialog) {
+            Button("Yes, let's go!", role: .none) {
+                if let card = pendingCard {
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                    cards.append(card)
+                    addToPriorities(card.id)
+                    Analytics.shared.trackCardCreated(hasEmoji: card.emoji != nil)
+                    pendingCard = nil
+                }
+            }
+            
+            Button("Maybe later", role: .cancel) {
+                if let card = pendingCard {
+                    cards.append(card)
+                    // Don't set as priority
+                    Analytics.shared.trackCardCreated(hasEmoji: card.emoji != nil)
+                    pendingCard = nil
+                }
+            }
+        } message: {
+            if let card = pendingCard {
+                Text("\(card.emoji ?? "")  \(card.simplifiedText)")
+            }
+        }
+    }
+    
+    private func createCard() {
+        guard !newCardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+        
+        let originalText = newCardText
+        let actionText = actionTransformEnabled ? transformToAction(originalText) : originalText
+        let emoji = findEmoji(for: actionText)
+        
+        let newCard = Card(
+            originalText: originalText,
+            simplifiedText: actionText,
+            emoji: emoji,
+            timestamp: Date()
+        )
+        
+        // If it's the first card, ask if they want to do it now
+        if cards.isEmpty {
+            pendingCard = newCard
+            showCreateModal = false
+            newCardText = ""
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                showDoNowDialog = true
+            }
+        } else {
+            cards.append(newCard)
+            
+            // Track analytics
+            Analytics.shared.trackCardCreated(hasEmoji: emoji != nil)
+            
+            // Reset and close modal
+            newCardText = ""
+            showCreateModal = false
+        }
+    }
+    
+    private func transformToAction(_ text: String) -> String {
+        let lowercased = text.lowercased()
+        
+        // Check each keyword in the action transformations
+        for (keyword, action) in actionTransformations {
+            if lowercased.contains(keyword) {
+                // If the text already starts with the action, return as-is
+                if lowercased.hasPrefix(action.lowercased()) {
+                    return text
+                }
+                
+                // If action is complete (like "Drink more water"), return it
+                if !action.contains("for") && !action.contains("about") && !action.contains("the") {
+                    // Check if it's a complete action
+                    let words = action.split(separator: " ")
+                    if words.count >= 3 || action == "Buy groceries" || action == "Drink more water" {
+                        return action
+                    }
+                }
+                
+                // Otherwise, append the original text
+                return "\(action) \(text)"
+            }
+        }
+        
+        // No transformation found, return original
+        return text
+    }
+    
+    
+    private func findEmoji(for text: String) -> String? {
+        let lowercased = text.lowercased()
+        
+        // Check each keyword in the emoji map
+        for (keyword, emoji) in emojiMap {
+            if lowercased.contains(keyword) {
+                return emoji
+            }
+        }
+        
+        return nil
+    }
+    
+    private func addToPriorities(_ cardId: UUID) {
+        // Add to priorities if not full (max 3)
+        if !priorityCardIds.contains(cardId) && priorityCardIds.count < 3 {
+            priorityCardIds.append(cardId)
+        }
+    }
+    
+    private func completeCard(_ card: Card) {
+        // Calculate time to complete
+        let timeToComplete = Date().timeIntervalSince(card.timestamp)
+        Analytics.shared.trackCardCompleted(timeToComplete: timeToComplete)
+        
+        // Remove the card
+        withAnimation {
+            cards.removeAll { $0.id == card.id }
+            
+            // If it was a priority, remove it from priorities
+            priorityCardIds.removeAll { $0 == card.id }
+        }
+    }
+    
+    private func completePriorityCard(_ card: Card) {
+        // Show tortoise animation
+        showCompleteTortoise = true
+        
+        // Calculate time to complete
+        let timeToComplete = Date().timeIntervalSince(card.timestamp)
+        Analytics.shared.trackCardCompleted(timeToComplete: timeToComplete)
+        
+        // After animation, remove card
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                cards.removeAll { $0.id == card.id }
+                priorityCardIds.removeAll { $0 == card.id }
+                showCompleteTortoise = false
+            }
+            
+            // If we have less than 3 priorities and there are remaining cards, ask to set new priority
+            if priorityCardIds.count < 3 && !cards.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showPriorityPicker = true
+                }
+            }
+        }
+    }
+    
+    private func clearAllCards() {
+        withAnimation {
+            cards.removeAll()
+            priorityCardIds.removeAll()
+        }
+    }
+    
+    
+    // MARK: - Persistence
+    
+    private func saveState() {
+        let encoder = JSONEncoder()
+        
+        // Save cards
+        if let cardsData = try? encoder.encode(cards) {
+            UserDefaults.standard.set(cardsData, forKey: "cards")
+        }
+        
+        // Save priority IDs (up to 3)
+        let priorityStrings = priorityCardIds.map { $0.uuidString }
+        UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
+        
+        // Save to shared storage for widget (first priority card)
+        let firstPriorityCard = priorityCards.first
+        SharedCardManager.shared.saveCurrentCard(firstPriorityCard)
+        
+        // Request widget refresh
+        #if canImport(WidgetKit)
+        WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+        #endif
+    }
+    
+    private func loadState() {
+        let decoder = JSONDecoder()
+        
+        // Load cards
+        if let cardsData = UserDefaults.standard.data(forKey: "cards"),
+           let loadedCards = try? decoder.decode([Card].self, from: cardsData) {
+            cards = loadedCards
+        }
+        
+        // Load priority IDs
+        if let priorityStrings = UserDefaults.standard.array(forKey: "priorityCardIds") as? [String] {
+            priorityCardIds = priorityStrings.compactMap { UUID(uuidString: $0) }
+        }
+    }
+}
+
+// MARK: - Tortoise Completion Animation
+
+struct TortoiseCompletionView: View {
+    @State private var scale: CGFloat = 0.5
+    @State private var rotation: Double = 0
+    @State private var opacity: Double = 0
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+            .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                // Tortoise emoji with animation
+                Text("🐢")
+                    .font(.system(size: 100))
+                    .scaleEffect(scale)
+                    .rotationEffect(.degrees(rotation))
+                
+                Text("Well done!")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Text("Slow and steady wins the race")
+                    .font(.system(size: 18))
+                    .foregroundColor(.white.opacity(0.9))
+            }
+            .opacity(opacity)
+            .onAppear {
+                // Scale and fade in
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                    scale = 1.2
+                    opacity = 1.0
+                }
+                
+                // Gentle rotation
+                withAnimation(
+                    Animation.easeInOut(duration: 0.8)
+                        .repeatCount(2, autoreverses: true)
+                ) {
+                    rotation = 10
+                }
+                
+                // Bounce back scale
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
+                    scale = 1.0
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Recent Captures Drawer
+
+struct RecentCapturesDrawer: View {
+    let cards: [Card]
+    @Binding var showAllCards: Bool
+    let maxVisibleCards: Int
+    let onCardTap: (Card) -> Void
+    let onComplete: (Card) -> Void
+    let onSetPriority: (Card) -> Void
+    let onCreateCard: (String, Bool) -> Void
+    
+    @State private var offset: CGFloat = 0
+    @GestureState private var dragOffset: CGFloat = 0
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
+    
+    private let collapsedHeight: CGFloat = 120
+    private let expandedHeight: CGFloat = 600
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Drag handle
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.secondary.opacity(0.3))
+                    .frame(width: 40, height: 5)
+                    .padding(.top, 12)
+                
+                // Header with action buttons
+                HStack {
+                    Text("Recent")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        // Audio button (if enabled)
+                        if audioInputEnabled {
+                            Button(action: {
+                                onCreateCard("", true)
+                            }) {
+                                Image(systemName: "mic.fill")
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundColor(.black)
+                                    .frame(width: 56, height: 56)
+                                    .background(Color(uiColor: .secondarySystemBackground))
+                                    .clipShape(Circle())
+                            }
+                        }
+                        
+                        // Add button
+                        Button(action: {
+                            onCreateCard("", false)
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 56, height: 56)
+                                .background(Color.black)
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+                
+                // Cards list or empty state
+                if cards.isEmpty {
+                    // No recent captures - just empty space
+                    VStack(spacing: 16) {
+                        Text("No Recent Captures")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(.secondary.opacity(0.6))
+                            .padding(.vertical, 20)
+                        
+                        Spacer()
+                    }
+                } else {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                                if showAllCards || index < maxVisibleCards {
+                                    SwipeableCardRow(
+                                        card: card,
+                                        onTap: {
+                                            onCardTap(card)
+                                        },
+                                        onComplete: {
+                                            onComplete(card)
+                                        },
+                                        onSetPriority: {
+                                            onSetPriority(card)
+                                        }
+                                    )
+                                    .padding(.horizontal, 20)
+                                }
+                            }
+                            
+                            // "More" button
+                            if cards.count > maxVisibleCards && !showAllCards {
+                                Button(action: {
+                                    withAnimation {
+                                        showAllCards = true
+                                    }
+                                }) {
+                                    HStack {
+                                        Spacer()
+                                        Text("More")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 12)
+                                }
+                                .padding(.horizontal, 20)
+                            }
+                        }
+                        .padding(.bottom, 40)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(uiColor: .systemBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: -8)
+            )
+            .frame(height: collapsedHeight + offset + dragOffset)
+            .frame(maxHeight: expandedHeight)
+            .offset(y: geometry.size.height - (collapsedHeight + offset + dragOffset))
+            .gesture(
+                DragGesture()
+                    .updating($dragOffset) { value, state, _ in
+                        state = -value.translation.height
+                    }
+                    .onEnded { value in
+                        let translation = -value.translation.height
+                        
+                        if translation > 100 {
+                            // Expand
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                offset = expandedHeight - collapsedHeight
+                            }
+                        } else if translation < -50 && offset > 0 {
+                            // Collapse
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                offset = 0
+                            }
+                        } else {
+                            // Stay in current state
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                if offset > (expandedHeight - collapsedHeight) / 2 {
+                                    offset = expandedHeight - collapsedHeight
+                                } else {
+                                    offset = 0
+                                }
+                            }
+                        }
+                    }
+            )
+        }
+        .ignoresSafeArea(edges: .bottom)
+    }
+}
+
+// MARK: - Hero Placeholder View
+
+struct HeroPlaceholderView: View {
+    let height: CGFloat
+    let onSetPriority: (() -> Void)?
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 40)
+                .fill(Color.white.opacity(0.05))
+            
+            RoundedRectangle(cornerRadius: 40)
+                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 8]))
+                .foregroundColor(.white.opacity(0.2))
+            
+            VStack(spacing: 20) {
+                Image(systemName: "lightbulb")
+                    .font(.system(size: 50))
+                    .foregroundColor(.white.opacity(0.3))
+                
+                Text("No priority set")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.7))
+                
+                Text("Swipe right on a capture to turn it on")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.5))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
+                
+                // Set priority button
+                if let setPriority = onSetPriority {
+                    Button(action: setPriority) {
+                        Text("Set Priority")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 16)
+                            .background(Color.white.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 12)
+                }
+            }
+        }
+        .frame(height: height)
+    }
+}
+
+// MARK: - Priority Picker View
+
+struct PriorityPickerView: View {
+    let cards: [Card]
+    let onSelect: (Card) -> Void
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(cards) { card in
+                    Button(action: {
+                        onSelect(card)
+                    }) {
+                        HStack(spacing: 16) {
+                            if let emoji = card.emoji {
+                                Text(emoji)
+                                    .font(.system(size: 32))
+                            }
+                            
+                            Text(card.simplifiedText)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Image(systemName: "lightbulb")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 12)
+                    }
+                }
+            }
+            .navigationTitle("Set Priority")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Hero Card View
+
+struct HeroCardView: View {
+    let card: Card
+    let height: CGFloat
+    let onTap: () -> Void
+    let onComplete: () -> Void
+    let onRemovePriority: () -> Void
+    
+    @State private var offset: CGFloat = 0
+    @State private var isDragging: Bool = false
+    @State private var isRevealed: Bool = false
+    @State private var swipeDirection: SwipeDirection = .none
+    @State private var scale: CGFloat = 0.9
+    @State private var opacity: Double = 0
+    @State private var yOffset: CGFloat = 0
+    
+    enum SwipeDirection {
+        case none, left, right
+    }
+    
+    var body: some View {
+        ZStack {
+            // Gray complete button (left swipe)
+            HStack {
+                Spacer()
+                Button(action: {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        offset = -UIScreen.main.bounds.width
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                        onComplete()
+                        offset = 0
+                        isRevealed = false
+                        swipeDirection = .none
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(uiColor: .secondarySystemBackground))
+                            .frame(width: 70, height: 70)
+                        
+                        Image(systemName: "xmark")
+                            .font(.system(size: 28, weight: .heavy))
+                            .foregroundColor(.black)
+                    }
+                }
+                .padding(.trailing, 20)
+            }
+            .opacity(swipeDirection == .left && (isRevealed || offset < -15) ? 1 : 0)
+            .animation(.easeOut(duration: 0.2), value: offset)
+            
+            // Gray unfavorite button (right swipe)
+            HStack {
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                        isRevealed = false
+                        swipeDirection = .none
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onRemovePriority()
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(uiColor: .secondarySystemBackground))
+                            .frame(width: 70, height: 70)
+                        
+                        Image(systemName: "lightbulb.slash.fill")
+                            .font(.system(size: 26, weight: .heavy))
+                            .foregroundColor(.black)
+                    }
+                }
+                .padding(.leading, 20)
+                Spacer()
+            }
+            .opacity(swipeDirection == .right && (isRevealed || offset > 15) ? 1 : 0)
+            .animation(.easeOut(duration: 0.2), value: offset)
+            
+            // Main card
+            ZStack {
+                RoundedRectangle(cornerRadius: 40)
+                    .fill(Color.yellow)
+                
+                VStack(spacing: 24) {
+                    if let emoji = card.emoji {
+                        Text(emoji)
+                            .font(.system(size: 80))
+                    }
+                    
+                    Text(card.simplifiedText)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(8)
+                        .padding(.horizontal, 32)
+                }
+                .padding(32)
+            }
+            .offset(x: offset)
+            .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { gesture in
+                        isDragging = true
+                        let translation = gesture.translation.width
+                        
+                        if translation < 0 {
+                            // Left swipe (complete)
+                            swipeDirection = .left
+                            offset = max(translation, -100)
+                        } else if translation > 0 {
+                            // Right swipe (unfavorite)
+                            swipeDirection = .right
+                            offset = min(translation, 100)
+                        }
+                    }
+                    .onEnded { gesture in
+                        isDragging = false
+                        let translation = gesture.translation.width
+                        
+                        if translation < -140 {
+                            // Full left swipe - complete directly
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                offset = -UIScreen.main.bounds.width
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                onComplete()
+                                offset = 0
+                                isRevealed = false
+                                swipeDirection = .none
+                            }
+                        } else if translation < -50 {
+                            // Partial left swipe - reveal complete button
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = -100
+                                isRevealed = true
+                            }
+                        } else if translation > 140 {
+                            // Full right swipe - remove priority directly
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                                isRevealed = false
+                                swipeDirection = .none
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                onRemovePriority()
+                            }
+                        } else if translation > 50 {
+                            // Partial right swipe - reveal unfavorite button
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = 100
+                                isRevealed = true
+                            }
+                        } else {
+                            // Too short - spring back
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                                isRevealed = false
+                                swipeDirection = .none
+                            }
+                        }
+                    }
+            )
+            .onTapGesture {
+                if offset == 0 && !isDragging {
+                    onTap()
+                } else if isRevealed {
+                    // Close revealed state
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                        isRevealed = false
+                    }
+                }
+            }
+        }
+        .frame(height: height)
+        .scaleEffect(scale)
+        .opacity(opacity)
+        .offset(y: yOffset)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                scale = 1.0
+                opacity = 1.0
+            }
+            
+            // Subtle breathing animation
+            withAnimation(
+                Animation.easeInOut(duration: 3.0)
+                    .repeatForever(autoreverses: true)
+            ) {
+                yOffset = -8
+            }
+        }
+        .onChange(of: card.id) { _, _ in
+            // Animate when card changes
+            scale = 0.9
+            opacity = 0
+            yOffset = 0
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                scale = 1.0
+                opacity = 1.0
+            }
+            
+            // Restart breathing animation
+            withAnimation(
+                Animation.easeInOut(duration: 3.0)
+                    .repeatForever(autoreverses: true)
+            ) {
+                yOffset = -8
+            }
+        }
+    }
+}
+
+// MARK: - Swipeable Card Row
+
+struct SwipeableCardRow: View {
+    let card: Card
+    let onTap: () -> Void
+    let onComplete: () -> Void
+    let onSetPriority: () -> Void
+    
+    @State private var offset: CGFloat = 0
+    @State private var isDragging: Bool = false
+    
+    var body: some View {
+        ZStack {
+            // Background actions
+            HStack {
+                // Yellow priority button (left side - swipe right)
+                ZStack {
+                    Circle()
+                        .fill(Color.yellow)
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 26, weight: .heavy))
+                        .foregroundColor(.white)
+                }
+                .padding(.leading, 16)
+                .opacity(offset > 20 ? 1 : 0)
+                
+                Spacer()
+                
+                // Gray complete button (right side - swipe left)
+                ZStack {
+                    Circle()
+                        .fill(Color(uiColor: .secondarySystemBackground))
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: "xmark")
+                        .font(.system(size: 22, weight: .heavy))
+                        .foregroundColor(.black)
+                }
+                .padding(.trailing, 16)
+                .opacity(offset < -20 ? 1 : 0)
+            }
+            
+            // Main card
+            HStack(spacing: 16) {
+                if let emoji = card.emoji {
+                    Text(emoji)
+                        .font(.system(size: 32))
+                }
+                
+                Text(card.simplifiedText)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .background(Color(uiColor: .secondarySystemBackground))
+            .cornerRadius(16)
+            .offset(x: offset)
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { gesture in
+                        isDragging = true
+                        let translation = gesture.translation.width
+                        offset = max(-120, min(120, translation))
+                    }
+                    .onEnded { gesture in
+                        isDragging = false
+                        let translation = gesture.translation.width
+                        
+                        if translation > 100 {
+                            // Full right swipe - set priority
+                            onSetPriority()
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
+                        } else if translation < -100 {
+                            // Full left swipe - complete
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                offset = -UIScreen.main.bounds.width
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                onComplete()
+                            }
+                        } else {
+                            // Spring back
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
+                        }
+                    }
+            )
+            .onTapGesture {
+                if offset == 0 && !isDragging {
+                    onTap()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Card Row View
+
+struct CardRowView: View {
+    let card: Card
+    let isOneMust: Bool
+    let isPriority: Bool
+    let opacity: Double
+    let onTap: () -> Void
+    let onComplete: () -> Void
+    let onSetOneMust: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Emoji
+            if let emoji = card.emoji {
+                Text(emoji)
+                    .font(.system(size: 24))
+            }
+            
+            // Text content
+            Text(card.simplifiedText)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.primary)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(14)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .cornerRadius(12)
+        .contentShape(Rectangle())
+        .opacity(opacity)
+        .onTapGesture(perform: onTap)
+    }
+}
+
+// MARK: - Create Card Modal
+
+struct CreateCardModal: View {
+    @Binding var text: String
+    let startWithDictation: Bool
+    let onSave: () -> Void
+    let onCancel: () -> Void
+    @FocusState private var isFocused: Bool
+    
+    let allCommonHints = [
+        "Flush the toilet 🚽",
+        "Dance for 10 seconds 💃",
+        "Don't forget your keys 🔑",
+        "Prepare slides for presentation 📊",
+        "Buy an umbrella ☂️",
+        "Charge your phone 🔋",
+        "Take your medicine 💊",
+        "Water the plants 🪴",
+        "Call mom 📞",
+        "Pay the bills 💳",
+        "Check the mail 📬",
+        "Lock the door 🔐",
+        "Turn off the lights 💡",
+        "Take out the trash 🗑️",
+        "Feed the pet 🐕",
+        "Bring reusable bags 🛍️",
+        "Set an alarm ⏰",
+        "Backup your files 💾",
+        "Reply to that email 📧",
+        "Schedule dentist appointment 🦷"
+    ]
+    
+    @State private var commonHints: [String] = []
+    
+    let randomSuggestions = [
+        "Compliment your coffee mug ☕️",
+        "Name all the colors you can see 🌈",
+        "Count backwards from 10 in Spanish 🇪🇸",
+        "Do a silly walk to the kitchen 🚶",
+        "Smell a lemon 🍋",
+        "High-five yourself 🙌",
+        "Whisper 'good job' to your plant 🪴",
+        "Touch something blue 💙",
+        "Make a weird face in the mirror 😜",
+        "Pet an imaginary dog 🐕",
+        "Sing one word of your favorite song 🎵",
+        "Stretch like a cat 🐱",
+        "Blink 20 times really fast 👁️",
+        "Say 'potato' in 3 different accents 🥔",
+        "Spin around three times slowly 🌀",
+        "Name your shoes out loud 👟",
+        "Wave at something random 👋",
+        "Hum the Jeopardy theme 🎶",
+        "Balance on one foot for 10 seconds 🦩",
+        "Make up a word and use it in a sentence 💭",
+        "Count how many pens you have ✍️",
+        "Tap your nose 7 times 👃",
+        "Say the alphabet backwards from G 🔤",
+        "Wiggle your toes 🦶",
+        "Name three things you're grateful for 🙏",
+        "Do 5 jumping jacks 🤸",
+        "Drink a glass of water 💧",
+        "Take 3 deep breaths 🫁",
+        "Look out the window for 30 seconds 🪟",
+        "Write your name with your non-dominant hand ✏️",
+        "Snap your fingers 10 times 🫰",
+        "Touch your elbows together 💪",
+        "Make a bird sound 🐦",
+        "Pretend you're a robot for 15 seconds 🤖",
+        "Organize one thing on your desk 📎"
+    ]
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                // Input field
+                TextField("What do you want to capture?", text: $text, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .padding()
+                    .font(.system(size: 18))
+                    .focused($isFocused)
+                    .lineLimit(5...10)
+                    .frame(minHeight: 120)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .cornerRadius(12)
+                
+                // Quick suggestions below input
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(commonHints, id: \.self) { hint in
+                        Button(action: {
+                            text = hint
+                        }) {
+                            HStack {
+                                Text(hint)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                Image(systemName: "arrow.up.left")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color(uiColor: .tertiarySystemBackground))
+                            .cornerRadius(10)
+                        }
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("New Capture")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: onCancel) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: onSave) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                
+                // Generate random button above keyboard
+                ToolbarItem(placement: .keyboard) {
+                    Button(action: {
+                        text = randomSuggestions.randomElement() ?? ""
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "dice.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Generate")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .onAppear {
+                // Pick 3 random hints
+                commonHints = Array(allCommonHints.shuffled().prefix(3))
+                
+                if startWithDictation {
+                    // Small delay then trigger dictation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        isFocused = true
+                    }
+                } else {
+                    isFocused = true
+                }
+            }
+        }
+    }
+}
+
+
+struct OneMustCardView: View {
+    let card: Card
+    let isNewCard: Bool
+    let isPriority: Bool
+    let onDismiss: () -> Void
+    let onSetPriority: () -> Void
+    let onRemovePriority: (() -> Void)?
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                ScrollView {
+                    VStack(spacing: 50) {
+                        Spacer(minLength: 50)
+                        
+                        // Emoji
+                        if let emoji = card.emoji {
+                            Text(emoji)
+                                .font(.system(size: 120))
+                        }
+                        
+                        // Text (scrollable)
+                        Text(card.simplifiedText)
+                            .font(.system(size: 38, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                        
+                        Spacer(minLength: isPriority ? 120 : 120)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                
+                // Fixed bottom toolbar with priority/unpriority button
+                VStack {
+                    Spacer()
+                    
+                    VStack(spacing: 0) {
+                        Divider()
+                        
+                        if !isPriority {
+                            // Make Priority button
+                            Button(action: {
+                                onSetPriority()
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    onDismiss()
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "lightbulb.fill")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    Text("Turn this on")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.yellow)
+                                .clipShape(Capsule())
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                        } else if let removePriority = onRemovePriority {
+                            // Remove Priority button
+                            Button(action: {
+                                removePriority()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "lightbulb.slash.fill")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.black)
+                                    Text("Turn this off")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color(uiColor: .secondarySystemBackground))
+                                .clipShape(Capsule())
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                        }
+                    }
+                    .background(Color(uiColor: .systemBackground))
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            onDismiss()
+                        }
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - View Extension for Custom Corner Radius
+
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 
 #Preview {
     ContentView()
 }
+
