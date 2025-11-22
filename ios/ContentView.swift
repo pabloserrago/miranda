@@ -1605,7 +1605,26 @@ struct OneMustCardView: View {
                         Divider()
                         
                         if !isPriority {
-                            // Make Priority button
+                            // Complete button (primary action)
+                            Button(action: {
+                                onComplete()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    Text("Complete")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.green)
+                                .clipShape(Capsule())
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            
+                            // Make Priority button (secondary action)
                             Button(action: {
                                 onSetPriority()
                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -1614,18 +1633,17 @@ struct OneMustCardView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "lightbulb.fill")
-                                        .font(.system(size: 20, weight: .semibold))
-                                    Text("Turn this on")
                                         .font(.system(size: 18, weight: .semibold))
+                                    Text("Turn this on")
+                                        .font(.system(size: 16, weight: .semibold))
                                 }
                                 .foregroundColor(.black)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
+                                .padding(.vertical, 14)
                                 .background(Color.yellow)
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
-                            .padding(.top, 16)
                             .padding(.bottom, 16)
                         } else {
                             // Complete button (primary action)
