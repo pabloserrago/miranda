@@ -143,7 +143,7 @@ struct ContentView: View {
                             
                             VStack(spacing: 0) {
                                 // "Keep this in sight" label
-                                if !priorityCards.isEmpty {
+                                if !priorityCardIds.isEmpty {
                                     Text("Keep this in sight")
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.white)
@@ -151,51 +151,64 @@ struct ContentView: View {
                                         .padding(.bottom, 12)
                                 }
                                 
-                                if !priorityCards.isEmpty {
-                                    // Calculate available height for priorities
+                                if !priorityCardIds.isEmpty {
+                                    // Calculate available height for priorities (always 3 slots)
                                     let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
-                                    let topPadding: CGFloat = priorityCards.isEmpty ? 0 : 48
+                                    let topPadding: CGFloat = 48
                                     let availableHeight = geometry.size.height - drawerHeight - topPadding
-                                    let cardHeight = (availableHeight - CGFloat(priorityCards.count * 20)) / CGFloat(max(priorityCards.count, 1))
+                                    let cardHeight = (availableHeight - CGFloat(3 * 12)) / 3.0 // Always divide by 3
                                     
-                                    // Show all priority cards (up to 3) - no scrolling
+                                    // Show all 3 slots (filled or empty)
                                     VStack(spacing: 12) {
-                                        ForEach(priorityCards) { priorityCard in
-                                            VStack(spacing: 8) {
-                                                HeroCardView(
-                                                    card: priorityCard,
+                                        ForEach(0..<3, id: \.self) { index in
+                                            if index < priorityCards.count {
+                                                // Show filled priority card
+                                                let priorityCard = priorityCards[index]
+                                                VStack(spacing: 8) {
+                                                    HeroCardView(
+                                                        card: priorityCard,
+                                                        height: min(cardHeight - 50, 300),
+                                                        onTap: {
+                                                            selectedCard = priorityCard
+                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                                showOneMust = true
+                                                            }
+                                                        },
+                                                        onComplete: {
+                                                            completeCard(priorityCard)
+                                                        },
+                                                        onRemovePriority: {
+                                                            withAnimation {
+                                                                priorityCardIds.removeAll { $0 == priorityCard.id }
+                                                                saveState()
+                                                            }
+                                                        }
+                                                    )
+                                                    
+                                                    // Complete button
+                                                    Button(action: {
+                                                        completePriorityCard(priorityCard)
+                                                    }) {
+                                                        Text("Complete")
+                                                            .font(.system(size: 14, weight: .semibold))
+                                                            .foregroundColor(.white)
+                                                            .padding(.horizontal, 32)
+                                                            .padding(.vertical, 10)
+                                                            .background(Color.white.opacity(0.15))
+                                                            .clipShape(Capsule())
+                                                    }
+                                                }
+                                                .padding(.horizontal, 20)
+                                            } else {
+                                                // Show empty slot with circular lightbulb button
+                                                EmptyPrioritySlot(
                                                     height: min(cardHeight - 50, 300),
                                                     onTap: {
-                                                        selectedCard = priorityCard
-                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                            showOneMust = true
-                                                        }
-                                                    },
-                                                    onComplete: {
-                                                        completeCard(priorityCard)
-                                                    },
-                                                    onRemovePriority: {
-                                                        withAnimation {
-                                                            priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                            saveState()
-                                                        }
+                                                        showPriorityPicker = true
                                                     }
                                                 )
-                                                
-                                                // Complete button for each card
-                                                Button(action: {
-                                                    completePriorityCard(priorityCard)
-                                                }) {
-                                                    Text("Complete")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundColor(.white)
-                                                        .padding(.horizontal, 32)
-                                                        .padding(.vertical, 10)
-                                                        .background(Color.white.opacity(0.15))
-                                                        .clipShape(Capsule())
-                                                }
+                                                .padding(.horizontal, 20)
                                             }
-                                            .padding(.horizontal, 20)
                                         }
                                     }
                                     .frame(maxHeight: availableHeight)
@@ -853,6 +866,40 @@ struct RecentCapturesDrawer: View {
             )
         }
         .ignoresSafeArea(edges: .bottom)
+    }
+}
+
+// MARK: - Empty Priority Slot
+
+struct EmptyPrioritySlot: View {
+    let height: CGFloat
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                RoundedRectangle(cornerRadius: min(40, height * 0.1))
+                    .fill(Color.white.opacity(0.03))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: min(40, height * 0.1))
+                            .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 8]))
+                            .foregroundColor(.white.opacity(0.15))
+                    )
+                
+                // Circular lightbulb button in center
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: min(80, height * 0.3), height: min(80, height * 0.3))
+                    
+                    Image(systemName: "lightbulb")
+                        .font(.system(size: min(32, height * 0.12), weight: .medium))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+            }
+        }
+        .frame(height: height)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
