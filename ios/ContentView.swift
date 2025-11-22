@@ -126,7 +126,19 @@ struct ContentView: View {
                         }
                         showOneMust = false
                         selectedCard = nil
-                    } : nil
+                    } : nil,
+                    onComplete: {
+                        // Check if it's a priority card for special animation
+                        if priorityCardIds.contains(currentCard.id) {
+                            showOneMust = false
+                            selectedCard = nil
+                            completePriorityCard(currentCard)
+                        } else {
+                            showOneMust = false
+                            selectedCard = nil
+                            completeCard(currentCard)
+                        }
+                    }
                 )
                 .transition(.scale.combined(with: .opacity))
                 .onAppear {
@@ -1552,6 +1564,7 @@ struct OneMustCardView: View {
     let onDismiss: () -> Void
     let onSetPriority: () -> Void
     let onRemovePriority: (() -> Void)?
+    let onComplete: () -> Void
     
     var body: some View {
         NavigationView {
@@ -1578,11 +1591,11 @@ struct OneMustCardView: View {
                     .frame(maxWidth: .infinity)
                 }
                 
-                // Fixed bottom toolbar with priority/unpriority button
+                // Fixed bottom toolbar with action buttons
                 VStack {
                     Spacer()
                     
-                    VStack(spacing: 0) {
+                    VStack(spacing: 12) {
                         Divider()
                         
                         if !isPriority {
@@ -1606,27 +1619,49 @@ struct OneMustCardView: View {
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 16)
-                        } else if let removePriority = onRemovePriority {
-                            // Remove Priority button
+                            .padding(.top, 16)
+                            .padding(.bottom, 16)
+                        } else {
+                            // Complete button (primary action)
                             Button(action: {
-                                removePriority()
+                                onComplete()
                             }) {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "lightbulb.slash.fill")
+                                    Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(.black)
-                                    Text("Turn this off")
+                                    Text("Complete")
                                         .font(.system(size: 18, weight: .semibold))
                                 }
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
-                                .background(Color(uiColor: .secondarySystemBackground))
+                                .background(Color.green)
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 16)
+                            .padding(.top, 16)
+                            
+                            // Remove Priority button (secondary action)
+                            if let removePriority = onRemovePriority {
+                                Button(action: {
+                                    removePriority()
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "lightbulb.slash.fill")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        Text("Turn this off")
+                                            .font(.system(size: 16, weight: .semibold))
+                                    }
+                                    .foregroundColor(.black)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(Color(uiColor: .secondarySystemBackground))
+                                    .clipShape(Capsule())
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
+                            }
                         }
                     }
                     .background(Color(uiColor: .systemBackground))
