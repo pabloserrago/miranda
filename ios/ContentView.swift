@@ -159,7 +159,7 @@ struct ContentView: View {
                                 if !priorityCardIds.isEmpty {
                                     // Calculate available height for priorities (always 3 slots)
                                     let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
-                                    let topPadding: CGFloat = 20
+                                    let topPadding: CGFloat = 80 // Space for settings icon
                                     let availableHeight = geometry.size.height - drawerHeight - topPadding
                                     let cardHeight = (availableHeight - CGFloat(3 * 12)) / 3.0 // Always divide by 3
                                     
@@ -169,7 +169,7 @@ struct ContentView: View {
                                             if index < priorityCards.count {
                                                 // Show filled priority card
                                                 let priorityCard = priorityCards[index]
-                                        HeroCardView(
+                                                HeroCardView(
                                             card: priorityCard,
                                                     height: cardHeight,
                                             onTap: {
@@ -222,6 +222,7 @@ struct ContentView: View {
                                             }
                                         }
                                     }
+                                    .padding(.top, 60)
                                     .frame(maxHeight: availableHeight)
                                     .onTapGesture {
                                         // Cancel drag if tapping outside
@@ -1091,7 +1092,7 @@ struct HeroCardView: View {
                         }
                         
                         Text(card.simplifiedText)
-                            .font(.system(size: max(min(20, height * 0.1), 15), weight: .bold))
+                            .font(.system(size: max(min(24, height * 0.12), 18), weight: .bold))
                             .foregroundColor(.black)
                             .multilineTextAlignment(.leading)
                             .lineLimit(height > 200 ? 4 : 2)
