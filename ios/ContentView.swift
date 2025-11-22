@@ -1082,27 +1082,17 @@ struct HeroCardView: View {
                 RoundedRectangle(cornerRadius: min(40, height * 0.1))
                     .fill(Color.yellow)
                 
-                HStack(alignment: .center, spacing: 12) {
-                    // Drag handle indicator (subtle dots)
-                    VStack(spacing: 3) {
-                        ForEach(0..<3, id: \.self) { _ in
-                            Circle()
-                                .fill(Color.black.opacity(0.15))
-                                .frame(width: 4, height: 4)
-                        }
-                    }
-                    .padding(.leading, 4)
-                    
+                HStack(alignment: .center, spacing: 16) {
                     // Left side: emoji and text
                     HStack(alignment: .center, spacing: 12) {
-                    if let emoji = card.emoji {
-                        Text(emoji)
+                        if let emoji = card.emoji {
+                            Text(emoji)
                                 .font(.system(size: max(min(60, height * 0.25), 32)))
-                    }
-                    
-                    Text(card.simplifiedText)
+                        }
+                        
+                        Text(card.simplifiedText)
                             .font(.system(size: max(min(20, height * 0.1), 15), weight: .bold))
-                        .foregroundColor(.black)
+                            .foregroundColor(.black)
                             .multilineTextAlignment(.leading)
                             .lineLimit(height > 200 ? 4 : 2)
                             .minimumScaleFactor(0.8)
