@@ -153,30 +153,11 @@ struct ContentView: View {
                             Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
                         .ignoresSafeArea()
                     
-                        VStack(spacing: 0) {
-                                // "Keep this in sight" label with priority count
-                                if !priorityCardIds.isEmpty {
-                                    HStack(spacing: 8) {
-                                    Text("Keep this in sight")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(.white)
-                                
-                                Spacer()
-                                
-                                        // Priority counter (e.g., "1 of 3")
-                                        Text("\(priorityCardIds.count) of 3")
-                                            .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.5))
-                                    }
-                                    .padding(.horizontal, 24)
-                                    .padding(.top, 20)
-                                    .padding(.bottom, 12)
-                                }
-                                
+                            VStack(spacing: 0) {
                                 if !priorityCardIds.isEmpty {
                                     // Calculate available height for priorities (always 3 slots)
                                     let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
-                                    let topPadding: CGFloat = 48
+                                    let topPadding: CGFloat = 20
                                     let availableHeight = geometry.size.height - drawerHeight - topPadding
                                     let cardHeight = (availableHeight - CGFloat(3 * 12)) / 3.0 // Always divide by 3
                                     
@@ -1125,18 +1106,19 @@ struct HeroCardView: View {
                 VStack(spacing: height * 0.05) {
                     if let emoji = card.emoji {
                         Text(emoji)
-                            .font(.system(size: min(80, height * 0.2)))
+                            .font(.system(size: max(min(80, height * 0.25), 40)))
                     }
                     
                     Text(card.simplifiedText)
-                        .font(.system(size: min(22, height * 0.055), weight: .bold))
+                        .font(.system(size: max(min(28, height * 0.12), 16), weight: .bold))
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)
-                        .lineLimit(height > 250 ? 8 : 4)
-                        .padding(.horizontal, height > 250 ? 32 : 20)
-                        .minimumScaleFactor(0.8)
+                        .lineLimit(height > 250 ? 8 : 3)
+                        .padding(.horizontal, height > 250 ? 32 : 16)
+                        .minimumScaleFactor(0.7)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(height > 250 ? 32 : 20)
+                .padding(height > 250 ? 32 : 16)
             }
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
