@@ -898,11 +898,11 @@ struct EmptyPrioritySlot: View {
     var body: some View {
         Button(action: onTap) {
             ZStack {
-                RoundedRectangle(cornerRadius: min(40, height * 0.1))
+                RoundedRectangle(cornerRadius: min(60, height * 0.15))
                     .fill(Color.white.opacity(0.03))
                     .overlay(
-                        RoundedRectangle(cornerRadius: min(40, height * 0.1))
-                            .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 8]))
+                        RoundedRectangle(cornerRadius: min(60, height * 0.15))
+                            .strokeBorder(lineWidth: 2)
                             .foregroundColor(.white.opacity(0.15))
                     )
                 
@@ -940,11 +940,11 @@ struct HeroPlaceholderView: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 40)
+            RoundedRectangle(cornerRadius: 60)
                 .fill(Color.white.opacity(0.05))
             
-            RoundedRectangle(cornerRadius: 40)
-                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 8]))
+            RoundedRectangle(cornerRadius: 60)
+                .strokeBorder(lineWidth: 2)
                 .foregroundColor(.white.opacity(0.2))
             
             VStack(spacing: 20) {
@@ -1079,7 +1079,7 @@ struct HeroCardView: View {
             
             // Main card
             ZStack {
-                RoundedRectangle(cornerRadius: min(40, height * 0.1))
+                RoundedRectangle(cornerRadius: min(60, height * 0.15))
                     .fill(Color.yellow)
                 
                 HStack(alignment: .center, spacing: 16) {
