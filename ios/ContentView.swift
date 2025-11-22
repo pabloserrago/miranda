@@ -141,77 +141,80 @@ struct ContentView: View {
                             Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
                                 .ignoresSafeArea()
                             
-                            VStack(spacing: 20) {
+                            VStack(spacing: 0) {
                                 // "Keep this in sight" label
                                 if !priorityCards.isEmpty {
                                     Text("Keep this in sight")
-                                        .font(.system(size: 18, weight: .semibold))
+                                        .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.white)
-                                        .padding(.top, 40)
+                                        .padding(.top, 20)
+                                        .padding(.bottom, 12)
                                 }
                                 
-                                Spacer()
-                                
                                 if !priorityCards.isEmpty {
-                                    // Show priority cards (up to 3)
-                                    ScrollView(.vertical, showsIndicators: false) {
-                                        VStack(spacing: 16) {
-                                            ForEach(priorityCards) { priorityCard in
-                                                VStack(spacing: 12) {
-                                                    HeroCardView(
-                                                        card: priorityCard,
-                                                        height: 380,
-                                                        onTap: {
-                                                            selectedCard = priorityCard
-                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                                showOneMust = true
-                                                            }
-                                                        },
-                                                        onComplete: {
-                                                            completeCard(priorityCard)
-                                                        },
-                                                        onRemovePriority: {
-                                                            withAnimation {
-                                                                priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                                saveState()
-                                                            }
+                                    // Calculate available height for priorities
+                                    let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
+                                    let topPadding: CGFloat = priorityCards.isEmpty ? 0 : 48
+                                    let availableHeight = geometry.size.height - drawerHeight - topPadding
+                                    let cardHeight = (availableHeight - CGFloat(priorityCards.count * 20)) / CGFloat(max(priorityCards.count, 1))
+                                    
+                                    // Show all priority cards (up to 3) - no scrolling
+                                    VStack(spacing: 12) {
+                                        ForEach(priorityCards) { priorityCard in
+                                            VStack(spacing: 8) {
+                                                HeroCardView(
+                                                    card: priorityCard,
+                                                    height: min(cardHeight - 50, 300),
+                                                    onTap: {
+                                                        selectedCard = priorityCard
+                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                            showOneMust = true
                                                         }
-                                                    )
-                                                    
-                                                    // Complete button for each card
-                                                    Button(action: {
-                                                        completePriorityCard(priorityCard)
-                                                    }) {
-                                                        Text("Complete")
-                                                            .font(.system(size: 16, weight: .semibold))
-                                                            .foregroundColor(.white)
-                                                            .padding(.horizontal, 40)
-                                                            .padding(.vertical, 14)
-                                                            .background(Color.white.opacity(0.15))
-                                                            .clipShape(Capsule())
+                                                    },
+                                                    onComplete: {
+                                                        completeCard(priorityCard)
+                                                    },
+                                                    onRemovePriority: {
+                                                        withAnimation {
+                                                            priorityCardIds.removeAll { $0 == priorityCard.id }
+                                                            saveState()
+                                                        }
                                                     }
+                                                )
+                                                
+                                                // Complete button for each card
+                                                Button(action: {
+                                                    completePriorityCard(priorityCard)
+                                                }) {
+                                                    Text("Complete")
+                                                        .font(.system(size: 14, weight: .semibold))
+                                                        .foregroundColor(.white)
+                                                        .padding(.horizontal, 32)
+                                                        .padding(.vertical, 10)
+                                                        .background(Color.white.opacity(0.15))
+                                                        .clipShape(Capsule())
                                                 }
-                                                .padding(.horizontal, 24)
                                             }
+                                            .padding(.horizontal, 20)
                                         }
-                                        .padding(.bottom, 20)
                                     }
+                                    .frame(maxHeight: availableHeight)
                                 } else if cards.count > 0 {
+                                    Spacer()
                                     HeroPlaceholderView(
-                                        height: 420,
+                                        height: 320,
                                         onSetPriority: {
                                             showPriorityPicker = true
                                         }
                                     )
                                     .padding(.horizontal, 24)
-                                    .padding(.top, 60)
+                                    Spacer()
                                 } else {
-                                    HeroPlaceholderView(height: 420, onSetPriority: nil)
+                                    Spacer()
+                                    HeroPlaceholderView(height: 320, onSetPriority: nil)
                                         .padding(.horizontal, 24)
-                                        .padding(.top, 60)
+                                    Spacer()
                                 }
-                                
-                                Spacer()
                                 
                                 // Space for drawer at bottom (25% by default)
                                 Color.clear
@@ -1031,23 +1034,24 @@ struct HeroCardView: View {
             
             // Main card
             ZStack {
-                RoundedRectangle(cornerRadius: 40)
+                RoundedRectangle(cornerRadius: min(40, height * 0.1))
                     .fill(Color.yellow)
                 
-                VStack(spacing: 24) {
+                VStack(spacing: height * 0.05) {
                     if let emoji = card.emoji {
                         Text(emoji)
-                            .font(.system(size: 80))
+                            .font(.system(size: min(80, height * 0.2)))
                     }
                     
                     Text(card.simplifiedText)
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: min(22, height * 0.055), weight: .bold))
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)
-                        .lineLimit(8)
-                        .padding(.horizontal, 32)
+                        .lineLimit(height > 250 ? 8 : 4)
+                        .padding(.horizontal, height > 250 ? 32 : 20)
+                        .minimumScaleFactor(0.8)
                 }
-                .padding(32)
+                .padding(height > 250 ? 32 : 20)
             }
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
