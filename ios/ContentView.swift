@@ -511,6 +511,16 @@ struct ContentView: View {
                     addToPriorities(card.id)
                     saveState()
                     showPriorityPicker = false
+                },
+                onCaptureText: {
+                    newCardText = ""
+                    startWithDictation = false
+                    showCreateModal = true
+                },
+                onCaptureVoice: {
+                    newCardText = ""
+                    startWithDictation = true
+                    showCreateModal = true
                 }
             )
         }
@@ -1036,41 +1046,118 @@ struct HeroPlaceholderView: View {
 struct PriorityPickerView: View {
     let cards: [Card]
     let onSelect: (Card) -> Void
+    let onCaptureText: () -> Void
+    let onCaptureVoice: () -> Void
     @Environment(\.dismiss) var dismiss
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(cards) { card in
-                    Button(action: {
-                        onSelect(card)
-                    }) {
-                        HStack(spacing: 16) {
-                            if let emoji = card.emoji {
-                                Text(emoji)
-                                    .font(.system(size: 32))
+            if cards.isEmpty {
+                // Empty state - no cards available to set as priority
+                VStack(spacing: 32) {
+                    Spacer()
+                    
+                    Image(systemName: "tray")
+                        .font(.system(size: 60))
+                        .foregroundColor(.secondary.opacity(0.5))
+                    
+                    VStack(spacing: 12) {
+                        Text("No other captures")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        Text("Capture something new to set as a priority")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
+                    
+                    HStack(spacing: 16) {
+                        // Audio capture button (if enabled) - icon only
+                        if audioInputEnabled {
+                            Button(action: {
+                                dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    onCaptureVoice()
+                                }
+                            }) {
+                                Image(systemName: "mic.fill")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.primary)
+                                    .frame(width: 60, height: 60)
+                                    .background(Color(uiColor: .secondarySystemBackground))
+                                    .clipShape(Circle())
                             }
-                            
-                            Text(card.simplifiedText)
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(.primary)
-                                .lineLimit(2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            Image(systemName: "lightbulb")
-                                .font(.system(size: 20))
-                                .foregroundColor(.secondary)
                         }
-                        .padding(.vertical, 12)
+                        
+                        // Main capture button
+                        Button(action: {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                onCaptureText()
+                            }
+                        }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 20, weight: .bold))
+                                Text("Capture")
+                                    .font(.system(size: 20, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 16)
+                            .background(Color.black)
+                            .clipShape(Capsule())
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .navigationTitle("Set Priority")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
                 }
-            }
-            .navigationTitle("Set Priority")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+            } else {
+                // Show list of available cards
+                List {
+                    ForEach(cards) { card in
+                        Button(action: {
+                            onSelect(card)
+                        }) {
+                            HStack(spacing: 16) {
+                                if let emoji = card.emoji {
+                                    Text(emoji)
+                                        .font(.system(size: 32))
+                                }
+                                
+                                Text(card.simplifiedText)
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(.primary)
+                                    .lineLimit(2)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                Image(systemName: "lightbulb")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 12)
+                        }
+                    }
+                }
+                .navigationTitle("Set Priority")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
                 }
             }
