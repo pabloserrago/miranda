@@ -169,7 +169,7 @@ struct ContentView: View {
                                             if index < priorityCards.count {
                                                 // Show filled priority card
                                                 let priorityCard = priorityCards[index]
-                                                HeroCardView(
+                                        HeroCardView(
                                             card: priorityCard,
                                                     height: cardHeight,
                                             onTap: {
@@ -245,7 +245,7 @@ struct ContentView: View {
                                 } else {
                                     // No cards at all - show big capture buttons
                                     VStack(spacing: 32) {
-                                        Spacer()
+                                Spacer()
                                         
                                         Image(systemName: "plus.circle.fill")
                                             .font(.system(size: 80))
@@ -281,7 +281,7 @@ struct ContentView: View {
                                             Button(action: {
                                                 newCardText = ""
                                                 startWithDictation = false
-                                                showCreateModal = true
+                                    showCreateModal = true
                                             }) {
                                                 HStack(spacing: 10) {
                                                     Image(systemName: "plus")
@@ -295,9 +295,9 @@ struct ContentView: View {
                                                 .background(Color.yellow)
                                                 .clipShape(Capsule())
                                             }
-                                        }
-                                        
-                                        Spacer()
+                        }
+                        
+                        Spacer()
                                     }
                                 }
                                 
@@ -306,7 +306,7 @@ struct ContentView: View {
                                     Color.clear
                                         .frame(height: DrawerState.small.height(screenHeight: geometry.size.height))
                                 }
-                            }
+                    }
                     
                     // Fixed top bar - floating buttons
                     VStack {
@@ -458,6 +458,7 @@ struct ContentView: View {
                             Color(uiColor: .systemBackground)
                         )
                         .cornerRadius(20, corners: [.topLeft, .topRight])
+                        }
                     }
                 }
             }
@@ -1135,14 +1136,14 @@ struct HeroCardView: View {
                 HStack(alignment: .center, spacing: 16) {
                     // Left side: emoji and text
                     HStack(alignment: .center, spacing: 12) {
-                        if let emoji = card.emoji {
-                            Text(emoji)
+                    if let emoji = card.emoji {
+                        Text(emoji)
                                 .font(.system(size: max(min(60, height * 0.25), 32)))
-                        }
-                        
-                        Text(card.simplifiedText)
+                    }
+                    
+                    Text(card.simplifiedText)
                             .font(.system(size: max(min(24, height * 0.12), 18), weight: .bold))
-                            .foregroundColor(.black)
+                        .foregroundColor(.black)
                             .multilineTextAlignment(.leading)
                             .lineLimit(height > 200 ? 4 : 2)
                             .minimumScaleFactor(0.8)
