@@ -243,16 +243,70 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
                                     Spacer()
                                 } else {
-                                    Spacer()
-                                    HeroPlaceholderView(height: 320, onSetPriority: nil)
-                                        .padding(.horizontal, 24)
-                                Spacer()
+                                    // No cards at all - show big capture buttons
+                                    VStack(spacing: 32) {
+                                        Spacer()
+                                        
+                                        Image(systemName: "plus.circle.fill")
+                                            .font(.system(size: 80))
+                                            .foregroundColor(.white.opacity(0.2))
+                                        
+                                        Text("Capture your first task")
+                                            .font(.system(size: 18, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.5))
+                                        
+                                        HStack(spacing: 16) {
+                                            // Audio capture button (if enabled)
+                                            if audioInputEnabled {
+                                                Button(action: {
+                                                    newCardText = ""
+                                                    startWithDictation = true
+                                                    showCreateModal = true
+                                                }) {
+                                                    HStack(spacing: 10) {
+                                                        Image(systemName: "mic.fill")
+                                                            .font(.system(size: 22, weight: .bold))
+                                                        Text("Voice")
+                                                            .font(.system(size: 20, weight: .bold))
+                                                    }
+                                                    .foregroundColor(.white)
+                                                    .padding(.horizontal, 40)
+                                                    .padding(.vertical, 18)
+                                                    .background(Color.white.opacity(0.15))
+                                                    .clipShape(Capsule())
+                                                }
+                                            }
+                                            
+                                            // Text capture button
+                                            Button(action: {
+                                                newCardText = ""
+                                                startWithDictation = false
+                                                showCreateModal = true
+                                            }) {
+                                                HStack(spacing: 10) {
+                                                    Image(systemName: "plus")
+                                                        .font(.system(size: 22, weight: .bold))
+                                                    Text("Type")
+                                                        .font(.system(size: 20, weight: .bold))
+                                                }
+                                                .foregroundColor(.black)
+                                                .padding(.horizontal, 40)
+                                                .padding(.vertical, 18)
+                                                .background(Color.yellow)
+                                                .clipShape(Capsule())
+                                            }
+                                        }
+                                        
+                                        Spacer()
+                                    }
                                 }
                                 
-                                // Space for drawer at bottom (25% by default)
-                                Color.clear
-                                    .frame(height: DrawerState.small.height(screenHeight: geometry.size.height))
-                    }
+                                // Space for drawer at bottom (25% by default) - only if we have cards
+                                if !cards.isEmpty {
+                                    Color.clear
+                                        .frame(height: DrawerState.small.height(screenHeight: geometry.size.height))
+                                }
+                            }
                     
                     // Fixed top bar - floating buttons
                     VStack {
@@ -279,7 +333,9 @@ struct ContentView: View {
                         }
                         
                         // Recent captures drawer - three-state system (overlays at bottom)
-                        VStack(spacing: 0) {
+                        // Only show if we have cards
+                        if !cards.isEmpty {
+                            VStack(spacing: 0) {
                             // Drag handle and header (draggable area)
                             VStack(spacing: 0) {
                                 // Drag handle
@@ -402,6 +458,8 @@ struct ContentView: View {
                             Color(uiColor: .systemBackground)
                         )
                         .cornerRadius(20, corners: [.topLeft, .topRight])
+                        }
+                    }
                 }
             }
         }
@@ -411,13 +469,6 @@ struct ContentView: View {
             Analytics.shared.trackAppOpened()
             // Reset drawer state on app open
             drawerState = .small
-            
-            // If no captures, open create modal automatically
-            if cards.isEmpty {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    showCreateModal = true
-                }
-            }
         }
         .onChange(of: cards) { _, _ in
             saveState()
