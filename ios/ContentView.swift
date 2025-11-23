@@ -458,11 +458,9 @@ struct ContentView: View {
                             Color(uiColor: .systemBackground)
                         )
                         .cornerRadius(20, corners: [.topLeft, .topRight])
-                        }
                     }
                 }
             }
-        }
         }
         .onAppear {
             loadState()
