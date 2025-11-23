@@ -243,61 +243,55 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
                                     Spacer()
                                 } else {
-                                    // No cards at all - show big capture buttons
-                                    VStack(spacing: 32) {
-                                Spacer()
+                                    // No cards at all - show big capture button
+                                    VStack(spacing: 24) {
+                                        Spacer()
                                         
-                                        Image(systemName: "plus.circle.fill")
-                                            .font(.system(size: 80))
-                                            .foregroundColor(.white.opacity(0.2))
-                                        
-                                        Text("Capture your first task")
-                                            .font(.system(size: 18, weight: .medium))
+                                        Text("Capture anything that's in your mind,\nlike a dream, an idea, or to-do.")
+                                            .font(.system(size: 16, weight: .medium))
                                             .foregroundColor(.white.opacity(0.5))
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal, 32)
+                                            .padding(.bottom, 16)
                                         
                                         HStack(spacing: 16) {
-                                            // Audio capture button (if enabled)
+                                            // Audio capture button (if enabled) - icon only
                                             if audioInputEnabled {
                                                 Button(action: {
                                                     newCardText = ""
                                                     startWithDictation = true
                                                     showCreateModal = true
                                                 }) {
-                                                    HStack(spacing: 10) {
-                                                        Image(systemName: "mic.fill")
-                                                            .font(.system(size: 22, weight: .bold))
-                                                        Text("Voice")
-                                                            .font(.system(size: 20, weight: .bold))
-                                                    }
-                                                    .foregroundColor(.white)
-                                                    .padding(.horizontal, 40)
-                                                    .padding(.vertical, 18)
-                                                    .background(Color.white.opacity(0.15))
-                                                    .clipShape(Capsule())
+                                                    Image(systemName: "mic.fill")
+                                                        .font(.system(size: 28, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                        .frame(width: 70, height: 70)
+                                                        .background(Color.white.opacity(0.15))
+                                                        .clipShape(Circle())
                                                 }
                                             }
                                             
-                                            // Text capture button
+                                            // Main capture button
                                             Button(action: {
                                                 newCardText = ""
                                                 startWithDictation = false
-                                    showCreateModal = true
+                                                showCreateModal = true
                                             }) {
-                                                HStack(spacing: 10) {
+                                                HStack(spacing: 12) {
                                                     Image(systemName: "plus")
-                                                        .font(.system(size: 22, weight: .bold))
-                                                    Text("Type")
-                                                        .font(.system(size: 20, weight: .bold))
+                                                        .font(.system(size: 24, weight: .bold))
+                                                    Text("Capture")
+                                                        .font(.system(size: 24, weight: .bold))
                                                 }
                                                 .foregroundColor(.black)
-                                                .padding(.horizontal, 40)
-                                                .padding(.vertical, 18)
+                                                .padding(.horizontal, 48)
+                                                .padding(.vertical, 20)
                                                 .background(Color.yellow)
                                                 .clipShape(Capsule())
                                             }
-                        }
-                        
-                        Spacer()
+                                        }
+                                        
+                                        Spacer()
                                     }
                                 }
                                 
