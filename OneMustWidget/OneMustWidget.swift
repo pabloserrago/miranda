@@ -107,51 +107,50 @@ struct CompactWidgetView: View {
     }
 }
 
-// MARK: - Medium Widget (Shows up to 2 priorities + capture button)
+// MARK: - Medium Widget (Shows all 3 priorities + capture button)
 
 struct MediumWidgetView: View {
     let cards: [Card]
     
     var body: some View {
-        HStack(spacing: 8) {
-            // Show up to 2 priority cards
-            ForEach(Array(cards.prefix(2).enumerated()), id: \.element.id) { index, card in
-                VStack(spacing: 6) {
-                    if let emoji = card.emoji {
-                        Text(emoji)
-                            .font(.system(size: 32))
+        HStack(spacing: 6) {
+            // Show all 3 priority slots
+            ForEach(0..<3, id: \.self) { index in
+                if index < cards.count {
+                    let card = cards[index]
+                    VStack(spacing: 4) {
+                        if let emoji = card.emoji {
+                            Text(emoji)
+                                .font(.system(size: 28))
+                        }
+                        
+                        Text(card.simplifiedText)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
                     }
-                    
-                    Text(card.simplifiedText)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.black)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.8)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 8)
-                .background(Color.yellow)
-                .cornerRadius(20)
-            }
-            
-            // Fill remaining slots with empty indicators if less than 2
-            if cards.count < 2 {
-                ForEach(cards.count..<2, id: \.self) { _ in
-                    VStack(spacing: 6) {
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 6)
+                    .background(Color.yellow)
+                    .cornerRadius(16)
+                } else {
+                    // Empty slot
+                    VStack(spacing: 4) {
                         Image(systemName: "lightbulb")
-                            .font(.system(size: 28))
+                            .font(.system(size: 24))
                             .foregroundColor(.secondary.opacity(0.3))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 10)
                     .background(Color(uiColor: .secondarySystemFill).opacity(0.5))
-                    .cornerRadius(20)
+                    .cornerRadius(16)
                 }
             }
         }
-        .padding(12)
+        .padding(10)
         .overlay(
             VStack {
                 Spacer()
