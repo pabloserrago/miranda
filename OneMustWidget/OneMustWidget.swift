@@ -58,7 +58,7 @@ struct OneMustWidgetEntryView : View {
     }
 }
 
-// MARK: - Compact Widget (Small - Scrollable)
+// MARK: - Compact Widget (Small)
 
 struct CompactWidgetView: View {
     let cards: [Card]
@@ -66,7 +66,7 @@ struct CompactWidgetView: View {
     var body: some View {
         ZStack {
             if let card = cards.first {
-                // Show first priority (can be extended to scroll through all)
+                // Show first priority
                 VStack(spacing: 8) {
                     if let emoji = card.emoji {
                         Text(emoji)
@@ -79,26 +79,30 @@ struct CompactWidgetView: View {
                         .multilineTextAlignment(.center)
                         .lineLimit(5)
                         .padding(.horizontal, 12)
-                    
-                    Spacer()
-                    
-                    // Indicator dots if multiple priorities
-                    if cards.count > 1 {
-                        HStack(spacing: 4) {
-                            ForEach(0..<min(cards.count, 3), id: \.self) { index in
-                                Circle()
-                                    .fill(index == 0 ? Color.primary : Color.secondary.opacity(0.3))
-                                    .frame(width: 5, height: 5)
-                            }
-                        }
-                        .padding(.bottom, 4)
-                    }
                 }
                 .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            
+            // + button in bottom right corner
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Link(destination: URL(string: "miranda://capture")!) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.primary)
+                            .frame(width: 32, height: 32)
+                            .background(Color(uiColor: .secondarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .padding(8)
+                }
             }
         }
         .containerBackground(for: .widget) {
-            Color.yellow
+            Color(uiColor: .systemBackground)
         }
     }
 }
@@ -132,142 +136,164 @@ struct MediumWidgetView: View {
                 .cornerRadius(20)
             }
             
-            // Capture button
-            Link(destination: URL(string: "miranda://capture")!) {
-                VStack(spacing: 8) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 32))
-                        .foregroundColor(.black)
-                    
-                    Text("Capture")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.black)
+            // Fill remaining slots with empty indicators if less than 2
+            ForEach(cards.count..<2, id: \.self) { _ in
+                VStack(spacing: 6) {
+                    Image(systemName: "lightbulb")
+                        .font(.system(size: 28))
+                        .foregroundColor(.secondary.opacity(0.3))
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(Color(uiColor: .secondarySystemFill))
+                .background(Color(uiColor: .secondarySystemFill).opacity(0.5))
                 .cornerRadius(20)
             }
         }
         .padding(12)
+        .overlay(
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Link(destination: URL(string: "miranda://capture")!) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.primary)
+                            .frame(width: 28, height: 28)
+                            .background(Color(uiColor: .secondarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .padding(8)
+                }
+            }
+        )
         .containerBackground(for: .widget) {
-            Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
+            Color(uiColor: .systemBackground)
         }
     }
 }
 
-// MARK: - Large Widget (Shows all 3 priorities in grid)
+// MARK: - Large Widget (Shows all 3 priorities)
 
 struct LargeWidgetView: View {
     let cards: [Card]
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Show all 3 priority slots
-            ForEach(0..<3, id: \.self) { index in
-                if index < cards.count {
-                    let card = cards[index]
-                    HStack(spacing: 12) {
-                        // Priority number badge
-                        Text("\(index + 1)")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 32, height: 32)
-                            .background(Color.yellow)
-                            .clipShape(Circle())
-                        
-                        // Emoji
-                        if let emoji = card.emoji {
-                            Text(emoji)
-                                .font(.system(size: 28))
+        ZStack {
+            VStack(spacing: 10) {
+                // Show all 3 priority slots
+                ForEach(0..<3, id: \.self) { index in
+                    if index < cards.count {
+                        let card = cards[index]
+                        HStack(spacing: 12) {
+                            // Priority number badge
+                            Text("\(index + 1)")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.black)
+                                .frame(width: 28, height: 28)
+                                .background(Color.yellow)
+                                .clipShape(Circle())
+                            
+                            // Emoji
+                            if let emoji = card.emoji {
+                                Text(emoji)
+                                    .font(.system(size: 24))
+                            }
+                            
+                            // Text
+                            Text(card.simplifiedText)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        
-                        // Text
-                        Text(card.simplifiedText)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .lineLimit(2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color(uiColor: .secondarySystemFill))
+                        .cornerRadius(16)
+                    } else {
+                        // Empty slot
+                        HStack(spacing: 12) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.secondary.opacity(0.3))
+                                .frame(width: 28, height: 28)
+                                .background(Color(uiColor: .tertiarySystemFill))
+                                .clipShape(Circle())
+                            
+                            Image(systemName: "lightbulb")
+                                .font(.system(size: 18))
+                                .foregroundColor(.secondary.opacity(0.3))
+                            
+                            Text("Empty slot")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.secondary.opacity(0.4))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color(uiColor: .tertiarySystemFill).opacity(0.5))
+                        .cornerRadius(16)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(Color.white.opacity(0.1))
-                    .cornerRadius(16)
-                } else {
-                    // Empty slot
-                    HStack(spacing: 12) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white.opacity(0.3))
-                            .frame(width: 32, height: 32)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
-                        
-                        Image(systemName: "lightbulb")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white.opacity(0.3))
-                        
-                        Text("Empty slot")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.4))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(Color.white.opacity(0.05))
-                    .cornerRadius(16)
                 }
             }
+            .padding(14)
             
-            // Capture button at bottom
-            Link(destination: URL(string: "miranda://capture")!) {
-                HStack(spacing: 10) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .bold))
-                    Text("Capture")
-                        .font(.system(size: 16, weight: .bold))
+            // + button in bottom right corner
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Link(destination: URL(string: "miranda://capture")!) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(uiColor: .secondarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .padding(12)
                 }
-                .foregroundColor(.black)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color.yellow)
-                .cornerRadius(16)
             }
         }
-        .padding(16)
         .containerBackground(for: .widget) {
-            Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
+            Color(uiColor: .systemBackground)
         }
     }
 }
 
 struct EmptyWidgetView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "lightbulb")
-                .font(.system(size: 40))
-                .foregroundColor(.white.opacity(0.3))
+        ZStack {
+            VStack(spacing: 16) {
+                Image(systemName: "lightbulb")
+                    .font(.system(size: 40))
+                    .foregroundColor(.secondary.opacity(0.3))
+                
+                Text("No priorities set")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
             
-            Text("No priorities set")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.white.opacity(0.7))
-            
-            Link(destination: URL(string: "miranda://capture")!) {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .bold))
-                    Text("Capture")
-                        .font(.system(size: 16, weight: .bold))
+            // + button in bottom right corner
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Link(destination: URL(string: "miranda://capture")!) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.primary)
+                            .frame(width: 32, height: 32)
+                            .background(Color(uiColor: .secondarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    .padding(8)
                 }
-                .foregroundColor(.black)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(Color.yellow)
-                .cornerRadius(20)
             }
         }
         .containerBackground(for: .widget) {
-            Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
+            Color(uiColor: .systemBackground)
         }
     }
 }
