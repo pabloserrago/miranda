@@ -469,6 +469,16 @@ struct ContentView: View {
         .onChange(of: priorityCardIds) { _, _ in
             saveState()
         }
+        .onOpenURL { url in
+            // Handle deep links from widget
+            if url.scheme == "miranda" {
+                if url.host == "capture" {
+                    newCardText = ""
+                    startWithDictation = false
+                    showCreateModal = true
+                }
+            }
+        }
         .sheet(isPresented: $showAnalytics) {
             AnalyticsDebugView()
         }
@@ -699,9 +709,10 @@ struct ContentView: View {
         let priorityStrings = priorityCardIds.map { $0.uuidString }
         UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
         
-        // Save to shared storage for widget (first priority card)
+        // Save to shared storage for widget
         let firstPriorityCard = priorityCards.first
-        SharedCardManager.shared.saveCurrentCard(firstPriorityCard)
+        SharedCardManager.shared.saveCurrentCard(firstPriorityCard) // For backward compatibility
+        SharedCardManager.shared.savePriorityCards(priorityCards) // All priority cards
         
         // Request widget refresh
         #if canImport(WidgetKit)

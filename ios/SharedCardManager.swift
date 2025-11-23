@@ -36,5 +36,32 @@ class SharedCardManager {
         
         return nil
     }
+    
+    // Save multiple priority cards (up to 3)
+    func savePriorityCards(_ cards: [Card]) {
+        guard let defaults = sharedDefaults else { return }
+        
+        let encoder = JSONEncoder()
+        
+        if let data = try? encoder.encode(cards) {
+            defaults.set(data, forKey: "sharedPriorityCards")
+        } else {
+            defaults.removeObject(forKey: "sharedPriorityCards")
+        }
+    }
+    
+    // Load all priority cards
+    func loadPriorityCards() -> [Card] {
+        guard let defaults = sharedDefaults else { return [] }
+        
+        let decoder = JSONDecoder()
+        
+        if let data = defaults.data(forKey: "sharedPriorityCards"),
+           let cards = try? decoder.decode([Card].self, from: data) {
+            return cards
+        }
+        
+        return []
+    }
 }
 
