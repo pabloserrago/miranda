@@ -137,16 +137,18 @@ struct MediumWidgetView: View {
             }
             
             // Fill remaining slots with empty indicators if less than 2
-            ForEach(cards.count..<2, id: \.self) { _ in
-                VStack(spacing: 6) {
-                    Image(systemName: "lightbulb")
-                        .font(.system(size: 28))
-                        .foregroundColor(.secondary.opacity(0.3))
+            if cards.count < 2 {
+                ForEach(cards.count..<2, id: \.self) { _ in
+                    VStack(spacing: 6) {
+                        Image(systemName: "lightbulb")
+                            .font(.system(size: 28))
+                            .foregroundColor(.secondary.opacity(0.3))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color(uiColor: .secondarySystemFill).opacity(0.5))
+                    .cornerRadius(20)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color(uiColor: .secondarySystemFill).opacity(0.5))
-                .cornerRadius(20)
             }
         }
         .padding(12)
