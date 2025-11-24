@@ -20,9 +20,18 @@ struct ConfigurationAppIntent: WidgetConfigurationIntent {
 // Intent to complete a priority card from widget
 struct CompleteCardIntent: AppIntent {
     static var title: LocalizedStringResource = "Complete Card"
+    static var openAppWhenRun: Bool = false
     
     @Parameter(title: "Card ID")
     var cardId: String
+    
+    init(cardId: String) {
+        self.cardId = cardId
+    }
+    
+    init() {
+        self.cardId = ""
+    }
     
     func perform() async throws -> some IntentResult {
         guard let cardIdUUID = UUID(uuidString: cardId) else {
