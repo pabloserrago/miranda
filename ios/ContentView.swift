@@ -713,6 +713,7 @@ struct ContentView: View {
         let firstPriorityCard = priorityCards.first
         SharedCardManager.shared.saveCurrentCard(firstPriorityCard) // For backward compatibility
         SharedCardManager.shared.savePriorityCards(priorityCards) // All priority cards
+        SharedCardManager.shared.saveAllCards(cards) // All cards for widget intents
         
         // Request widget refresh
         #if canImport(WidgetKit)

@@ -82,6 +82,21 @@ struct CompactWidgetView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Complete button (top right)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                            Image(systemName: "circle")
+                                .font(.system(size: 22, weight: .regular))
+                                .foregroundColor(.primary)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(8)
+                    }
+                    Spacer()
+                }
             }
             
             // + button in bottom right corner
@@ -118,24 +133,35 @@ struct MediumWidgetView: View {
             ForEach(0..<3, id: \.self) { index in
                 if index < cards.count {
                     let card = cards[index]
-                    VStack(spacing: 4) {
-                        if let emoji = card.emoji {
-                            Text(emoji)
-                                .font(.system(size: 28))
+                    ZStack(alignment: .topTrailing) {
+                        VStack(spacing: 4) {
+                            if let emoji = card.emoji {
+                                Text(emoji)
+                                    .font(.system(size: 28))
+                            }
+                            
+                            Text(card.simplifiedText)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.7)
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 6)
+                        .background(Color.yellow)
+                        .cornerRadius(16)
                         
-                        Text(card.simplifiedText)
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.7)
+                        // Complete button
+                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                            Image(systemName: "circle")
+                                .font(.system(size: 18, weight: .regular))
+                                .foregroundColor(.black.opacity(0.4))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(6)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 6)
-                    .background(Color.yellow)
-                    .cornerRadius(16)
                 } else {
                     // Empty slot
                     VStack(spacing: 4) {
@@ -187,6 +213,14 @@ struct LargeWidgetView: View {
                     if index < cards.count {
                         let card = cards[index]
                         HStack(spacing: 12) {
+                            // Complete button (like Reminders)
+                            Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                                Image(systemName: "circle")
+                                    .font(.system(size: 22, weight: .regular))
+                                    .foregroundColor(.primary)
+                            }
+                            .buttonStyle(.plain)
+                            
                             // Priority number badge
                             Text("\(index + 1)")
                                 .font(.system(size: 14, weight: .bold))
@@ -215,6 +249,10 @@ struct LargeWidgetView: View {
                     } else {
                         // Empty slot
                         HStack(spacing: 12) {
+                            Image(systemName: "circle")
+                                .font(.system(size: 22, weight: .regular))
+                                .foregroundColor(.secondary.opacity(0.2))
+                            
                             Text("\(index + 1)")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.secondary.opacity(0.3))

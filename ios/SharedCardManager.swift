@@ -63,5 +63,30 @@ class SharedCardManager {
         
         return []
     }
+    
+    // Save all cards
+    func saveAllCards(_ cards: [Card]) {
+        guard let defaults = sharedDefaults else { return }
+        
+        let encoder = JSONEncoder()
+        
+        if let data = try? encoder.encode(cards) {
+            defaults.set(data, forKey: "sharedAllCards")
+        }
+    }
+    
+    // Load all cards
+    func loadAllCards() -> [Card] {
+        guard let defaults = sharedDefaults else { return [] }
+        
+        let decoder = JSONDecoder()
+        
+        if let data = defaults.data(forKey: "sharedAllCards"),
+           let cards = try? decoder.decode([Card].self, from: data) {
+            return cards
+        }
+        
+        return []
+    }
 }
 
