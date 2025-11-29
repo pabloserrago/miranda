@@ -245,7 +245,7 @@ struct ContentView: View {
                                 } else {
                                     // No cards at all - show big capture button
                                     VStack(spacing: 24) {
-                                        Spacer()
+                                Spacer()
                                         
                                         Text("Capture anything that's in your mind,\nlike a dream, an idea, or to-do.")
                                             .font(.system(size: 16, weight: .medium))
@@ -275,7 +275,7 @@ struct ContentView: View {
                                             Button(action: {
                                                 newCardText = ""
                                                 startWithDictation = false
-                                                showCreateModal = true
+                                    showCreateModal = true
                                             }) {
                                                 HStack(spacing: 12) {
                                                     Image(systemName: "plus")
@@ -289,9 +289,9 @@ struct ContentView: View {
                                                 .background(Color.yellow)
                                                 .clipShape(Capsule())
                                             }
-                                        }
-                                        
-                                        Spacer()
+                        }
+                        
+                        Spacer()
                                     }
                                 }
                                 
@@ -476,6 +476,18 @@ struct ContentView: View {
                     newCardText = ""
                     startWithDictation = false
                     showCreateModal = true
+                } else if url.host == "card" {
+                    // Open specific card
+                    let pathComponents = url.pathComponents
+                    if pathComponents.count > 1,
+                       let cardIdString = pathComponents.last,
+                       let cardId = UUID(uuidString: cardIdString),
+                       let card = cards.first(where: { $0.id == cardId }) {
+                        selectedCard = card
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showOneMust = true
+                        }
+                    }
                 }
             }
         }
@@ -1138,37 +1150,37 @@ struct PriorityPickerView: View {
                 }
             } else {
                 // Show list of available cards
-                List {
-                    ForEach(cards) { card in
-                        Button(action: {
-                            onSelect(card)
-                        }) {
-                            HStack(spacing: 16) {
-                                if let emoji = card.emoji {
-                                    Text(emoji)
-                                        .font(.system(size: 32))
-                                }
-                                
-                                Text(card.simplifiedText)
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(.primary)
-                                    .lineLimit(2)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                Image(systemName: "lightbulb")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.secondary)
+            List {
+                ForEach(cards) { card in
+                    Button(action: {
+                        onSelect(card)
+                    }) {
+                        HStack(spacing: 16) {
+                            if let emoji = card.emoji {
+                                Text(emoji)
+                                    .font(.system(size: 32))
                             }
-                            .padding(.vertical, 12)
+                            
+                            Text(card.simplifiedText)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Image(systemName: "lightbulb")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
                         }
+                        .padding(.vertical, 12)
                     }
                 }
-                .navigationTitle("Set Priority")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
-                            dismiss()
+            }
+            .navigationTitle("Set Priority")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
                         }
                     }
                 }

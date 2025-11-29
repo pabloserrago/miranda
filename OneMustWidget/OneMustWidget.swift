@@ -123,78 +123,91 @@ struct CompactWidgetView: View {
     }
 }
 
-// MARK: - Medium Widget (Shows all 3 priorities + capture button)
+// MARK: - Medium Widget (Shows all 3 priorities like Reminders)
 
 struct MediumWidgetView: View {
     let cards: [Card]
     
     var body: some View {
-        HStack(spacing: 6) {
-            // Show all 3 priority slots
-            ForEach(0..<3, id: \.self) { index in
-                if index < cards.count {
-                    let card = cards[index]
-                    ZStack(alignment: .topTrailing) {
-                        VStack(spacing: 4) {
-                            if let emoji = card.emoji {
-                                Text(emoji)
-                                    .font(.system(size: 28))
+        ZStack {
+            VStack(spacing: 8) {
+                // Show all 3 priority slots
+                ForEach(0..<3, id: \.self) { index in
+                    if index < cards.count {
+                        let card = cards[index]
+                        HStack(spacing: 12) {
+                            // Complete checkbox button
+                            Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                                Image(systemName: "circle")
+                                    .font(.system(size: 24, weight: .regular))
+                                    .foregroundColor(.primary)
                             }
+                            .buttonStyle(.plain)
                             
-                            Text(card.simplifiedText)
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(.black)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .minimumScaleFactor(0.7)
+                            // Card content (tappable to open in app)
+                            Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
+                                HStack(spacing: 10) {
+                                    if let emoji = card.emoji {
+                                        Text(emoji)
+                                            .font(.system(size: 24))
+                                    }
+                                    
+                                    Text(card.simplifiedText)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.primary)
+                                        .lineLimit(2)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 6)
-                        .background(Color.yellow)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color(uiColor: .secondarySystemFill))
                         .cornerRadius(16)
-                        
-                        // Complete button
-                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                    } else {
+                        // Empty slot
+                        HStack(spacing: 12) {
                             Image(systemName: "circle")
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundColor(.black.opacity(0.4))
+                                .font(.system(size: 24, weight: .regular))
+                                .foregroundColor(.secondary.opacity(0.2))
+                            
+                            HStack(spacing: 10) {
+                                Image(systemName: "lightbulb")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.secondary.opacity(0.3))
+                                
+                                Text("Empty slot")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary.opacity(0.4))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .padding(6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color(uiColor: .tertiarySystemFill).opacity(0.5))
+                        .cornerRadius(16)
                     }
-                } else {
-                    // Empty slot
-                    VStack(spacing: 4) {
-                        Image(systemName: "lightbulb")
-                            .font(.system(size: 24))
-                            .foregroundColor(.secondary.opacity(0.3))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(uiColor: .secondarySystemFill).opacity(0.5))
-                    .cornerRadius(16)
                 }
             }
-        }
-        .padding(10)
-        .overlay(
+            .padding(12)
+            
+            // + button in bottom right corner
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
                     Link(destination: URL(string: "miranda://capture")!) {
                         Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.primary)
-                            .frame(width: 28, height: 28)
-                            .background(Color(uiColor: .secondarySystemFill))
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
+                            .background(Color.yellow)
                             .clipShape(Circle())
                     }
-                    .padding(8)
+                    .padding(12)
                 }
             }
-        )
+        }
         .containerBackground(for: .widget) {
             Color(uiColor: .systemBackground)
         }
