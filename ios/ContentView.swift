@@ -32,14 +32,14 @@ struct ContentView: View {
     private let maxVisibleCards = 6
     
     enum DrawerState {
-        case small   // 25%
+        case small   // 15%
         case medium  // 50%
         case large   // 100%
         
         func height(screenHeight: CGFloat) -> CGFloat {
             switch self {
             case .small:
-                return screenHeight * 0.25
+                return screenHeight * 0.15
             case .medium:
                 return screenHeight * 0.50
             case .large:
@@ -159,12 +159,12 @@ struct ContentView: View {
                                 if !priorityCardIds.isEmpty {
                                     // Calculate available height for priorities (always 3 slots)
                                     let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
-                                    let topPadding: CGFloat = 80 // Space for settings icon
+                                    let topPadding: CGFloat = 70 // Space for settings icon
                                     let availableHeight = geometry.size.height - drawerHeight - topPadding
-                                    let cardHeight = (availableHeight - CGFloat(3 * 12)) / 3.0 // Always divide by 3
+                                    let cardHeight = (availableHeight - CGFloat(3 * 8)) / 3.0 // Always divide by 3
                                     
                                     // Show all 3 slots (filled or empty)
-                                    VStack(spacing: 12) {
+                                    VStack(spacing: 8) {
                                         ForEach(0..<3, id: \.self) { index in
                                             if index < priorityCards.count {
                                                 // Show filled priority card
@@ -222,7 +222,7 @@ struct ContentView: View {
                                             }
                                         }
                                     }
-                                    .padding(.top, 60)
+                                    .padding(.top, 50)
                                     .frame(maxHeight: availableHeight)
                                     .onTapGesture {
                                         // Cancel drag if tapping outside
@@ -1205,6 +1205,12 @@ struct HeroCardView: View {
     @State private var scale: CGFloat = 0.9
     @State private var opacity: Double = 0
     
+    // Blue gradient colors matching Figma design
+    private let gradientColors = [
+        Color(red: 0.85, green: 0.92, blue: 1.0),   // Light blue top
+        Color(red: 0.70, green: 0.82, blue: 0.95)   // Deeper blue bottom
+    ]
+    
     var body: some View {
         ZStack {
             // Remove priority button (right swipe reveals this)
@@ -1233,58 +1239,39 @@ struct HeroCardView: View {
             .opacity(offset > 15 ? 1 : 0)
             .animation(.easeOut(duration: 0.2), value: offset)
             
-            // Main card
+            // Main card with blue gradient
             ZStack {
-                RoundedRectangle(cornerRadius: min(80, height * 0.2))
-                    .fill(Color.yellow)
+                RoundedRectangle(cornerRadius: 35)
+                    .fill(
+                        LinearGradient(
+                            colors: gradientColors,
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
                 
-                HStack(alignment: .center, spacing: 16) {
-                    // Left side: emoji and text
-                    HStack(alignment: .center, spacing: 12) {
-                    if let emoji = card.emoji {
-                        Text(emoji)
-                                .font(.system(size: max(min(60, height * 0.25), 32)))
-                    }
-                    
-                    Text(card.simplifiedText)
-                            .font(.system(size: max(min(24, height * 0.12), 18), weight: .bold))
-                        .foregroundColor(.black)
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(height > 200 ? 4 : 2)
-                            .minimumScaleFactor(0.8)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        if offset == 0 && !isDragging && !isLongPressing {
-                            onTap()
-                        }
-                    }
-                    .onLongPressGesture(minimumDuration: 0.4, perform: {
-                        onLongPress()
-                    }, onPressingChanged: { isPressing in
-                        isLongPressing = isPressing
-                    })
-                    
-                    // Right side: complete button
-                    Button(action: {
-                        onComplete()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.black.opacity(0.15))
-                                .frame(width: max(min(60, height * 0.25), 44), height: max(min(60, height * 0.25), 44))
-                            
-                            Image(systemName: "checkmark")
-                                .font(.system(size: max(min(28, height * 0.12), 20), weight: .bold))
-                                .foregroundColor(.black)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, max(min(32, height * 0.1), 20))
-                .padding(.vertical, max(min(24, height * 0.08), 16))
+                Text(card.simplifiedText)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(.black.opacity(0.85))
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(height > 200 ? 6 : 4)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .padding(.horizontal, 25)
+                    .padding(.vertical, 20)
             }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if offset == 0 && !isDragging && !isLongPressing {
+                    onTap()
+                }
+            }
+            .onLongPressGesture(minimumDuration: 0.4, perform: {
+                onLongPress()
+            }, onPressingChanged: { isPressing in
+                isLongPressing = isPressing
+            })
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
             .simultaneousGesture(
@@ -1427,6 +1414,12 @@ struct SwipeableCardRow: View {
     @State private var offset: CGFloat = 0
     @State private var isDragging: Bool = false
     
+    // Blue gradient colors matching Figma design
+    private let gradientColors = [
+        Color(red: 0.85, green: 0.92, blue: 1.0),   // Light blue top
+        Color(red: 0.70, green: 0.82, blue: 0.95)   // Deeper blue bottom
+    ]
+    
     var body: some View {
         ZStack {
             // Background actions
@@ -1460,23 +1453,26 @@ struct SwipeableCardRow: View {
                 .opacity(offset < -20 ? 1 : 0)
             }
             
-            // Main card
-            HStack(spacing: 16) {
-                if let emoji = card.emoji {
-                    Text(emoji)
-                        .font(.system(size: 32))
-                }
-                
-                Text(card.simplifiedText)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 18)
-            .background(Color(uiColor: .secondarySystemBackground))
-            .cornerRadius(16)
+            // Main card with blue gradient
+            Text(card.simplifiedText)
+                .font(.system(size: 20, weight: .regular))
+                .foregroundColor(.black.opacity(0.85))
+                .lineLimit(6)
+                .truncationMode(.tail)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 28)
+                .frame(minHeight: 300)
+                .background(
+                    LinearGradient(
+                        colors: gradientColors,
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(35)
+                .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
             .offset(x: offset)
             .gesture(
                 DragGesture(minimumDistance: 10)
