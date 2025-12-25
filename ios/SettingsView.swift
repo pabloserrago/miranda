@@ -243,6 +243,31 @@ struct SettingsView: View {
                             }
                         }
                     }
+                    
+                    // 7. Developer Settings
+                    Section {
+                        NavigationLink(destination: DevComponentsView()) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "hammer.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("View Components")
+                            }
+                        }
+                        
+                        Button(action: onShowAnalytics) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("Analytics Debug")
+                            }
+                        }
+                    } header: {
+                        Text("Developer")
+                    }
                 }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -351,7 +376,75 @@ struct AppIcon: View {
     }
 }
 
+// MARK: - Developer Components View
+
+struct DevComponentsView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Card Default
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("card-default")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    CardComponent(
+                        text: "Test example of something to do.",
+                        variant: .cardDefault,
+                        minHeight: 200
+                    )
+                }
+                
+                // Card Onboarding
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("card-onboarding")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    CardOnboarding(minHeight: 200)
+                }
+                
+                // Card Boost
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("card-boost")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    CardBoost(
+                        text: "Test example of something to do.",
+                        label: "Limitless",
+                        minHeight: 200
+                    )
+                }
+                
+                // Card Default with long text
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("card-default (long text)")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    CardComponent(
+                        text: "This is a much longer piece of text that should demonstrate how the card handles overflow and truncation when there's too much content to display.",
+                        variant: .cardDefault,
+                        minHeight: 200
+                    )
+                }
+            }
+            .padding(20)
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .navigationTitle("Components")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 #Preview {
     SettingsView(onShowAnalytics: {}, onDeleteAll: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true)
+}
+
+#Preview("Dev Components") {
+    NavigationView {
+        DevComponentsView()
+    }
 }
 

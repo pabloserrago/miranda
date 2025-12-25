@@ -1194,6 +1194,7 @@ struct PriorityPickerView: View {
 struct HeroCardView: View {
     let card: Card
     let height: CGFloat
+    var variant: CardVariant = .cardDefault
     let onTap: () -> Void
     let onComplete: () -> Void
     let onRemovePriority: () -> Void
@@ -1204,12 +1205,6 @@ struct HeroCardView: View {
     @State private var isLongPressing: Bool = false
     @State private var scale: CGFloat = 0.9
     @State private var opacity: Double = 0
-    
-    // Blue gradient colors matching Figma design
-    private let gradientColors = [
-        Color(red: 0.85, green: 0.92, blue: 1.0),   // Light blue top
-        Color(red: 0.70, green: 0.82, blue: 0.95)   // Deeper blue bottom
-    ]
     
     var body: some View {
         ZStack {
@@ -1239,28 +1234,12 @@ struct HeroCardView: View {
             .opacity(offset > 15 ? 1 : 0)
             .animation(.easeOut(duration: 0.2), value: offset)
             
-            // Main card with blue gradient
-            ZStack {
-                RoundedRectangle(cornerRadius: 35)
-                    .fill(
-                        LinearGradient(
-                            colors: gradientColors,
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
-                
-                Text(card.simplifiedText)
-                    .font(.system(size: 18, weight: .regular))
-                    .foregroundColor(.black.opacity(0.85))
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(height > 200 ? 6 : 4)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .padding(.horizontal, 25)
-                    .padding(.vertical, 20)
-            }
+            // Main card using CardComponent
+            CardComponent(
+                text: card.simplifiedText,
+                variant: variant,
+                minHeight: height
+            )
             .contentShape(Rectangle())
             .onTapGesture {
                 if offset == 0 && !isDragging && !isLongPressing {
@@ -1407,18 +1386,13 @@ struct CardDropDelegate: DropDelegate {
 
 struct SwipeableCardRow: View {
     let card: Card
+    var variant: CardVariant = .cardDefault
     let onTap: () -> Void
     let onComplete: () -> Void
     let onSetPriority: () -> Void
     
     @State private var offset: CGFloat = 0
     @State private var isDragging: Bool = false
-    
-    // Blue gradient colors matching Figma design
-    private let gradientColors = [
-        Color(red: 0.85, green: 0.92, blue: 1.0),   // Light blue top
-        Color(red: 0.70, green: 0.82, blue: 0.95)   // Deeper blue bottom
-    ]
     
     var body: some View {
         ZStack {
@@ -1453,26 +1427,15 @@ struct SwipeableCardRow: View {
                 .opacity(offset < -20 ? 1 : 0)
             }
             
-            // Main card with blue gradient
-            Text(card.simplifiedText)
-                .font(.system(size: 20, weight: .regular))
-                .foregroundColor(.black.opacity(0.85))
-                .lineLimit(6)
-                .truncationMode(.tail)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 28)
-                .frame(minHeight: 300)
-                .background(
-                    LinearGradient(
-                        colors: gradientColors,
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .cornerRadius(35)
-                .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+            // Main card using CardComponent
+            CardComponent(
+                text: card.simplifiedText,
+                variant: variant,
+                minHeight: 300,
+                fontSize: 20,
+                horizontalPadding: 24,
+                verticalPadding: 28
+            )
             .offset(x: offset)
             .gesture(
                 DragGesture(minimumDistance: 10)
