@@ -157,69 +157,58 @@ struct ContentView: View {
                     
                         VStack(spacing: 0) {
                                 if !priorityCardIds.isEmpty {
-                                    // Calculate available height for priorities (always 3 slots)
+                                    // Calculate available height for priorities
                                     let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
                                     let topPadding: CGFloat = 70 // Space for settings icon
                                     let availableHeight = geometry.size.height - drawerHeight - topPadding
-                                    let cardHeight = (availableHeight - CGFloat(3 * 8)) / 3.0 // Always divide by 3
+                                    let priorityCount = priorityCards.count
+                                    let maxCardHeight: CGFloat = 200 // Max height per card
+                                    let calculatedHeight = (availableHeight - CGFloat(priorityCount * 8)) / CGFloat(priorityCount)
+                                    let cardHeight = min(calculatedHeight, maxCardHeight)
                                     
-                                    // Show all 3 slots (filled or empty)
+                                    // Show only actual priority cards (no empty slots)
                                     VStack(spacing: 8) {
-                                        ForEach(0..<3, id: \.self) { index in
-                                            if index < priorityCards.count {
-                                                // Show filled priority card
-                                                let priorityCard = priorityCards[index]
-                                        HeroCardView(
-                                            card: priorityCard,
-                                                    height: cardHeight,
-                                            onTap: {
-                                                selectedCard = priorityCard
-                                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                    showOneMust = true
-                                                }
-                                            },
-                                            onComplete: {
-                                                        completePriorityCard(priorityCard)
-                                            },
-                                            onRemovePriority: {
-                                                withAnimation {
-                                                            priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                    saveState()
-                                                }
-                                                    },
-                                                    onLongPress: {
-                                                        // Start dragging
-                                                        let generator = UIImpactFeedbackGenerator(style: .medium)
-                                                        generator.impactOccurred()
-                                                        draggedCard = priorityCard
+                                        ForEach(Array(priorityCards.enumerated()), id: \.element.id) { index, priorityCard in
+                                            HeroCardView(
+                                                card: priorityCard,
+                                                height: cardHeight,
+                                                onTap: {
+                                                    selectedCard = priorityCard
+                                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                        showOneMust = true
                                                     }
-                                                )
-                                                .padding(.horizontal, 20)
-                                                .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
-                                                .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
-                                                .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
-                                                .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
-                                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
-                                                .onDrop(of: [.text], delegate: CardDropDelegate(
-                                                    destinationIndex: index,
-                                                    draggedCard: $draggedCard,
-                                                    priorityCardIds: $priorityCardIds,
-                                                    cards: cards,
-                                                    onReorder: {
+                                                },
+                                                onComplete: {
+                                                    completePriorityCard(priorityCard)
+                                                },
+                                                onRemovePriority: {
+                                                    withAnimation {
+                                                        priorityCardIds.removeAll { $0 == priorityCard.id }
                                                         saveState()
                                                     }
-                                                ))
-                                            } else {
-                                                // Show empty slot with circular lightbulb button
-                                                EmptyPrioritySlot(
-                                                    height: cardHeight,
-                                                    slotNumber: index + 1,
-                                                    onTap: {
-                                                        showPriorityPicker = true
-                                                    }
-                                                )
-                                                .padding(.horizontal, 20)
-                                            }
+                                                },
+                                                onLongPress: {
+                                                    // Start dragging
+                                                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                    generator.impactOccurred()
+                                                    draggedCard = priorityCard
+                                                }
+                                            )
+                                            .padding(.horizontal, 20)
+                                            .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
+                                            .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
+                                            .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
+                                            .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
+                                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
+                                            .onDrop(of: [.text], delegate: CardDropDelegate(
+                                                destinationIndex: index,
+                                                draggedCard: $draggedCard,
+                                                priorityCardIds: $priorityCardIds,
+                                                cards: cards,
+                                                onReorder: {
+                                                    saveState()
+                                                }
+                                            ))
                                         }
                                     }
                                     .padding(.top, 50)
@@ -1411,10 +1400,10 @@ struct SwipeableCardRow: View {
             CardComponent(
                 text: card.simplifiedText,
                 variant: variant,
-                minHeight: 300,
-                fontSize: 20,
-                horizontalPadding: 24,
-                verticalPadding: 28
+                minHeight: 100,
+                fontSize: 18,
+                horizontalPadding: 20,
+                verticalPadding: 20
             )
             .offset(x: offset)
             .gesture(
