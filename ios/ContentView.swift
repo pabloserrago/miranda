@@ -243,55 +243,35 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
                                     Spacer()
                                 } else {
-                                    // No cards at all - show big capture button
+                                    // No cards at all - show onboarding card and capture button
                                     VStack(spacing: 24) {
-                                Spacer()
+                                        Spacer()
                                         
-                                        Text("Capture anything that's in your mind,\nlike a dream, an idea, or to-do.")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.5))
-                                            .multilineTextAlignment(.center)
+                                        // Onboarding card
+                                        CardOnboarding()
+                                            .frame(maxHeight: 200)
+                                            .padding(.horizontal, 20)
+                                        
+                                        // Capture button
+                                        Button(action: {
+                                            newCardText = ""
+                                            startWithDictation = false
+                                            showCreateModal = true
+                                        }) {
+                                            HStack(spacing: 12) {
+                                                Image(systemName: "plus")
+                                                    .font(.system(size: 20, weight: .bold))
+                                                Text("Capture")
+                                                    .font(.system(size: 20, weight: .bold))
+                                            }
+                                            .foregroundColor(.white)
                                             .padding(.horizontal, 32)
-                                            .padding(.bottom, 16)
+                                            .padding(.vertical, 16)
+                                            .background(Color.blue)
+                                            .clipShape(Capsule())
+                                        }
                                         
-                                        HStack(spacing: 16) {
-                                            // Audio capture button (if enabled) - icon only
-                                            if audioInputEnabled {
-                                                Button(action: {
-                                                    newCardText = ""
-                                                    startWithDictation = true
-                                                    showCreateModal = true
-                                                }) {
-                                                    Image(systemName: "mic.fill")
-                                                        .font(.system(size: 28, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                        .frame(width: 70, height: 70)
-                                                        .background(Color.white.opacity(0.15))
-                                                        .clipShape(Circle())
-                                                }
-                                            }
-                                            
-                                            // Main capture button
-                                            Button(action: {
-                                                newCardText = ""
-                                                startWithDictation = false
-                                    showCreateModal = true
-                                            }) {
-                                                HStack(spacing: 12) {
-                                                    Image(systemName: "plus")
-                                                        .font(.system(size: 24, weight: .bold))
-                                                    Text("Capture")
-                                                        .font(.system(size: 24, weight: .bold))
-                                                }
-                                                .foregroundColor(.black)
-                                                .padding(.horizontal, 48)
-                                                .padding(.vertical, 20)
-                                                .background(Color.yellow)
-                                                .clipShape(Capsule())
-                                            }
-                        }
-                        
-                        Spacer()
+                                        Spacer()
                                     }
                                 }
                                 
