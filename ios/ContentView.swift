@@ -20,7 +20,9 @@ struct ContentView: View {
     @State private var pendingCard: Card? = nil
     @State private var showPriorityPicker: Bool = false
     @State private var showCompleteTortoise: Bool = false
+    @State private var searchText: String = ""
     @FocusState private var isInputFocused: Bool
+    @FocusState private var isSearchFocused: Bool
     @State private var drawerState: DrawerState = .small
     @GestureState private var drawerDragOffset: CGFloat = 0
     @State private var draggedCard: Card? = nil
@@ -74,6 +76,18 @@ struct ContentView: View {
     private var priorityCards: [Card] {
         priorityCardIds.compactMap { id in
             cards.first { $0.id == id }
+        }
+    }
+    
+    // Filter cards based on search text
+    private var filteredNonPriorityCards: [Card] {
+        let nonPriorityCards = sortedCards.filter { !priorityCardIds.contains($0.id) }
+        if searchText.isEmpty {
+            return nonPriorityCards
+        }
+        return nonPriorityCards.filter { card in
+            card.simplifiedText.localizedCaseInsensitiveContains(searchText) ||
+            card.originalText.localizedCaseInsensitiveContains(searchText)
         }
     }
     
@@ -157,10 +171,10 @@ struct ContentView: View {
                     
                         VStack(spacing: 0) {
                                 if !priorityCardIds.isEmpty {
-                                    // Calculate available height for priorities
-                                    let drawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
+                                    // Calculate available height for priorities (always use small drawer height for calculation)
+                                    let baseDrawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
                                     let topPadding: CGFloat = 70 // Space for settings icon
-                                    let availableHeight = geometry.size.height - drawerHeight - topPadding
+                                    let availableHeight = geometry.size.height - baseDrawerHeight - topPadding
                                     let priorityCount = priorityCards.count
                                     let maxCardHeight: CGFloat = 200 // Max height per card
                                     let calculatedHeight = (availableHeight - CGFloat(priorityCount * 8)) / CGFloat(priorityCount)
@@ -310,47 +324,65 @@ struct ContentView: View {
                                     .frame(width: 40, height: 5)
                                     .padding(.top, 12)
                                 
-                                // Header with action buttons
-                                HStack {
-                                    Text("Recent")
-                                        .font(.system(size: 22, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                    
-                                    Spacer()
-                                    
-                                    HStack(spacing: 12) {
-                                        // Audio button (if enabled)
-                                        if audioInputEnabled {
+                                // Header with search field and action buttons
+                                HStack(spacing: 12) {
+                                    // Search field with glass material
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.secondary)
+                                        
+                                        TextField("Find...", text: $searchText)
+                                            .font(.system(size: 17))
+                                            .textFieldStyle(.plain)
+                                            .focused($isSearchFocused)
+                                            .submitLabel(.search)
+                                        
+                                        if !searchText.isEmpty {
                                             Button(action: {
-                                                newCardText = ""
-                                                startWithDictation = true
-                                                showCreateModal = true
+                                                searchText = ""
                                             }) {
-                                                Image(systemName: "mic.fill")
-                                                    .font(.system(size: 22, weight: .semibold))
-                                                    .foregroundColor(.black)
-                                                    .frame(width: 56, height: 56)
-                                                    .background(Color(uiColor: .secondarySystemBackground))
-                                                    .clipShape(Circle())
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
                                             }
                                         }
-                                        
-                                        // Add button
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    
+                                    // Audio button (if enabled)
+                                    if audioInputEnabled {
                                         Button(action: {
                                             newCardText = ""
-                                            startWithDictation = false
+                                            startWithDictation = true
                                             showCreateModal = true
                                         }) {
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 22, weight: .semibold))
-                                                .foregroundColor(.white)
-                                                .frame(width: 56, height: 56)
-                                                .background(Color.black)
+                                            Image(systemName: "mic.fill")
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(.black)
+                                                .frame(width: 48, height: 48)
+                                                .background(Color(uiColor: .tertiarySystemBackground))
                                                 .clipShape(Circle())
                                         }
                                     }
+                                    
+                                    // Add button
+                                    Button(action: {
+                                        newCardText = ""
+                                        startWithDictation = false
+                                        showCreateModal = true
+                                    }) {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .frame(width: 48, height: 48)
+                                            .background(Color.black)
+                                            .clipShape(Circle())
+                                    }
                                 }
-                                .padding(.horizontal, 24)
+                                .padding(.horizontal, 20)
                                 .padding(.top, 16)
                                 .padding(.bottom, 12)
                             }
@@ -381,18 +413,25 @@ struct ContentView: View {
                                     }
                             )
                             
-                            // Cards list or empty state (exclude priority cards)
-                            let nonPriorityCards = sortedCards.filter { !priorityCardIds.contains($0.id) }
-                            if nonPriorityCards.isEmpty {
-                                // No recent captures
-                                Text("No Recent Captures")
-                                    .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(.secondary.opacity(0.6))
-                                    .padding(.vertical, 20)
+                            // Cards list or empty state (exclude priority cards, apply search filter)
+                            if filteredNonPriorityCards.isEmpty {
+                                // No results
+                                VStack(spacing: 8) {
+                                    if !searchText.isEmpty {
+                                        Text("No results for \"\(searchText)\"")
+                                            .font(.system(size: 16, weight: .regular))
+                                            .foregroundColor(.secondary.opacity(0.6))
+                                    } else {
+                                        Text("No Recent Captures")
+                                            .font(.system(size: 16, weight: .regular))
+                                            .foregroundColor(.secondary.opacity(0.6))
+                                    }
+                                }
+                                .padding(.vertical, 20)
                             } else {
                                 ScrollView {
                                     VStack(spacing: 12) {
-                                        ForEach(Array(nonPriorityCards.enumerated()), id: \.element.id) { index, card in
+                                        ForEach(Array(filteredNonPriorityCards.enumerated()), id: \.element.id) { index, card in
                                             SwipeableCardRow(
                                                 card: card,
                                                 onTap: {
@@ -423,9 +462,7 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height))
-                        .background(
-                            Color(uiColor: .systemBackground)
-                        )
+                        .background(.regularMaterial)
                         .cornerRadius(20, corners: [.topLeft, .topRight])
                         }
                     }
@@ -443,6 +480,14 @@ struct ContentView: View {
         }
         .onChange(of: priorityCardIds) { _, _ in
             saveState()
+        }
+        .onChange(of: isSearchFocused) { _, focused in
+            if focused {
+                // Expand drawer to full screen when search is focused
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    drawerState = .large
+                }
+            }
         }
         .onOpenURL { url in
             // Handle deep links from widget
