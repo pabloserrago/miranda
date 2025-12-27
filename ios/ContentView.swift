@@ -169,46 +169,49 @@ struct ContentView: View {
                                     // Show only actual priority cards (no empty slots)
                                     VStack(spacing: 8) {
                                         ForEach(Array(priorityCards.enumerated()), id: \.element.id) { index, priorityCard in
-                                            HeroCardView(
-                                                card: priorityCard,
-                                                height: cardHeight,
-                                                onTap: {
-                                                    selectedCard = priorityCard
-                                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                        showOneMust = true
-                                                    }
-                                                },
-                                                onComplete: {
-                                                    completePriorityCard(priorityCard)
-                                                },
-                                                onRemovePriority: {
-                                                    withAnimation {
-                                                        priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                        saveState()
-                                                    }
-                                                },
-                                                onLongPress: {
-                                                    // Start dragging
-                                                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                                                    generator.impactOccurred()
-                                                    draggedCard = priorityCard
+                                        HeroCardView(
+                                            card: priorityCard,
+                                            height: cardHeight,
+                                            onTap: {
+                                                selectedCard = priorityCard
+                                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                    showOneMust = true
                                                 }
-                                            )
-                                            .padding(.horizontal, 20)
-                                            .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
-                                            .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
-                                            .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
-                                            .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
-                                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
-                                            .onDrop(of: [.text], delegate: CardDropDelegate(
-                                                destinationIndex: index,
-                                                draggedCard: $draggedCard,
-                                                priorityCardIds: $priorityCardIds,
-                                                cards: cards,
-                                                onReorder: {
+                                            },
+                                            onComplete: {
+                                                completePriorityCard(priorityCard)
+                                            },
+                                            onDelete: {
+                                                deleteCard(priorityCard)
+                                            },
+                                            onRemovePriority: {
+                                                withAnimation {
+                                                    priorityCardIds.removeAll { $0 == priorityCard.id }
                                                     saveState()
                                                 }
-                                            ))
+                                            },
+                                            onLongPress: {
+                                                // Start dragging
+                                                let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                        generator.impactOccurred()
+                                                        draggedCard = priorityCard
+                                                    }
+                                                )
+                                                .padding(.horizontal, 20)
+                                                .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
+                                                .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
+                                                .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
+                                                .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
+                                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
+                                                .onDrop(of: [.text], delegate: CardDropDelegate(
+                                                    destinationIndex: index,
+                                                    draggedCard: $draggedCard,
+                                                    priorityCardIds: $priorityCardIds,
+                                                    cards: cards,
+                                                    onReorder: {
+                                                        saveState()
+                                                    }
+                                                ))
                                         }
                                     }
                                     .padding(.top, 50)
@@ -234,7 +237,7 @@ struct ContentView: View {
                                 } else {
                                     // No cards at all - show onboarding card and capture button
                                     VStack(spacing: 24) {
-                                        Spacer()
+                                Spacer()
                                         
                                         // Onboarding card
                                         CardOnboarding()
@@ -242,25 +245,25 @@ struct ContentView: View {
                                             .padding(.horizontal, 20)
                                         
                                         // Capture button
-                                        Button(action: {
-                                            newCardText = ""
-                                            startWithDictation = false
-                                            showCreateModal = true
-                                        }) {
-                                            HStack(spacing: 12) {
-                                                Image(systemName: "plus")
+                                            Button(action: {
+                                                newCardText = ""
+                                                startWithDictation = false
+                                    showCreateModal = true
+                                            }) {
+                                                HStack(spacing: 12) {
+                                                    Image(systemName: "plus")
                                                     .font(.system(size: 20, weight: .bold))
-                                                Text("Capture")
+                                                    Text("Capture")
                                                     .font(.system(size: 20, weight: .bold))
-                                            }
+                                                }
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 32)
                                             .padding(.vertical, 16)
                                             .background(Color.blue)
-                                            .clipShape(Capsule())
-                                        }
-                                        
-                                        Spacer()
+                                                .clipShape(Capsule())
+                        }
+                        
+                        Spacer()
                                     }
                                 }
                                 
@@ -400,6 +403,9 @@ struct ContentView: View {
                                                 },
                                                 onComplete: {
                                                     completeCard(card)
+                                                },
+                                                onDelete: {
+                                                    deleteCard(card)
                                                 },
                                                 onSetPriority: {
                                                     let generator = UINotificationFeedbackGenerator()
@@ -643,6 +649,16 @@ struct ContentView: View {
         }
     }
     
+    private func deleteCard(_ card: Card) {
+        // Remove the card without tracking completion
+        withAnimation {
+            cards.removeAll { $0.id == card.id }
+            
+            // If it was a priority, remove it from priorities
+            priorityCardIds.removeAll { $0 == card.id }
+        }
+    }
+    
     private func completePriorityCard(_ card: Card) {
         // Show tortoise animation
         showCompleteTortoise = true
@@ -778,6 +794,7 @@ struct RecentCapturesDrawer: View {
     let maxVisibleCards: Int
     let onCardTap: (Card) -> Void
     let onComplete: (Card) -> Void
+    let onDelete: (Card) -> Void
     let onSetPriority: (Card) -> Void
     let onCreateCard: (String, Bool) -> Void
     
@@ -860,6 +877,9 @@ struct RecentCapturesDrawer: View {
                                         },
                                         onComplete: {
                                             onComplete(card)
+                                        },
+                                        onDelete: {
+                                            onDelete(card)
                                         },
                                         onSetPriority: {
                                             onSetPriority(card)
@@ -1166,6 +1186,7 @@ struct HeroCardView: View {
     var variant: CardVariant = .cardDefault
     let onTap: () -> Void
     let onComplete: () -> Void
+    let onDelete: () -> Void
     let onRemovePriority: () -> Void
     let onLongPress: () -> Void
     
@@ -1177,8 +1198,9 @@ struct HeroCardView: View {
     
     var body: some View {
         ZStack {
-            // Remove priority button (right swipe reveals this)
+            // Background actions
             HStack {
+                // Remove priority button (right swipe reveals this)
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                         offset = 0
@@ -1190,17 +1212,63 @@ struct HeroCardView: View {
                     ZStack {
                         Circle()
                             .fill(Color.white.opacity(0.2))
-                            .frame(width: 70, height: 70)
+                            .frame(width: 60, height: 60)
                         
                         Image(systemName: "lightbulb.slash.fill")
-                            .font(.system(size: 26, weight: .heavy))
+                            .font(.system(size: 24, weight: .heavy))
                             .foregroundColor(.white)
                     }
                 }
                 .padding(.leading, 20)
+                .opacity(offset > 15 ? 1 : 0)
+                
                 Spacer()
+                
+                // Action buttons (left swipe reveals these)
+                HStack(spacing: 12) {
+                    // Green checkmark/done button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            offset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            onComplete()
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    
+                    // Red trash/delete button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            offset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            onDelete()
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .padding(.trailing, 20)
+                .opacity(offset < -15 ? 1 : 0)
             }
-            .opacity(offset > 15 ? 1 : 0)
             .animation(.easeOut(duration: 0.2), value: offset)
             
             // Main card using CardComponent
@@ -1211,7 +1279,12 @@ struct HeroCardView: View {
             )
             .contentShape(Rectangle())
             .onTapGesture {
-                if offset == 0 && !isDragging && !isLongPressing {
+                if offset != 0 {
+                    // If swiped, tap to close
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                } else if !isDragging && !isLongPressing {
                     onTap()
                 }
             }
@@ -1228,27 +1301,24 @@ struct HeroCardView: View {
                         isDragging = true
                         let translation = gesture.translation.width
                         
-                        if translation > 0 && !isLongPressing {
-                            // Right swipe only (remove from priority)
-                            offset = min(translation, 100)
+                        if !isLongPressing {
+                            // Allow both directions
+                            offset = max(-140, min(100, translation))
                         }
                     }
                     .onEnded { gesture in
                         isDragging = false
                         let translation = gesture.translation.width
                         
-                        if translation > 140 {
-                            // Full right swipe - remove priority directly
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                offset = 0
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                onRemovePriority()
-                            }
-                        } else if translation > 50 {
-                            // Partial right swipe - reveal button
+                        if translation > 50 {
+                            // Right swipe - reveal remove priority button
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = 100
+                            }
+                        } else if translation < -50 {
+                            // Left swipe - reveal complete/delete buttons
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = -140
                             }
                         } else {
                             // Too short - spring back
@@ -1358,6 +1428,7 @@ struct SwipeableCardRow: View {
     var variant: CardVariant = .cardDefault
     let onTap: () -> Void
     let onComplete: () -> Void
+    let onDelete: () -> Void
     let onSetPriority: () -> Void
     
     @State private var offset: CGFloat = 0
@@ -1368,29 +1439,70 @@ struct SwipeableCardRow: View {
             // Background actions
             HStack {
                 // Yellow priority button (left side - swipe right)
-                ZStack {
-                    Circle()
-                        .fill(Color.yellow)
-                        .frame(width: 60, height: 60)
-                    
-                    Image(systemName: "lightbulb.fill")
-                        .font(.system(size: 26, weight: .heavy))
-                        .foregroundColor(.white)
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onSetPriority()
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.yellow)
+                            .frame(width: 60, height: 60)
+                        
+                        Image(systemName: "lightbulb.fill")
+                            .font(.system(size: 26, weight: .heavy))
+                            .foregroundColor(.white)
+                    }
                 }
                 .padding(.leading, 16)
                 .opacity(offset > 20 ? 1 : 0)
                 
                 Spacer()
                 
-                // Gray complete button (right side - swipe left)
-                ZStack {
-                    Circle()
-                        .fill(Color(uiColor: .secondarySystemBackground))
-                        .frame(width: 60, height: 60)
+                // Action buttons (right side - swipe left)
+                HStack(spacing: 12) {
+                    // Green checkmark/done button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            offset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            onComplete()
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+                        }
+                    }
                     
-                    Image(systemName: "xmark")
-                        .font(.system(size: 22, weight: .heavy))
-                        .foregroundColor(.black)
+                    // Red trash/delete button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            offset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            onDelete()
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+                        }
+                    }
                 }
                 .padding(.trailing, 16)
                 .opacity(offset < -20 ? 1 : 0)
@@ -1411,25 +1523,21 @@ struct SwipeableCardRow: View {
                     .onChanged { gesture in
                         isDragging = true
                         let translation = gesture.translation.width
-                        offset = max(-120, min(120, translation))
+                        offset = max(-140, min(120, translation))
                     }
                     .onEnded { gesture in
                         isDragging = false
                         let translation = gesture.translation.width
                         
-                        if translation > 100 {
-                            // Full right swipe - set priority
-                            onSetPriority()
+                        if translation > 50 {
+                            // Right swipe - reveal priority button (don't auto-trigger)
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                offset = 0
+                                offset = 100
                             }
-                        } else if translation < -100 {
-                            // Full left swipe - complete
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                offset = -UIScreen.main.bounds.width
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                onComplete()
+                        } else if translation < -50 {
+                            // Left swipe - reveal action buttons (don't auto-complete)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = -140
                             }
                         } else {
                             // Spring back
@@ -1440,7 +1548,12 @@ struct SwipeableCardRow: View {
                     }
             )
             .onTapGesture {
-                if offset == 0 && !isDragging {
+                if offset != 0 {
+                    // If swiped, tap to close
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                } else if !isDragging {
                     onTap()
                 }
             }
