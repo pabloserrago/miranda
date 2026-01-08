@@ -20,7 +20,11 @@ struct ContentView: View {
     @State private var pendingCard: Card? = nil
     @State private var showPriorityPicker: Bool = false
     @State private var showCompleteTortoise: Bool = false
+    @State private var showWidgetInstructions: Bool = false
     @State private var searchText: String = ""
+    @State private var widgetOnboardingDismissed: Bool = false
+    @State private var captureOnboardingDismissed: Bool = false
+    @State private var excludedFromPriorityIds: [UUID] = []
     @FocusState private var isInputFocused: Bool
     @FocusState private var isSearchFocused: Bool
     @State private var drawerState: DrawerState = .small
@@ -79,9 +83,16 @@ struct ContentView: View {
         }
     }
     
-    // Filter cards based on search text
+    // Get current auto-priority card IDs (first 3 eligible cards)
+    // All cards that are eligible for priority (not excluded)
+    private var autoPriorityCardIds: Set<UUID> {
+        let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+        return Set(eligibleForPriority.map { $0.id })
+    }
+    
+    // Filter cards based on search text (exclude auto-priority cards)
     private var filteredNonPriorityCards: [Card] {
-        let nonPriorityCards = sortedCards.filter { !priorityCardIds.contains($0.id) }
+        let nonPriorityCards = sortedCards.filter { !autoPriorityCardIds.contains($0.id) }
         if searchText.isEmpty {
             return nonPriorityCards
         }
@@ -120,10 +131,11 @@ struct ContentView: View {
             
             if showOneMust, let currentCard = selectedCard {
                 // Full-screen "One Must" card
+                let isCurrentlyPriority = autoPriorityCardIds.contains(currentCard.id)
                 OneMustCardView(
                     card: currentCard,
                     isNewCard: isNewCard,
-                    isPriority: priorityCardIds.contains(currentCard.id),
+                    isPriority: isCurrentlyPriority,
                     onDismiss: {
                         showOneMust = false
                         selectedCard = nil
@@ -132,20 +144,24 @@ struct ContentView: View {
                     onSetPriority: {
                         let generator = UINotificationFeedbackGenerator()
                         generator.notificationOccurred(.success)
-                        addToPriorities(currentCard.id)
+                        // Remove from exclusion list to make it eligible for auto-priority
+                        excludedFromPriorityIds.removeAll { $0 == currentCard.id }
                         saveState()
                     },
-                    onRemovePriority: priorityCardIds.contains(currentCard.id) ? {
+                    onRemovePriority: isCurrentlyPriority ? {
+                        // Add to exclusion list
+                        if !excludedFromPriorityIds.contains(currentCard.id) {
                         withAnimation {
-                            priorityCardIds.removeAll { $0 == currentCard.id }
-                            saveState()
+                                excludedFromPriorityIds.append(currentCard.id)
                         }
+                        }
+                        saveState()
                         showOneMust = false
                         selectedCard = nil
                     } : nil,
                     onComplete: {
                         // Check if it's a priority card for special animation
-                        if priorityCardIds.contains(currentCard.id) {
+                        if isCurrentlyPriority {
                             showOneMust = false
                             selectedCard = nil
                             completePriorityCard(currentCard)
@@ -170,22 +186,58 @@ struct ContentView: View {
                         .ignoresSafeArea()
                     
                         VStack(spacing: 0) {
-                                if !priorityCardIds.isEmpty {
-                                    // Calculate available height for priorities (always use small drawer height for calculation)
+                                if !cards.isEmpty {
+                                    // Auto-prioritize: show cards as priorities when ≤3 cards
+                                    // Calculate available height for priorities
                                     let baseDrawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
                                     let topPadding: CGFloat = 70 // Space for settings icon
                                     let availableHeight = geometry.size.height - baseDrawerHeight - topPadding
-                                    let priorityCount = priorityCards.count
+                                    
+                                    // Get cards to display as priorities (all eligible, no limit)
+                                    let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+                                    let autoPriorityCards = Array(eligibleForPriority)
+                                    
+                                    // Determine if we should show widget onboarding card (when fewer than 3 priorities)
+                                    let showWidgetCard = autoPriorityCards.count < 3 && autoPriorityCards.count > 0 && !widgetOnboardingDismissed
+                                    let totalDisplayCount = autoPriorityCards.count + (showWidgetCard ? 1 : 0)
+                                    
                                     let maxCardHeight: CGFloat = 200 // Max height per card
-                                    let calculatedHeight = (availableHeight - CGFloat(priorityCount * 8)) / CGFloat(priorityCount)
+                                    let calculatedHeight = (availableHeight - CGFloat(totalDisplayCount * 8)) / CGFloat(totalDisplayCount)
                                     let cardHeight = min(calculatedHeight, maxCardHeight)
                                     
-                                    // Show only actual priority cards (no empty slots)
+                                    // Show priority cards and optional widget onboarding
                                     VStack(spacing: 8) {
-                                        ForEach(Array(priorityCards.enumerated()), id: \.element.id) { index, priorityCard in
+                                        // If no priority cards to show, display Capture button
+                                        if autoPriorityCards.isEmpty && !showWidgetCard {
+                                            Spacer()
+                                            
+                                            // Capture button
+                                            Button(action: {
+                                                newCardText = ""
+                                                startWithDictation = false
+                                                showCreateModal = true
+                                            }) {
+                                                HStack(spacing: 12) {
+                                                    Image(systemName: "plus")
+                                                        .font(.system(size: 20, weight: .bold))
+                                                    Text("Capture")
+                                                        .font(.system(size: 20, weight: .bold))
+                                                }
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 32)
+                                                .padding(.vertical, 16)
+                                                .background(Color.blue)
+                                                .clipShape(Capsule())
+                                            }
+                                            
+                                            Spacer()
+                                        }
+                                        
+                                        // Priority cards
+                                        ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, priorityCard in
                                         HeroCardView(
                                             card: priorityCard,
-                                            height: cardHeight,
+                                                    height: cardHeight,
                                             onTap: {
                                                 selectedCard = priorityCard
                                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -193,20 +245,22 @@ struct ContentView: View {
                                                 }
                                             },
                                             onComplete: {
-                                                completePriorityCard(priorityCard)
+                                                        completePriorityCard(priorityCard)
                                             },
-                                            onDelete: {
-                                                deleteCard(priorityCard)
+                                                onDelete: {
+                                                    deleteCard(priorityCard)
                                             },
                                             onRemovePriority: {
+                                                    // Exclude from auto-priority (card stays in drawer)
+                                                    if !excludedFromPriorityIds.contains(priorityCard.id) {
                                                 withAnimation {
-                                                    priorityCardIds.removeAll { $0 == priorityCard.id }
-                                                    saveState()
+                                                            excludedFromPriorityIds.append(priorityCard.id)
                                                 }
-                                            },
-                                            onLongPress: {
-                                                // Start dragging
-                                                let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                    }
+                                                    saveState()
+                                                    },
+                                                    onLongPress: {
+                                                        let generator = UIImpactFeedbackGenerator(style: .medium)
                                                         generator.impactOccurred()
                                                         draggedCard = priorityCard
                                                     }
@@ -214,49 +268,54 @@ struct ContentView: View {
                                                 .padding(.horizontal, 20)
                                                 .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
                                                 .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
-                                                .shadow(color: draggedCard?.id == priorityCard.id ? Color.yellow.opacity(0.5) : Color.clear, radius: draggedCard?.id == priorityCard.id ? 20 : 0)
                                                 .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
                                                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
-                                                .onDrop(of: [.text], delegate: CardDropDelegate(
-                                                    destinationIndex: index,
-                                                    draggedCard: $draggedCard,
-                                                    priorityCardIds: $priorityCardIds,
-                                                    cards: cards,
-                                                    onReorder: {
-                                                        saveState()
-                                                    }
-                                                ))
                                         }
-                                    }
+                                        
+                                        // Widget onboarding card (when 1-2 cards exist)
+                                        if showWidgetCard {
+                                            WidgetOnboardingCard(
+                                                    height: cardHeight,
+                                                priorityCard: autoPriorityCards.first,
+                                                onDismiss: {
+                                                    withAnimation {
+                                                        widgetOnboardingDismissed = true
+                                                    }
+                                                },
+                                                onLearnMore: {
+                                                    showWidgetInstructions = true
+                                                    }
+                                                )
+                                                .padding(.horizontal, 20)
+                                            }
+                                        }
                                     .padding(.top, 50)
                                     .frame(maxHeight: availableHeight)
                                     .onTapGesture {
-                                        // Cancel drag if tapping outside
                                         if draggedCard != nil {
                                             withAnimation {
                                                 draggedCard = nil
                                             }
                                         }
                                     }
-                                } else if cards.count > 0 {
-                                    Spacer()
-                                    HeroPlaceholderView(
-                                        height: 320,
-                                        onSetPriority: {
-                                            showPriorityPicker = true
-                                        }
-                                    )
-                                    .padding(.horizontal, 24)
-                                    Spacer()
                                 } else {
                                     // No cards at all - show onboarding card and capture button
                                     VStack(spacing: 24) {
                                 Spacer()
                                         
-                                        // Onboarding card
-                                        CardOnboarding()
+                                        // Onboarding card (dismissible)
+                                        if !captureOnboardingDismissed {
+                                            DismissibleOnboardingCard(
+                                                onDismiss: {
+                                                    withAnimation {
+                                                        captureOnboardingDismissed = true
+                                                        saveState()
+                                                    }
+                                                }
+                                            )
                                             .frame(maxHeight: 200)
                                             .padding(.horizontal, 20)
+                                        }
                                         
                                         // Capture button
                                             Button(action: {
@@ -352,36 +411,36 @@ struct ContentView: View {
                                     .padding(.vertical, 10)
                                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                                     
-                                    // Audio button (if enabled)
-                                    if audioInputEnabled {
-                                        Button(action: {
-                                            newCardText = ""
-                                            startWithDictation = true
-                                            showCreateModal = true
-                                        }) {
-                                            Image(systemName: "mic.fill")
+                                        // Audio button (if enabled)
+                                        if audioInputEnabled {
+                                            Button(action: {
+                                                newCardText = ""
+                                                startWithDictation = true
+                                                showCreateModal = true
+                                            }) {
+                                                Image(systemName: "mic.fill")
                                                 .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(.black)
+                                                    .foregroundColor(.black)
                                                 .frame(width: 48, height: 48)
                                                 .background(Color(uiColor: .tertiarySystemBackground))
+                                                    .clipShape(Circle())
+                                            }
+                                        }
+                                        
+                                        // Add button
+                                        Button(action: {
+                                            newCardText = ""
+                                            startWithDictation = false
+                                            showCreateModal = true
+                                        }) {
+                                            Image(systemName: "plus")
+                                            .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(.white)
+                                            .frame(width: 48, height: 48)
+                                                .background(Color.black)
                                                 .clipShape(Circle())
                                         }
                                     }
-                                    
-                                    // Add button
-                                    Button(action: {
-                                        newCardText = ""
-                                        startWithDictation = false
-                                        showCreateModal = true
-                                    }) {
-                                        Image(systemName: "plus")
-                                            .font(.system(size: 20, weight: .semibold))
-                                            .foregroundColor(.white)
-                                            .frame(width: 48, height: 48)
-                                            .background(Color.black)
-                                            .clipShape(Circle())
-                                    }
-                                }
                                 .padding(.horizontal, 20)
                                 .padding(.top, 16)
                                 .padding(.bottom, 12)
@@ -422,12 +481,18 @@ struct ContentView: View {
                                             .font(.system(size: 16, weight: .regular))
                                             .foregroundColor(.secondary.opacity(0.6))
                                     } else {
-                                        Text("No Recent Captures")
-                                            .font(.system(size: 16, weight: .regular))
-                                            .foregroundColor(.secondary.opacity(0.6))
+                                Text("No Recent Captures")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(.secondary.opacity(0.6))
+                                    
+                                    #if DEBUG
+                                    Text("Debug: \(cards.count) cards, \(excludedFromPriorityIds.count) excluded, \(autoPriorityCardIds.count) priorities")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.secondary.opacity(0.4))
+                                    #endif
                                     }
                                 }
-                                .padding(.vertical, 20)
+                                    .padding(.vertical, 20)
                             } else {
                                 ScrollView {
                                     VStack(spacing: 12) {
@@ -449,8 +514,12 @@ struct ContentView: View {
                                                 onSetPriority: {
                                                     let generator = UINotificationFeedbackGenerator()
                                                     generator.notificationOccurred(.success)
-                                                    addToPriorities(card.id)
+                                                    // Remove from exclusion list so it can be a priority again
+                                                    withAnimation {
+                                                        excludedFromPriorityIds.removeAll { $0 == card.id }
+                                                    }
                                                     saveState()
+                                                    print("DEBUG: Set priority for card \(card.id), excluded count: \(excludedFromPriorityIds.count)")
                                                 }
                                             )
                                             .padding(.horizontal, 20)
@@ -525,10 +594,25 @@ struct ContentView: View {
                 onDeleteAll: {
                     clearAllCards()
                 },
+                onResetOnboarding: {
+                    resetOnboarding()
+                },
                 currentPriorityCard: priorityCards.first,
                 lastCapture: cards.max(by: { $0.timestamp < $1.timestamp }),
                 hasCaptures: !cards.isEmpty
             )
+        }
+        .sheet(isPresented: $showWidgetInstructions) {
+            NavigationView {
+                WidgetInstructionsView()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showWidgetInstructions = false
+                            }
+                        }
+                    }
+            }
         }
         .sheet(isPresented: $showCreateModal) {
             CreateCardModal(
@@ -609,17 +693,13 @@ struct ContentView: View {
             timestamp: Date()
         )
         
-        // If it's the first card, ask if they want to do it now
-        if cards.isEmpty {
-            pendingCard = newCard
-            showCreateModal = false
-            newCardText = ""
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                showDoNowDialog = true
-            }
-        } else {
-            cards.append(newCard)
+        // Add the card
+        cards.append(newCard)
+        
+        // Auto-set as priority if less than 3 cards
+        if cards.count <= 3 {
+            addToPriorities(newCard.id)
+        }
             
             // Track analytics
             Analytics.shared.trackCardCreated(hasEmoji: emoji != nil)
@@ -627,7 +707,6 @@ struct ContentView: View {
             // Reset and close modal
             newCardText = ""
             showCreateModal = false
-        }
     }
     
     private func transformToAction(_ text: String) -> String {
@@ -736,6 +815,26 @@ struct ContentView: View {
         }
     }
     
+    private func resetOnboarding() {
+        withAnimation {
+            // Reset all onboarding states
+            widgetOnboardingDismissed = false
+            captureOnboardingDismissed = false
+            priorityCardIds.removeAll()
+            excludedFromPriorityIds.removeAll()
+            
+            // Clear UserDefaults for onboarding
+            UserDefaults.standard.removeObject(forKey: "widgetOnboardingDismissed")
+            UserDefaults.standard.removeObject(forKey: "captureOnboardingDismissed")
+            UserDefaults.standard.removeObject(forKey: "priorityCardIds")
+            UserDefaults.standard.removeObject(forKey: "excludedFromPriorityIds")
+        }
+        
+        // Haptic feedback
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+    }
+    
     
     // MARK: - Persistence
     
@@ -751,10 +850,20 @@ struct ContentView: View {
         let priorityStrings = priorityCardIds.map { $0.uuidString }
         UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
         
-        // Save to shared storage for widget
-        let firstPriorityCard = priorityCards.first
+        // Save onboarding dismissed states
+        UserDefaults.standard.set(widgetOnboardingDismissed, forKey: "widgetOnboardingDismissed")
+        UserDefaults.standard.set(captureOnboardingDismissed, forKey: "captureOnboardingDismissed")
+        
+        // Save excluded from priority IDs
+        let excludedStrings = excludedFromPriorityIds.map { $0.uuidString }
+        UserDefaults.standard.set(excludedStrings, forKey: "excludedFromPriorityIds")
+        
+        // Save to shared storage for widget - only first 3 priorities show in widget
+        let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+        let widgetPriorityCards = Array(eligibleForPriority.prefix(3))
+        let firstPriorityCard = widgetPriorityCards.first
         SharedCardManager.shared.saveCurrentCard(firstPriorityCard) // For backward compatibility
-        SharedCardManager.shared.savePriorityCards(priorityCards) // All priority cards
+        SharedCardManager.shared.savePriorityCards(widgetPriorityCards) // First 3 priority cards for widget
         SharedCardManager.shared.saveAllCards(cards) // All cards for widget intents
         
         // Request widget refresh
@@ -775,6 +884,15 @@ struct ContentView: View {
         // Load priority IDs
         if let priorityStrings = UserDefaults.standard.array(forKey: "priorityCardIds") as? [String] {
             priorityCardIds = priorityStrings.compactMap { UUID(uuidString: $0) }
+        }
+        
+        // Load onboarding dismissed states
+        widgetOnboardingDismissed = UserDefaults.standard.bool(forKey: "widgetOnboardingDismissed")
+        captureOnboardingDismissed = UserDefaults.standard.bool(forKey: "captureOnboardingDismissed")
+        
+        // Load excluded from priority IDs
+        if let excludedStrings = UserDefaults.standard.array(forKey: "excludedFromPriorityIds") as? [String] {
+            excludedFromPriorityIds = excludedStrings.compactMap { UUID(uuidString: $0) }
         }
     }
 }
@@ -1045,53 +1163,192 @@ struct EmptyPrioritySlot: View {
     }
 }
 
-// MARK: - Hero Placeholder View
+// MARK: - Dismissible Onboarding Card (Empty State)
 
-struct HeroPlaceholderView: View {
-    let height: CGFloat
-    let onSetPriority: (() -> Void)?
+struct DismissibleOnboardingCard: View {
+    let onDismiss: () -> Void
+    
+    @State private var offset: CGFloat = 0
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 80)
-                .fill(Color.white.opacity(0.05))
-            
-            RoundedRectangle(cornerRadius: 80)
-                .strokeBorder(lineWidth: 2)
-                .foregroundColor(.white.opacity(0.2))
-            
-            VStack(spacing: 20) {
-                Image(systemName: "lightbulb")
-                    .font(.system(size: 50))
-                    .foregroundColor(.white.opacity(0.3))
+            // Dismiss button (swipe left reveals)
+            HStack {
+                Spacer()
                 
-                Text("No priorities set")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.7))
-                
-                Text("Set up to 3 priorities")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white.opacity(0.6))
-                    .padding(.bottom, 4)
-                
-                Text("Swipe right on a capture to turn it on")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.4))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 30)
-                
-                // Set priority button
-                if let setPriority = onSetPriority {
-                    Button(action: setPriority) {
-                        Text("Set Priority")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 16)
-                            .background(Color.white.opacity(0.15))
-                            .clipShape(Capsule())
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
                     }
-                    .padding(.top, 12)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onDismiss()
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "xmark")
+                            .font(.system(size: 20, weight: .heavy))
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding(.trailing, 20)
+                .opacity(offset < -15 ? 1 : 0)
+            }
+            
+            // Main card - reuses CardOnboarding
+            CardOnboarding()
+                .offset(x: offset)
+                .gesture(
+                    DragGesture(minimumDistance: 10)
+                        .onChanged { gesture in
+                            let translation = gesture.translation.width
+                            if translation < 0 {
+                                offset = max(-100, translation)
+                            }
+                        }
+                        .onEnded { gesture in
+                            let translation = gesture.translation.width
+                            
+                            if translation < -50 {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    offset = -80
+                                }
+                            } else {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    offset = 0
+                                }
+                            }
+                        }
+                )
+                .onTapGesture {
+                    if offset != 0 {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            offset = 0
+                        }
+                    }
+                }
+        }
+    }
+}
+
+// MARK: - Widget Onboarding Card
+
+struct WidgetOnboardingCard: View {
+    let height: CGFloat
+    let priorityCard: Card?
+    let onDismiss: () -> Void
+    let onLearnMore: () -> Void
+    
+    @State private var offset: CGFloat = 0
+    
+    var body: some View {
+        ZStack {
+            // Dismiss button (swipe left reveals)
+            HStack {
+                Spacer()
+                
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onDismiss()
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "xmark")
+                            .font(.system(size: 20, weight: .heavy))
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding(.trailing, 20)
+                .opacity(offset < -15 ? 1 : 0)
+            }
+            
+            // Main card - use CardOnboarding style but with widget text
+            VStack(alignment: .leading, spacing: 0) {
+                // Mini card preview showing current priority
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: CardVariant.cardDefault.gradientColors,
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    if let card = priorityCard {
+                        Text("\(card.emoji ?? "") \(card.simplifiedText)")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.black.opacity(0.85))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .padding(.horizontal, 12)
+                    }
+                }
+                .frame(height: 70)
+                .padding(.bottom, 16)
+                
+                // Instructional text - should not truncate
+                (Text("Add the Widget to your home screen to keep your priorities visible. ")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(.black.opacity(0.85))
+                + Text("Easy-peasy.")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.black.opacity(0.85)))
+                .fixedSize(horizontal: false, vertical: true)
+                
+                Spacer()
+            }
+            .padding(25)
+            .frame(height: height)
+            .background(
+                LinearGradient(
+                    colors: CardVariant.cardOnboarding.gradientColors,
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .cornerRadius(35)
+            .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+            .offset(x: offset)
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { gesture in
+                        let translation = gesture.translation.width
+                        if translation < 0 {
+                            offset = max(-100, translation)
+                        }
+                    }
+                    .onEnded { gesture in
+                        let translation = gesture.translation.width
+                        
+                        if translation < -50 {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = -80
+                            }
+                        } else {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
+                        }
+                    }
+            )
+            .onTapGesture {
+                if offset != 0 {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
+                    }
+                } else {
+                    onLearnMore()
                 }
             }
         }
@@ -1265,7 +1522,7 @@ struct HeroCardView: View {
                     }
                 }
                 .padding(.leading, 20)
-                .opacity(offset > 15 ? 1 : 0)
+            .opacity(offset > 15 ? 1 : 0)
                 
                 Spacer()
                 
@@ -1302,12 +1559,12 @@ struct HeroCardView: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(Color.red)
+                                .fill(Color.gray.opacity(0.3))
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "trash.fill")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.white)
+                                .foregroundColor(.gray)
                         }
                     }
                 }
@@ -1492,14 +1749,14 @@ struct SwipeableCardRow: View {
                         onSetPriority()
                     }
                 }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.yellow)
-                            .frame(width: 60, height: 60)
-                        
-                        Image(systemName: "lightbulb.fill")
-                            .font(.system(size: 26, weight: .heavy))
-                            .foregroundColor(.white)
+                ZStack {
+                    Circle()
+                        .fill(Color.yellow)
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 26, weight: .heavy))
+                        .foregroundColor(.white)
                     }
                 }
                 .padding(.leading, 16)
@@ -1518,8 +1775,8 @@ struct SwipeableCardRow: View {
                             onComplete()
                         }
                     }) {
-                        ZStack {
-                            Circle()
+                ZStack {
+                    Circle()
                                 .fill(Color.green)
                                 .frame(width: 50, height: 50)
                             
@@ -1529,7 +1786,7 @@ struct SwipeableCardRow: View {
                         }
                     }
                     
-                    // Red trash/delete button
+                    // Trash/delete button (neutral style)
                     Button(action: {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                             offset = 0
@@ -1540,12 +1797,12 @@ struct SwipeableCardRow: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(Color.red)
+                                .fill(Color.gray.opacity(0.3))
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "trash.fill")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.white)
+                                .foregroundColor(.gray)
                         }
                     }
                 }

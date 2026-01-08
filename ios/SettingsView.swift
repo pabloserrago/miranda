@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     let onShowAnalytics: () -> Void
     let onDeleteAll: () -> Void
+    let onResetOnboarding: () -> Void
     let currentPriorityCard: Card?
     let lastCapture: Card?
     let hasCaptures: Bool
@@ -265,6 +266,16 @@ struct SettingsView: View {
                                 Text("Analytics Debug")
                             }
                         }
+                        
+                        Button(action: onResetOnboarding) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("Reset Onboarding")
+                            }
+                        }
                     } header: {
                         Text("Developer")
                     }
@@ -439,7 +450,7 @@ struct DevComponentsView: View {
 }
 
 #Preview {
-    SettingsView(onShowAnalytics: {}, onDeleteAll: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true)
+    SettingsView(onShowAnalytics: {}, onDeleteAll: {}, onResetOnboarding: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true)
 }
 
 #Preview("Dev Components") {
