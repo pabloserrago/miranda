@@ -1680,14 +1680,14 @@ struct HeroCardView: View {
             })
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 20)
+            .gesture(
+                DragGesture(minimumDistance: 30)
                     .onChanged { gesture in
                         let horizontal = abs(gesture.translation.width)
                         let vertical = abs(gesture.translation.height)
                         
-                        // Only respond to horizontal swipes (ratio > 1.5)
-                        guard horizontal > vertical * 1.5 else { return }
+                        // Only respond to clearly horizontal swipes (3x ratio, min 40px)
+                        guard horizontal > 40 && horizontal > vertical * 3 else { return }
                         
                         isDragging = true
                         let translation = gesture.translation.width
@@ -1700,20 +1700,23 @@ struct HeroCardView: View {
                         let horizontal = abs(gesture.translation.width)
                         let vertical = abs(gesture.translation.height)
                         
-                        // Only process if it was a horizontal swipe
-                        guard horizontal > vertical * 1.5 else {
+                        // Only process if it was clearly horizontal
+                        guard horizontal > 40 && horizontal > vertical * 3 else {
                             isDragging = false
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                offset = 0
+                            }
                             return
                         }
                         
                         isDragging = false
                         let translation = gesture.translation.width
                         
-                        if translation > 50 {
+                        if translation > 60 {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = 100
                             }
-                        } else if translation < -50 {
+                        } else if translation < -60 {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = -140
                             }
