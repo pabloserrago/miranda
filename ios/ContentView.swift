@@ -38,14 +38,14 @@ struct ContentView: View {
     private let maxVisibleCards = 6
     
     enum DrawerState {
-        case small   // 15%
+        case small   // 20%
         case medium  // 50%
         case large   // 100%
         
         func height(screenHeight: CGFloat) -> CGFloat {
             switch self {
             case .small:
-                return screenHeight * 0.15
+                return screenHeight * 0.20
             case .medium:
                 return screenHeight * 0.50
             case .large:
@@ -493,6 +493,7 @@ struct ContentView: View {
                                     }
                                 }
                                     .padding(.vertical, 20)
+                                .frame(maxWidth: .infinity, alignment: .top)
                             } else {
                                 ScrollView {
                                     VStack(spacing: 12) {
@@ -528,6 +529,7 @@ struct ContentView: View {
                                     .padding(.bottom, 40 + geometry.safeAreaInsets.bottom)
                                 }
                             }
+                            Spacer()
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
@@ -1031,6 +1033,7 @@ struct RecentCapturesDrawer: View {
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(.secondary.opacity(0.6))
                             .padding(.vertical, 20)
+                                .frame(maxWidth: .infinity, alignment: .top)
                         
                         Spacer()
                     }
