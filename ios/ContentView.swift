@@ -86,7 +86,7 @@ struct ContentView: View {
     // Get current auto-priority card IDs (first 3 eligible cards)
     // All cards that are eligible for priority (not excluded)
     private var autoPriorityCardIds: Set<UUID> {
-        let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+        let eligibleForPriority: [Card] = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
         return Set(eligibleForPriority.map { $0.id })
     }
     
@@ -189,21 +189,21 @@ struct ContentView: View {
                                 if !cards.isEmpty {
                                     // Auto-prioritize: show cards as priorities when ≤3 cards
                                     // Calculate available height for priorities
-                                    let baseDrawerHeight = DrawerState.small.height(screenHeight: geometry.size.height)
+                                    let baseDrawerHeight: CGFloat = DrawerState.small.height(screenHeight: geometry.size.height)
                                     let topPadding: CGFloat = 70 // Space for settings icon
-                                    let availableHeight = geometry.size.height - baseDrawerHeight - topPadding
+                                    let availableHeight: CGFloat = geometry.size.height - baseDrawerHeight - topPadding
                                     
                                     // Get cards to display as priorities (all eligible, no limit)
-                                    let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
-                                    let autoPriorityCards = Array(eligibleForPriority)
+                                    let eligibleForPriority: [Card] = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+                                    let autoPriorityCards: [Card] = Array(eligibleForPriority)
                                     
                                     // Determine if we should show widget onboarding card (when fewer than 3 priorities)
-                                    let showWidgetCard = autoPriorityCards.count < 3 && autoPriorityCards.count > 0 && !widgetOnboardingDismissed
-                                    let totalDisplayCount = autoPriorityCards.count + (showWidgetCard ? 1 : 0)
+                                    let showWidgetCard: Bool = autoPriorityCards.count < 3 && autoPriorityCards.count > 0 && !widgetOnboardingDismissed
+                                    let totalDisplayCount: Int = autoPriorityCards.count + (showWidgetCard ? 1 : 0)
                                     
                                     let maxCardHeight: CGFloat = 200 // Max height per card
-                                    let calculatedHeight = (availableHeight - CGFloat(totalDisplayCount * 8)) / CGFloat(totalDisplayCount)
-                                    let cardHeight = min(calculatedHeight, maxCardHeight)
+                                    let calculatedHeight: CGFloat = (availableHeight - CGFloat(totalDisplayCount * 8)) / CGFloat(totalDisplayCount)
+                                    let cardHeight: CGFloat = min(calculatedHeight, maxCardHeight)
                                     
                                     // Show priority cards and optional widget onboarding
                                     VStack(spacing: 8) {
@@ -525,14 +525,16 @@ struct ContentView: View {
                                             .padding(.horizontal, 20)
                                         }
                                     }
-                                    .padding(.bottom, 40)
+                                    .padding(.bottom, 40 + geometry.safeAreaInsets.bottom)
                                 }
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: drawerState.height(screenHeight: geometry.size.height))
+                        .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
                         .background(.regularMaterial)
                         .cornerRadius(20, corners: [.topLeft, .topRight])
+                        .ignoresSafeArea(edges: .bottom)
+                        .offset(y: geometry.safeAreaInsets.bottom)
                         }
                     }
                 }
@@ -696,9 +698,13 @@ struct ContentView: View {
         // Add the card
         cards.append(newCard)
         
-        // Auto-set as priority if less than 3 cards
-        if cards.count <= 3 {
-            addToPriorities(newCard.id)
+        
+        // Count current priorities (cards not excluded)
+        let currentPriorityCount: Int = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
+        
+        // If already 3+ priorities, exclude new card from priority (goes to drawer)
+        if currentPriorityCount > 3 {
+            excludedFromPriorityIds.append(newCard.id)
         }
             
             // Track analytics
@@ -859,7 +865,7 @@ struct ContentView: View {
         UserDefaults.standard.set(excludedStrings, forKey: "excludedFromPriorityIds")
         
         // Save to shared storage for widget - only first 3 priorities show in widget
-        let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
+        let eligibleForPriority: [Card] = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
         let widgetPriorityCards = Array(eligibleForPriority.prefix(3))
         let firstPriorityCard = widgetPriorityCards.first
         SharedCardManager.shared.saveCurrentCard(firstPriorityCard) // For backward compatibility
@@ -1071,7 +1077,7 @@ struct RecentCapturesDrawer: View {
                                 .padding(.horizontal, 20)
                             }
                         }
-                        .padding(.bottom, 40)
+                        .padding(.bottom, 40 + geometry.safeAreaInsets.bottom)
                     }
                 }
             }
@@ -1298,12 +1304,12 @@ struct WidgetOnboardingCard: View {
                 .padding(.bottom, 16)
                 
                 // Instructional text - should not truncate
-                (Text("Add the Widget to your home screen to keep your priorities visible. ")
-                    .font(.system(size: 18, weight: .regular))
-                    .foregroundColor(.black.opacity(0.85))
-                + Text("Easy-peasy.")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.black.opacity(0.85)))
+                Group {
+                    Text("Add the Widget to your home screen to keep your priorities visible. ")
+                    + Text("Easy-peasy.").bold()
+                }
+                .font(.system(size: 18))
+                .foregroundColor(.black.opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
                 
                 Spacer()
