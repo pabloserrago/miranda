@@ -201,12 +201,16 @@ struct ContentView: View {
                                     let showWidgetCard: Bool = autoPriorityCards.count < 3 && autoPriorityCards.count > 0 && !widgetOnboardingDismissed
                                     let totalDisplayCount: Int = autoPriorityCards.count + (showWidgetCard ? 1 : 0)
                                     
-                                    let maxCardHeight: CGFloat = 200 // Max height per card
-                                    let calculatedHeight: CGFloat = (availableHeight - CGFloat(totalDisplayCount * 8)) / CGFloat(totalDisplayCount)
-                                    let cardHeight: CGFloat = min(calculatedHeight, maxCardHeight)
+                                    let fixedCardHeight: CGFloat = 180
+                                    let shouldScroll: Bool = autoPriorityCards.count > 3
+                                    let calculatedHeight: CGFloat = totalDisplayCount > 0 ? (availableHeight - CGFloat(totalDisplayCount * 8)) / CGFloat(totalDisplayCount) : fixedCardHeight
+                                    let cardHeight: CGFloat = shouldScroll ? fixedCardHeight : min(calculatedHeight, fixedCardHeight)
                                     
                                     // Show priority cards and optional widget onboarding
-                                    VStack(spacing: 8) {
+                                    Group {
+                                        if shouldScroll {
+                                            ScrollView(showsIndicators: false) {
+                                                VStack(spacing: 8) {
                                         // If no priority cards to show, display Capture button
                                         if autoPriorityCards.isEmpty && !showWidgetCard {
                                             Spacer()
@@ -288,9 +292,79 @@ struct ContentView: View {
                                                 )
                                                 .padding(.horizontal, 20)
                                             }
+                                                }
+                                                .padding(.bottom, baseDrawerHeight + 60)
+                                            }
+                                        } else {
+                                            VStack(spacing: 8) {
+                                                // If no priority cards to show, display Capture button
+                                                if autoPriorityCards.isEmpty && !showWidgetCard {
+                                                    Spacer()
+                                                    Button(action: {
+                                                        newCardText = ""
+                                                        startWithDictation = false
+                                                        showCreateModal = true
+                                                    }) {
+                                                        HStack(spacing: 12) {
+                                                            Image(systemName: "plus")
+                                                                .font(.system(size: 20, weight: .bold))
+                                                            Text("Capture")
+                                                                .font(.system(size: 20, weight: .bold))
+                                                        }
+                                                        .foregroundColor(.white)
+                                                        .padding(.horizontal, 32)
+                                                        .padding(.vertical, 16)
+                                                        .background(Color.blue)
+                                                        .clipShape(Capsule())
+                                                    }
+                                                    Spacer()
+                                                }
+                                                
+                                                ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, priorityCard in
+                                                    HeroCardView(
+                                                        card: priorityCard,
+                                                        height: cardHeight,
+                                                        onTap: {
+                                                            selectedCard = priorityCard
+                                                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                                                showOneMust = true
+                                                            }
+                                                        },
+                                                        onComplete: { completePriorityCard(priorityCard) },
+                                                        onDelete: { deleteCard(priorityCard) },
+                                                        onRemovePriority: {
+                                                            if !excludedFromPriorityIds.contains(priorityCard.id) {
+                                                                withAnimation { excludedFromPriorityIds.append(priorityCard.id) }
+                                                            }
+                                                            saveState()
+                                                        },
+                                                        onLongPress: {
+                                                            let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                            generator.impactOccurred()
+                                                            draggedCard = priorityCard
+                                                        }
+                                                    )
+                                                    .padding(.horizontal, 20)
+                                                    .opacity(draggedCard?.id == priorityCard.id ? 0.6 : 1.0)
+                                                    .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
+                                                    .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
+                                                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
+                                                }
+                                                
+                                                if showWidgetCard {
+                                                    WidgetOnboardingCard(
+                                                        height: cardHeight,
+                                                        priorityCard: autoPriorityCards.first,
+                                                        onDismiss: { withAnimation { widgetOnboardingDismissed = true } },
+                                                        onLearnMore: { showWidgetInstructions = true }
+                                                    )
+                                                    .padding(.horizontal, 20)
+                                                }
+                                            }
+                                            .frame(maxHeight: availableHeight)
                                         }
+                                    }
                                     .padding(.top, 50)
-                                    .frame(maxHeight: availableHeight)
                                     .onTapGesture {
                                         if draggedCard != nil {
                                             withAnimation {
@@ -479,16 +553,16 @@ struct ContentView: View {
                                     if !searchText.isEmpty {
                                         Text("No results for \"\(searchText)\"")
                                             .font(.system(size: 16, weight: .regular))
-                                            .foregroundColor(.secondary.opacity(0.6))
+                                            .foregroundColor(.secondary)
                                     } else {
                                 Text("No Recent Captures")
                                     .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(.secondary.opacity(0.6))
+                                    .foregroundColor(.secondary)
                                     
                                     #if DEBUG
                                     Text("Debug: \(cards.count) cards, \(excludedFromPriorityIds.count) excluded, \(autoPriorityCardIds.count) priorities")
                                         .font(.system(size: 10))
-                                        .foregroundColor(.secondary.opacity(0.4))
+                                        .foregroundColor(.secondary.opacity(0.7))
                                     #endif
                                     }
                                 }
@@ -1031,7 +1105,7 @@ struct RecentCapturesDrawer: View {
                     VStack(spacing: 16) {
                         Text("No Recent Captures")
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(.secondary.opacity(0.6))
+                            .foregroundColor(.secondary)
                             .padding(.vertical, 20)
                                 .frame(maxWidth: .infinity, alignment: .top)
                         
