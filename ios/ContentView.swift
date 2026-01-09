@@ -209,7 +209,7 @@ struct ContentView: View {
                                     // Show priority cards and optional widget onboarding
                                     Group {
                                         if shouldScroll {
-                                            ScrollView(showsIndicators: false) {
+                                            ScrollView(.vertical, showsIndicators: true) {
                                                 VStack(spacing: 8) {
                                         // If no priority cards to show, display Capture button
                                         if autoPriorityCards.isEmpty && !showWidgetCard {
@@ -1681,32 +1681,43 @@ struct HeroCardView: View {
             .offset(x: offset)
             .animation(isDragging ? .none : .spring(response: 0.35, dampingFraction: 0.75), value: offset)
             .simultaneousGesture(
-                DragGesture(minimumDistance: 10)
+                DragGesture(minimumDistance: 20)
                     .onChanged { gesture in
+                        let horizontal = abs(gesture.translation.width)
+                        let vertical = abs(gesture.translation.height)
+                        
+                        // Only respond to horizontal swipes (ratio > 1.5)
+                        guard horizontal > vertical * 1.5 else { return }
+                        
                         isDragging = true
                         let translation = gesture.translation.width
                         
                         if !isLongPressing {
-                            // Allow both directions
                             offset = max(-140, min(100, translation))
                         }
                     }
                     .onEnded { gesture in
+                        let horizontal = abs(gesture.translation.width)
+                        let vertical = abs(gesture.translation.height)
+                        
+                        // Only process if it was a horizontal swipe
+                        guard horizontal > vertical * 1.5 else {
+                            isDragging = false
+                            return
+                        }
+                        
                         isDragging = false
                         let translation = gesture.translation.width
                         
                         if translation > 50 {
-                            // Right swipe - reveal remove priority button
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = 100
                             }
                         } else if translation < -50 {
-                            // Left swipe - reveal complete/delete buttons
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = -140
                             }
                         } else {
-                            // Too short - spring back
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                 offset = 0
                             }
