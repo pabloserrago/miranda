@@ -190,7 +190,7 @@ struct ContentView: View {
                                     // Auto-prioritize: show cards as priorities when ≤3 cards
                                     // Calculate available height for priorities
                                     let baseDrawerHeight: CGFloat = DrawerState.small.height(screenHeight: geometry.size.height)
-                                    let topPadding: CGFloat = 70 // Space for settings icon
+                                    let topPadding: CGFloat = 60 // Space for settings icon
                                     let availableHeight: CGFloat = geometry.size.height - baseDrawerHeight - topPadding
                                     
                                     // Get cards to display as priorities (all eligible, no limit)
@@ -364,7 +364,7 @@ struct ContentView: View {
                                             .frame(maxHeight: availableHeight)
                                         }
                                     }
-                                    .padding(.top, 50)
+                                    .padding(.top, 20)
                                     .onTapGesture {
                                         if draggedCard != nil {
                                             withAnimation {
@@ -421,28 +421,41 @@ struct ContentView: View {
                                 }
                     }
                     
-                    // Fixed top bar - floating buttons
-                    VStack {
-                        // Settings button (tortoise) - always on left
+                    // Fixed top bar - transparent with blur
+                    VStack(spacing: 0) {
+                        // Blur background that fades out
                         HStack {
                             Button(action: {
                                 showSettings = true
                             }) {
                                 Image(systemName: "tortoise.fill")
                                     .font(.system(size: 20))
-                                            .foregroundColor(.black)
+                                    .foregroundColor(.black)
                                     .frame(width: 40, height: 40)
-                                            .background(Color.white)
+                                    .background(Color.white)
                                     .clipShape(Circle())
                             }
                             
                             Spacer()
                         }
                         .padding(.horizontal, 20)
-                        .padding(.top, 16)
+                        .padding(.top, 8)
+                        .padding(.bottom, 12)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255),
+                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255).opacity(0.8),
+                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255).opacity(0)
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .ignoresSafeArea(edges: .top)
+                        )
                         
                         Spacer()
-                            }
+                    }
                         }
                         
                         // Recent captures drawer - three-state system (overlays at bottom)
