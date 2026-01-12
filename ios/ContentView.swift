@@ -364,7 +364,7 @@ struct ContentView: View {
                                             .frame(maxHeight: availableHeight)
                                         }
                                     }
-                                    .padding(.top, 70)
+                                    .padding(.top, 20)
                                     .onTapGesture {
                                         if draggedCard != nil {
                                             withAnimation {
@@ -430,29 +430,17 @@ struct ContentView: View {
                             }) {
                                 Image(systemName: "tortoise.fill")
                                     .font(.system(size: 20))
-                                    .foregroundColor(.black)
-                                    .frame(width: 40, height: 40)
-                                    .background(Color.white)
+                                    .foregroundColor(.white)
+                                    .frame(width: 44, height: 44)
+                                    .background(.ultraThinMaterial)
                                     .clipShape(Circle())
+                                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
                             }
                             
                             Spacer()
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
-                        .padding(.bottom, 12)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255),
-                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255).opacity(0.8),
-                                    Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255).opacity(0)
-                                ]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .ignoresSafeArea(edges: .top)
-                        )
                         
                         Spacer()
                     }
