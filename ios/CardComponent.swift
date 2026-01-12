@@ -56,9 +56,9 @@ struct CardComponent: View {
             .padding(.vertical, verticalPadding)
             .frame(minHeight: minHeight)
             .background(
-                Group {
+Group {
                     if variant == .cardDefault {
-                        AngularGradient(
+                        RadialGradient(
                             gradient: Gradient(stops: [
                                 .init(color: variant.gradientColors[0], location: 0.0),
                                 .init(color: variant.gradientColors[1], location: 0.33),
@@ -66,7 +66,8 @@ struct CardComponent: View {
                                 .init(color: variant.gradientColors[3], location: 1.0)
                             ]),
                             center: .center,
-                            angle: .degrees(45)
+                            startRadius: 0,
+                            endRadius: 400
                         )
                     } else {
                         LinearGradient(
