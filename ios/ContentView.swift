@@ -182,7 +182,11 @@ struct ContentView: View {
                     ZStack(alignment: .bottom) {
                         // Main content area
                 ZStack {
-                            Color(red: 0x22/255, green: 0x22/255, blue: 0x22/255)
+                            Color(uiColor: UIColor { traitCollection in
+                                traitCollection.userInterfaceStyle == .dark
+                                    ? UIColor(red: 0x1C/255, green: 0x1C/255, blue: 0x1E/255, alpha: 1) // Dark mode: #1C1C1E
+                                    : UIColor(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255, alpha: 1) // Light mode: #F2F2F7
+                            })
                         .ignoresSafeArea()
                     
                         VStack(spacing: 0) {
