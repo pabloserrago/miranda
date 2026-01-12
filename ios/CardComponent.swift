@@ -65,8 +65,8 @@ Group {
                                 .init(color: variant.gradientColors[2], location: 0.64),
                                 .init(color: variant.gradientColors[3], location: 1.0)
                             ]),
-                            startPoint: .top,
-                            endPoint: .bottom
+                            startPoint: UnitPoint(x: 0, y: 1),
+                            endPoint: UnitPoint(x: 1, y: 0)
                         )
                     } else {
                         LinearGradient(
