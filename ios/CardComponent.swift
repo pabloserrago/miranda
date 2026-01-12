@@ -58,21 +58,29 @@ struct CardComponent: View {
             .background(
 Group {
                     if variant == .cardDefault {
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: variant.gradientColors[0], location: 0.0),
-                                .init(color: variant.gradientColors[1], location: 0.33),
-                                .init(color: variant.gradientColors[2], location: 0.64),
-                                .init(color: variant.gradientColors[3], location: 1.0)
-                            ]),
-                            startPoint: UnitPoint(x: 0, y: 0),
-                            endPoint: UnitPoint(x: 1, y: 1)
+                        // Add subtle randomization to gradient for visual variety
+                        let variation = Double.random(in: -0.05...0.05)
+                        let angleVariation = Double.random(in: -0.1...0.1)
+                        
+                        return AnyView(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: variant.gradientColors[0], location: max(0, 0.0 + variation)),
+                                    .init(color: variant.gradientColors[1], location: max(0.1, min(0.4, 0.33 + variation))),
+                                    .init(color: variant.gradientColors[2], location: max(0.5, min(0.75, 0.64 + variation))),
+                                    .init(color: variant.gradientColors[3], location: 1.0)
+                                ]),
+                                startPoint: UnitPoint(x: angleVariation, y: angleVariation),
+                                endPoint: UnitPoint(x: 1.0 + angleVariation, y: 1.0 + angleVariation)
+                            )
                         )
                     } else {
-                        LinearGradient(
-                            colors: variant.gradientColors,
-                            startPoint: .top,
-                            endPoint: .bottom
+                        return AnyView(
+                            LinearGradient(
+                                colors: variant.gradientColors,
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
                         )
                     }
                 }
