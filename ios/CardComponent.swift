@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Card Variant
-enum CardVariant {
+enum CardVariant: Equatable {
     case cardDefault
     case cardOnboarding
     case cardBoost
@@ -10,8 +10,10 @@ enum CardVariant {
         switch self {
         case .cardDefault:
             return [
-                Color(red: 0.85, green: 0.92, blue: 1.0),   // Light blue top
-                Color(red: 0.70, green: 0.82, blue: 0.95)   // Deeper blue bottom
+                Color(red: 0xA4/255, green: 0xBE/255, blue: 0xF5/255),   // 0% - #A4BEF5
+                Color(red: 0xE7/255, green: 0xED/255, blue: 0xF9/255),   // 33% - #E7EDF9
+                Color(red: 0xE7/255, green: 0xED/255, blue: 0xF9/255),   // 53% - #E7EDF9
+                Color(red: 0x45/255, green: 0x7D/255, blue: 0xE6/255)    // 100% - #457DE6
             ]
         case .cardOnboarding:
             return [
@@ -54,11 +56,26 @@ struct CardComponent: View {
             .padding(.vertical, verticalPadding)
             .frame(minHeight: minHeight)
             .background(
-                LinearGradient(
-                    colors: variant.gradientColors,
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                Group {
+                    if variant == .cardDefault {
+                        AngularGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: variant.gradientColors[0], location: 0.0),
+                                .init(color: variant.gradientColors[1], location: 0.33),
+                                .init(color: variant.gradientColors[2], location: 0.53),
+                                .init(color: variant.gradientColors[3], location: 1.0)
+                            ]),
+                            center: .center,
+                            angle: .degrees(45)
+                        )
+                    } else {
+                        LinearGradient(
+                            colors: variant.gradientColors,
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+                }
             )
             .cornerRadius(cornerRadius)
             .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
