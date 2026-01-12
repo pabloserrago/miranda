@@ -364,7 +364,7 @@ struct ContentView: View {
                                             .frame(maxHeight: availableHeight)
                                         }
                                     }
-                                    .padding(.top, 20)
+                                    .padding(.top, 0)
                                     .onTapGesture {
                                         if draggedCard != nil {
                                             withAnimation {
