@@ -51,7 +51,7 @@ struct CardComponent: View {
             .multilineTextAlignment(.leading)
             .lineLimit(6)
             .truncationMode(.tail)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding(.horizontal, horizontalPadding)
             .padding(.vertical, verticalPadding)
             .frame(minHeight: minHeight)
@@ -97,7 +97,7 @@ struct CardOnboarding: View {
                 .foregroundColor(.black.opacity(0.85))
         }
         .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(.horizontal, 25)
         .padding(.vertical, 20)
         .frame(minHeight: minHeight)
@@ -155,7 +155,7 @@ struct CardBoost: View {
                 .multilineTextAlignment(.leading)
                 .lineLimit(6)
                 .truncationMode(.tail)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 20)
                 .background(
