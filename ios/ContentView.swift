@@ -1358,6 +1358,9 @@ struct WidgetOnboardingCard: View {
             
             // Main card - use CardOnboarding style but with widget text
             VStack(alignment: .leading, spacing: 0) {
+                Spacer()
+                    .frame(height: 25)
+                
                 // Mini card preview showing current priority
                 ZStack {
                     RoundedRectangle(cornerRadius: 20)
@@ -1383,7 +1386,7 @@ struct WidgetOnboardingCard: View {
                 
                 // Instructional text - should not truncate
                 Group {
-                    Text("Add the Widget to your home screen to keep your priorities visible. ")
+                    Text("Add the Widget to your home screen to keep your priorities visible (max 3). ")
                     + Text("Easy-peasy.").bold()
                 }
                 .font(.system(size: 18))
