@@ -434,7 +434,9 @@ struct ContentView: View {
                             }) {
                                 Image(systemName: "tortoise.fill")
                                     .font(.system(size: 20))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                        traitCollection.userInterfaceStyle == .dark ? .white : .black
+                                    }))
                                     .frame(width: 44, height: 44)
                                     .background(.ultraThinMaterial)
                                     .clipShape(Circle())
