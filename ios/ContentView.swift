@@ -499,10 +499,16 @@ struct ContentView: View {
                                             }) {
                                                 Image(systemName: "mic.fill")
                                                 .font(.system(size: 20, weight: .semibold))
-                                                    .foregroundColor(.black)
+                                                .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                                    traitCollection.userInterfaceStyle == .dark ? .white : .black
+                                                }))
                                                 .frame(width: 48, height: 48)
-                                                .background(Color(uiColor: .tertiarySystemBackground))
-                                                    .clipShape(Circle())
+                                                .background(Color(uiColor: UIColor { traitCollection in
+                                                    traitCollection.userInterfaceStyle == .dark
+                                                        ? UIColor(white: 1.0, alpha: 0.15) // Dark mode: semi-transparent white
+                                                        : UIColor(white: 0.0, alpha: 0.08) // Light mode: semi-transparent black
+                                                }))
+                                                .clipShape(Circle())
                                             }
                                         }
                                         
@@ -514,10 +520,16 @@ struct ContentView: View {
                                         }) {
                                             Image(systemName: "plus")
                                             .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(.white)
+                                            .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                                traitCollection.userInterfaceStyle == .dark ? .white : .black
+                                            }))
                                             .frame(width: 48, height: 48)
-                                                .background(Color.black)
-                                                .clipShape(Circle())
+                                            .background(Color(uiColor: UIColor { traitCollection in
+                                                traitCollection.userInterfaceStyle == .dark
+                                                    ? UIColor(white: 1.0, alpha: 0.15) // Dark mode: semi-transparent white
+                                                    : UIColor(white: 0.0, alpha: 0.08) // Light mode: semi-transparent black
+                                            }))
+                                            .clipShape(Circle())
                                         }
                                     }
                                 .padding(.horizontal, 20)
