@@ -614,8 +614,8 @@ struct ContentView: View {
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
                         .background(Color(uiColor: UIColor { traitCollection in
                             traitCollection.userInterfaceStyle == .dark
-                                ? UIColor(red: 0x2B/255, green: 0x2B/255, blue: 0x3F/255, alpha: 1) // Dark mode: #2B2B3F
-                                : UIColor(red: 0xE5/255, green: 0xE5/255, blue: 0xFF/255, alpha: 1) // Light mode: #E5E5FF
+                                ? UIColor(red: 0x2C/255, green: 0x2C/255, blue: 0x2E/255, alpha: 1) // Dark mode: #2C2C2E
+                                : UIColor(red: 0xFF/255, green: 0xFF/255, blue: 0xFF/255, alpha: 1) // Light mode: #FFFFFF
                         }))
                         .cornerRadius(20, corners: [.topLeft, .topRight])
                         .ignoresSafeArea(edges: .bottom)
