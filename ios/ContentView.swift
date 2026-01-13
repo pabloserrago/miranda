@@ -612,7 +612,7 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
-                        .background(.regularMaterial)
+                        .background(Color(red: 0xE5/255, green: 0xE5/255, blue: 0xFF/255))
                         .cornerRadius(20, corners: [.topLeft, .topRight])
                         .ignoresSafeArea(edges: .bottom)
                         .offset(y: geometry.safeAreaInsets.bottom)
