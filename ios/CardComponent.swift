@@ -5,6 +5,7 @@ enum CardVariant: Equatable {
     case cardDefault
     case cardOnboarding
     case cardBoost
+    case cardDrawer  // Plain style for drawer cards
     
     var gradientColors: [Color] {
         switch self {
@@ -26,11 +27,25 @@ enum CardVariant: Equatable {
                 Color(red: 1.0, green: 0.92, blue: 0.75),   // Light orange/peach top
                 Color(red: 0.98, green: 0.80, blue: 0.60)   // Deeper orange/gold bottom
             ]
+        case .cardDrawer:
+            // Plain color for drawer cards - #F2F2F7
+            return [
+                Color(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255)
+            ]
         }
     }
     
     var textColor: Color {
         return .black.opacity(0.85)
+    }
+    
+    var hasShadow: Bool {
+        switch self {
+        case .cardDrawer:
+            return false  // No shadow for drawer cards
+        default:
+            return true
+        }
     }
 }
 
@@ -56,7 +71,7 @@ struct CardComponent: View {
             .padding(.vertical, verticalPadding)
             .frame(minHeight: minHeight)
             .background(
-Group {
+                Group {
                     if variant == .cardDefault {
                         // Add subtle randomization to gradient for visual variety
                         let variation = Double.random(in: -0.05...0.05)
@@ -74,6 +89,11 @@ Group {
                                 endPoint: UnitPoint(x: 1.0 + angleVariation, y: 1.0 + angleVariation)
                             )
                         )
+                    } else if variant == .cardDrawer {
+                        // Plain solid color for drawer cards
+                        return AnyView(
+                            variant.gradientColors[0]
+                        )
                     } else {
                         return AnyView(
                             LinearGradient(
@@ -86,7 +106,12 @@ Group {
                 }
             )
             .cornerRadius(cornerRadius)
-            .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+            .shadow(
+                color: variant.hasShadow ? .black.opacity(0.09) : .clear,
+                radius: variant.hasShadow ? 3 : 0,
+                x: 0,
+                y: variant.hasShadow ? 3 : 0
+            )
     }
 }
 
@@ -201,6 +226,15 @@ struct CardBoost: View {
                 minHeight: 200
             )
             
+            Text("card-drawer")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            CardComponent(
+                text: "This is a drawer card with plain background.",
+                variant: .cardDrawer,
+                minHeight: 100
+            )
+            
             Text("card-onboarding")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -217,4 +251,3 @@ struct CardBoost: View {
         .padding()
     }
 }
-
