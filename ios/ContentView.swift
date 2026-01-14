@@ -592,7 +592,7 @@ struct ContentView: View {
                                     VStack(spacing: 12) {
                                         ForEach(Array(filteredNonPriorityCards.enumerated()), id: \.element.id) { index, card in
                                             SwipeableCardRow(
-                                                card: card,
+                                                card: card, variant: .cardDrawer,
                                                 onTap: {
                                                     selectedCard = card
                                                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -1140,7 +1140,7 @@ struct RecentCapturesDrawer: View {
                             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
                                 if showAllCards || index < maxVisibleCards {
                                     SwipeableCardRow(
-                                        card: card,
+                                        card: card, variant: .cardDrawer,
                                         onTap: {
                                             onCardTap(card)
                                         },
