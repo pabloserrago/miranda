@@ -28,7 +28,7 @@ enum CardVariant: Equatable {
                 Color(red: 0.98, green: 0.80, blue: 0.60)   // Deeper orange/gold bottom
             ]
         case .cardDrawer:
-            // Plain color for drawer cards - #F2F2F7
+            // Adaptive color for drawer cards - Light: #F2F2F7, Dark: #1C1C1E
             return [
                 Color(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255)
             ]
@@ -90,9 +90,14 @@ struct CardComponent: View {
                             )
                         )
                     } else if variant == .cardDrawer {
-                        // Plain solid color for drawer cards
+                        // Adaptive plain color for drawer cards
+                        // Light mode: #F2F2F7, Dark mode: #1C1C1E
                         return AnyView(
-                            variant.gradientColors[0]
+                            Color(uiColor: UIColor { traitCollection in
+                                traitCollection.userInterfaceStyle == .dark
+                                    ? UIColor(red: 0x1C/255, green: 0x1C/255, blue: 0x1E/255, alpha: 1) // Dark mode: #1C1C1E
+                                    : UIColor(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255, alpha: 1) // Light mode: #F2F2F7
+                            })
                         )
                     } else {
                         return AnyView(
