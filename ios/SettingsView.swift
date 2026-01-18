@@ -406,6 +406,19 @@ struct DevComponentsView: View {
                     )
                 }
                 
+                // Card Drawer
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("card-drawer")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    CardComponent(
+                        text: "Drawer card with plain background (adaptive for light/dark mode).",
+                        variant: .cardDrawer,
+                        minHeight: 100
+                    )
+                }
+                
                 // Card Onboarding
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-onboarding")
