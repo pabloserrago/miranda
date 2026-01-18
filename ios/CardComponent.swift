@@ -62,7 +62,15 @@ struct CardComponent: View {
     var body: some View {
         Text(text)
             .font(.system(size: fontSize, weight: .regular))
-            .foregroundColor(variant.textColor)
+            .foregroundColor(
+                variant == .cardDrawer 
+                    ? Color(uiColor: UIColor { traitCollection in
+                        traitCollection.userInterfaceStyle == .dark
+                            ? .white  // Dark mode: white text
+                            : UIColor.black.withAlphaComponent(0.85)  // Light mode: black text
+                    })
+                    : variant.textColor
+            )
             .multilineTextAlignment(.leading)
             .lineLimit(6)
             .truncationMode(.tail)
