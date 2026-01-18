@@ -230,15 +230,6 @@ struct CardBoost: View {
 #Preview("Card Variants") {
     ScrollView {
         VStack(spacing: 20) {
-            Text("card-default")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            CardComponent(
-                text: "Test example of something to do.",
-                variant: .cardDefault,
-                minHeight: 200
-            )
-            
             Text("card-drawer")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -246,6 +237,15 @@ struct CardBoost: View {
                 text: "This is a drawer card with plain background.",
                 variant: .cardDrawer,
                 minHeight: 100
+            )
+            
+            Text("card-default")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            CardComponent(
+                text: "Test example of something to do.",
+                variant: .cardDefault,
+                minHeight: 200
             )
             
             Text("card-onboarding")
