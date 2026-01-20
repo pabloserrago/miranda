@@ -1595,12 +1595,16 @@ struct HeroCardView: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color.white.opacity(0.2))
+                            .fill(Color(uiColor: UIColor { traitCollection in
+                                return traitCollection.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.2) : UIColor.black.withAlphaComponent(0.15)
+                            }))
                             .frame(width: 60, height: 60)
                         
                         Image(systemName: "lightbulb.slash.fill")
                             .font(.system(size: 24, weight: .heavy))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
+                            }))
                     }
                 }
                 .padding(.leading, 20)
@@ -2268,11 +2272,15 @@ struct OneMustCardView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "lightbulb.slash.fill")
                                             .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(.black)
+                                        .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                            return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
+                                        }))
                                     Text("Turn this off")
                                             .font(.system(size: 16, weight: .semibold))
                                 }
-                                .foregroundColor(.black)
+                                .foregroundColor(Color(uiColor: UIColor { traitCollection in
+                                    return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
+                                }))
                                 .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
                                 .background(Color(uiColor: .secondarySystemBackground))
