@@ -172,12 +172,12 @@ struct MediumWidgetView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.horizontal, 18)
+                    .padding(.horizontal, 16)
                 }
                 
                 Spacer()
             }
-            .padding(.top, 20)
+            .padding(.top, 16)
             
             // Pill-shaped + button in bottom right
             VStack {
@@ -192,11 +192,12 @@ struct MediumWidgetView: View {
                             .background(Color.black)
                             .clipShape(Circle())
                     }
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 16)
+                    .padding(.trailing, 12)
+                    .padding(.bottom, 12)
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
             Color.clear
         }
@@ -324,8 +325,9 @@ struct EmptyWidgetView: View {
                 
                 Spacer()
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 70)
             
             // + Note button in bottom right corner
             VStack {
@@ -347,10 +349,11 @@ struct EmptyWidgetView: View {
                         .background(Color.black)
                         .clipShape(Capsule())
                     }
-                    .padding(16)
+                    .padding(12)
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
             Color(red: 232/255, green: 234/255, blue: 246/255)
         }
