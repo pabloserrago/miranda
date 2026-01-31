@@ -172,8 +172,8 @@ struct MediumWidgetView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.leading, 14)
-                    .padding(.trailing, 12)
+                    .padding(.leading, 8)
+                    .padding(.trailing, 8)
                 }
                 
                 Spacer()
@@ -193,7 +193,7 @@ struct MediumWidgetView: View {
                             .background(Color.black)
                             .clipShape(Circle())
                     }
-                    .padding(.trailing, 12)
+                    .padding(.trailing, 8)
                     .padding(.bottom, 12)
                 }
             }
