@@ -172,7 +172,8 @@ struct MediumWidgetView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.leading, 14)
+                    .padding(.trailing, 12)
                 }
                 
                 Spacer()
