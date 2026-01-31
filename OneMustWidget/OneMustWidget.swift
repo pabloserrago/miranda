@@ -133,59 +133,67 @@ struct MediumWidgetView: View {
             // Blue gradient background
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color(red: 0.85, green: 0.88, blue: 0.98), location: 0.0),
-                    .init(color: Color(red: 0.55, green: 0.70, blue: 0.95), location: 1.0)
+                    .init(color: Color(red: 0.88, green: 0.90, blue: 0.98), location: 0.0),
+                    .init(color: Color(red: 0.50, green: 0.65, blue: 0.92), location: 1.0)
                 ]),
                 startPoint: .leading,
                 endPoint: .trailing
             )
             
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 // Show only actual cards (no empty slots)
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
-                    HStack(spacing: 12) {
+                    HStack(spacing: 14) {
                         // Frosted glass checkbox
                         Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.primary)
-                                .frame(width: 32, height: 32)
-                                .background(.ultraThinMaterial)
+                                .font(.system(size: 18, weight: .regular))
+                                .foregroundColor(Color.black.opacity(0.7))
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(Color.white.opacity(0.35))
+                                        .background(
+                                            Circle()
+                                                .fill(.ultraThinMaterial)
+                                        )
+                                )
                                 .clipShape(Circle())
                         }
                         .buttonStyle(.plain)
                         
-                        // Card content
+                        // Card content (text only, no emoji)
                         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
                             Text(card.simplifiedText)
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(.primary)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.black)
                                 .lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 18)
                 }
                 
                 Spacer()
             }
-            .padding(.top, 16)
+            .padding(.top, 20)
             
-            // Circular + button in bottom right
+            // Pill-shaped + button in bottom right
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
                     Link(destination: URL(string: "miranda://capture")!) {
                         Image(systemName: "plus")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 48, height: 48)
+                            .frame(width: 56, height: 56)
                             .background(Color.black)
                             .clipShape(Circle())
                     }
-                    .padding(12)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 16)
                 }
             }
         }
@@ -194,8 +202,6 @@ struct MediumWidgetView: View {
         }
     }
 }
-
-// MARK: - Large Widget (Shows all 3 priorities)
 
 struct LargeWidgetView: View {
     let cards: [Card]
