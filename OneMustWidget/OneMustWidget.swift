@@ -130,68 +130,49 @@ struct MediumWidgetView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 8) {
-                // Show all 3 priority slots
-                ForEach(0..<3, id: \.self) { index in
-                    if index < cards.count {
-                        let card = cards[index]
-                        HStack(spacing: 12) {
-                            // Complete checkbox button
-                            Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 24, weight: .regular))
-                                    .foregroundColor(.primary)
-                            }
-                            .buttonStyle(.plain)
-                            
-                            // Card content (tappable to open in app)
-                            Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-                                HStack(spacing: 10) {
-                                    if let emoji = card.emoji {
-                                        Text(emoji)
-                                            .font(.system(size: 24))
-                                    }
-                                    
-                                    Text(card.simplifiedText)
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.primary)
-                                        .lineLimit(2)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .secondarySystemFill))
-                        .cornerRadius(16)
-                    } else {
-                        // Empty slot
-                        HStack(spacing: 12) {
-                            Image(systemName: "circle")
-                                .font(.system(size: 24, weight: .regular))
-                                .foregroundColor(.secondary.opacity(0.2))
-                            
-                            HStack(spacing: 10) {
-                                Image(systemName: "lightbulb")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.secondary.opacity(0.3))
-                                
-                                Text("Empty slot")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.secondary.opacity(0.4))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .tertiarySystemFill).opacity(0.5))
-                        .cornerRadius(16)
-                    }
-                }
-            }
-            .padding(12)
+            // Blue gradient background
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: Color(red: 0.85, green: 0.88, blue: 0.98), location: 0.0),
+                    .init(color: Color(red: 0.55, green: 0.70, blue: 0.95), location: 1.0)
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
             
-            // + button in bottom right corner
+            VStack(spacing: 12) {
+                // Show only actual cards (no empty slots)
+                ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
+                    HStack(spacing: 12) {
+                        // Frosted glass checkbox
+                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                                .frame(width: 32, height: 32)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        
+                        // Card content
+                        Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
+                            Text(card.simplifiedText)
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .multilineTextAlignment(.leading)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                
+                Spacer()
+            }
+            .padding(.top, 16)
+            
+            // Circular + button in bottom right
             VStack {
                 Spacer()
                 HStack {
@@ -200,8 +181,8 @@ struct MediumWidgetView: View {
                         Image(systemName: "plus")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .background(Color.yellow)
+                            .frame(width: 48, height: 48)
+                            .background(Color.black)
                             .clipShape(Circle())
                     }
                     .padding(12)
@@ -209,7 +190,7 @@ struct MediumWidgetView: View {
             }
         }
         .containerBackground(for: .widget) {
-            Color(uiColor: .systemBackground)
+            Color.clear
         }
     }
 }
@@ -318,35 +299,54 @@ struct LargeWidgetView: View {
 struct EmptyWidgetView: View {
     var body: some View {
         ZStack {
-            VStack(spacing: 16) {
-                Image(systemName: "lightbulb")
-                    .font(.system(size: 40))
-                    .foregroundColor(.secondary.opacity(0.3))
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Capture anything that's in your mind.")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Text("No priorities set")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.secondary)
+                HStack(spacing: 0) {
+                    Text("Like a dream, idea or to-do. ")
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundColor(.primary)
+                    
+                    Text("Simple.")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.primary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer()
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
             
-            // + button in bottom right corner
+            // + Note button in bottom right corner
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
                     Link(destination: URL(string: "miranda://capture")!) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.primary)
-                            .frame(width: 32, height: 32)
-                            .background(Color(uiColor: .secondarySystemFill))
-                            .clipShape(Circle())
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                            
+                            Text("Note")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.black)
+                        .clipShape(Capsule())
                     }
-                    .padding(8)
+                    .padding(16)
                 }
             }
         }
         .containerBackground(for: .widget) {
-            Color(uiColor: .systemBackground)
+            Color(red: 232/255, green: 234/255, blue: 246/255)
         }
     }
 }
