@@ -172,6 +172,7 @@ struct MediumWidgetView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 8)
                     .padding(.trailing, 8)
                 }
