@@ -140,7 +140,7 @@ struct MediumWidgetView: View {
                 endPoint: .trailing
             )
             
-            VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 16) {
                 // Show only actual cards (no empty slots)
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
                     HStack(spacing: 14) {
