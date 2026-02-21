@@ -130,18 +130,8 @@ struct MediumWidgetView: View {
     
     var body: some View {
         ZStack {
-            // Blue gradient background
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: Color(red: 0.82, green: 0.86, blue: 0.98), location: 0.0),
-                    .init(color: Color(red: 0.45, green: 0.60, blue: 0.95), location: 1.0)
-                ]),
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            
             VStack(alignment: .leading, spacing: 12) {
-                // Show only actual cards (no empty slots)
+                // Priority cards
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
                     HStack(spacing: 14) {
                         // Frosted glass checkbox
@@ -162,18 +152,15 @@ struct MediumWidgetView: View {
                         }
                         .buttonStyle(.plain)
                         
-                        // Card content (text only, no emoji)
+                        // Task text
                         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
                             Text(card.simplifiedText)
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(.black)
                                 .lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .multilineTextAlignment(.leading)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    
                 }
                 
                 Spacer()
@@ -181,7 +168,7 @@ struct MediumWidgetView: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
             
-            // Pill-shaped + button in bottom right
+            // + button
             VStack {
                 Spacer()
                 HStack {
@@ -194,17 +181,25 @@ struct MediumWidgetView: View {
                             .background(Color.black)
                             .clipShape(Circle())
                     }
-                    .padding(.trailing, 8)
-                    .padding(.bottom, 12)
+                    .padding(12)
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
-            Color.clear
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: Color(red: 0.82, green: 0.86, blue: 0.98), location: 0.0),
+                    .init(color: Color(red: 0.45, green: 0.60, blue: 0.95), location: 1.0)
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
         }
     }
 }
+
+
 
 struct LargeWidgetView: View {
     let cards: [Card]
