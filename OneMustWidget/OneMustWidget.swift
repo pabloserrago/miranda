@@ -292,10 +292,11 @@ struct TaskRowView: View {
     let isCompleting: Bool
     @Environment(\.colorScheme) var colorScheme
 
-    // Typography scale — hierarchy through size alone
-    private var fontSize: CGFloat { rank == 0 ? 30 : 12 }  // P1: 30pt/800 (fills upper portion), P2/P3: 12pt/400
+    // Typography scale — hierarchy through size and weight
+    // P1: 28pt/800 ensures 2 full lines render before truncating, hierarchy in weight step
+    private var fontSize: CGFloat { rank == 0 ? 28 : 12 }  // P1: 28pt/800, P2/P3: 12pt/400
     private var fontWeight: Font.Weight {
-        if rank == 0 { return .heavy }  // 800 weight - headline dominance
+        if rank == 0 { return .heavy }  // 800 weight - commanding
         return .regular  // 400 weight - supporting
     }
     
@@ -321,8 +322,8 @@ struct TaskRowView: View {
             HStack(alignment: .center, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
-                    .tracking(rank == 0 ? -0.90 : -0.144)  // P1: -0.03em, P2/P3: -0.012em
-                    .lineLimit(2)
+                    .tracking(rank == 0 ? -0.84 : -0.144)  // P1: -0.03em at 28pt, P2/P3: -0.012em
+                    .lineLimit(2)  // Two line minimum for P1, truncate beyond
                     .truncationMode(.tail)
                     .foregroundColor(textColor)
                     .opacity(finalTextOpacity)  // Only for completing fade
