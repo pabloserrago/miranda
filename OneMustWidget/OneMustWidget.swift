@@ -194,7 +194,7 @@ struct MediumWidgetView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
-            .padding(.bottom, 12)
+            .padding(.bottom, 10)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
@@ -211,7 +211,7 @@ struct MediumWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.80), location: 0.0),
+                        .init(color: Color(red: 0.882, green: 0.910, blue: 0.980), location: 0.0),  // rgba(225,232,250) - lavender-tinted white
                         .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
                     ]),
                     startPoint: .top,
@@ -307,7 +307,7 @@ struct TaskRowView: View {
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — rank drives visual hierarchy
-    private var fontSize: CGFloat { rank == 0 ? 17 : 13 }
+    private var fontSize: CGFloat { rank == 0 ? 15 : 13 }  // P1: 15pt/650, P2/P3: 13pt/420
     private var fontWeight: Font.Weight {
         if rank == 0 { return .semibold }  // 650 weight
         return rank == 1 ? .regular : .regular  // 420 vs 400 (minimal diff)
@@ -508,7 +508,7 @@ struct EmptyWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.80), location: 0.0),
+                        .init(color: Color(red: 0.882, green: 0.910, blue: 0.980), location: 0.0),  // rgba(225,232,250) - lavender-tinted white
                         .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
                     ]),
                     startPoint: .top,
