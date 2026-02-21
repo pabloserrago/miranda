@@ -194,7 +194,7 @@ struct MediumWidgetView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
-            .padding(.bottom, 10)
+            .padding(.bottom, 16)  // WidgetKit system margin needs at least 16pt
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
@@ -211,7 +211,7 @@ struct MediumWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 0.882, green: 0.910, blue: 0.980), location: 0.0),  // rgba(225,232,250) - lavender-tinted white
+                        .init(color: Color(red: 0.824, green: 0.871, blue: 0.973), location: 0.0),  // rgba(210,222,248) - more color
                         .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
                     ]),
                     startPoint: .top,
@@ -286,7 +286,7 @@ struct MediumWidgetView: View {
                 Capsule()
                     .fill(colorScheme == .dark ? 
                         Color.white.opacity(0.13) : 
-                        Color(red: 0.10, green: 0.10, blue: 0.18))
+                        Color(red: 0.118, green: 0.118, blue: 0.220))  // #1E1E38 - softer dark
                     .shadow(color: colorScheme == .dark ? 
                         Color.black.opacity(0.25) : 
                         Color(red: 0.07, green: 0.07, blue: 0.16).opacity(0.18), 
@@ -322,11 +322,19 @@ struct TaskRowView: View {
             // Dark mode colors from HTML
             if rank == 0 { return Color(red: 0.922, green: 0.949, blue: 1.0) }  // rgba(235,242,255,1.00)
             if rank == 1 { return Color(red: 0.863, green: 0.910, blue: 1.0).opacity(0.85) }  // rgba(220,232,255,0.85)
-            return Color(red: 0.784, green: 0.843, blue: 1.0).opacity(0.38)  // rgba(200,215,255,0.38)
+            return Color(red: 0.784, green: 0.843, blue: 1.0)  // rgba(200,215,255) - opacity applied separately
         } else {
             // Light mode
             return Color(red: 0.07, green: 0.07, blue: 0.16)
         }
+    }
+    
+    // Opacity applied to Text view directly (WidgetKit requirement)
+    private var finalTextOpacity: Double {
+        if isCompleting { return 0.22 }
+        if rank == 2 && colorScheme == .dark { return 0.38 }
+        if rank == 2 && colorScheme == .light { return 0.36 }
+        return 1.0
     }
 
     var body: some View {
@@ -336,13 +344,14 @@ struct TaskRowView: View {
                     .font(.system(size: fontSize, weight: fontWeight))
                     .tracking(rank == 0 ? -0.51 : -0.156)  // -0.03em and -0.012em
                     .lineLimit(2)
-                    .foregroundColor(isCompleting ? textColor.opacity(0.22) : textColor)
+                    .foregroundColor(textColor)
+                    .opacity(finalTextOpacity)  // Opacity on Text directly for WidgetKit
                     .strikethrough(isCompleting, color: textColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, rank == 0 ? 8 : 7)
+            .padding(.vertical, 6)  // Tighter for 3-task layout
             .padding(.bottom, rank == 0 ? 3 : 0)
         }
         // matchedGeometryEffect: animates task promotion when previous task is removed
@@ -508,7 +517,7 @@ struct EmptyWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 0.882, green: 0.910, blue: 0.980), location: 0.0),  // rgba(225,232,250) - lavender-tinted white
+                        .init(color: Color(red: 0.824, green: 0.871, blue: 0.973), location: 0.0),  // rgba(210,222,248) - more color
                         .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
                     ]),
                     startPoint: .top,
