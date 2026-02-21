@@ -334,7 +334,7 @@ struct TaskRowView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 30pt text), P2/P3: 4pt
+            .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 2-line 28pt text), P2/P3: 4pt
             .padding(.bottom, rank == 0 ? 4 : 0)  // P1 breath
         }
         .buttonStyle(.plain)
