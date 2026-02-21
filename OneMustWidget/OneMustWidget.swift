@@ -181,32 +181,14 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            // Main content
-            VStack(alignment: .leading, spacing: 0) {
-                // Tasks anchored to top
-                taskList
-                    .padding(.top, 14)
-                    .padding(.trailing, 36)  // Room for corner + mark
-                
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .leading, spacing: 0) {
+            // Tasks anchored to top
+            taskList
+                .padding(.top, 14)
             
-            // Corner + mark (28×28pt circle, top-right)
-            Link(destination: URL(string: "miranda://capture")!) {
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(textColor.opacity(0.75))
-                    .frame(width: 28, height: 28)
-                    .background(
-                        Circle()
-                            .fill(textColor.opacity(0.14))
-                    )
-            }
-            .padding(.top, 14)
-            .padding(.trailing, 14)
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
             if colorScheme == .dark {
                 LinearGradient(
@@ -230,12 +212,6 @@ struct MediumWidgetView: View {
             }
         }
     }
-    
-    private var textColor: Color {
-        colorScheme == .dark ? 
-            Color(red: 0.922, green: 0.949, blue: 1.0) : 
-            Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
-    }
 
     @ViewBuilder
     private var taskList: some View {
@@ -243,12 +219,14 @@ struct MediumWidgetView: View {
         if entry.priorityCards.isEmpty {
             emptyReadyView
         } else {
+            let visibleCards = Array(entry.priorityCards.prefix(3))
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(Array(entry.priorityCards.prefix(3).enumerated()), id: \.element.id) { index, card in
+                ForEach(Array(visibleCards.enumerated()), id: \.element.id) { index, card in
                     TaskRowView(
                         card: card,
                         rank: index,
-                        isCompleting: entry.phase.isCompleting(card.id)
+                        isCompleting: entry.phase.isCompleting(card.id),
+                        isLastRow: index == visibleCards.count - 1
                     )
                     .padding(.horizontal, 14)  // Safe area edge alignment
                     .transition(
@@ -290,6 +268,7 @@ struct TaskRowView: View {
     let card: Card
     let rank: Int
     let isCompleting: Bool
+    let isLastRow: Bool
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — hierarchy through size and weight
@@ -319,7 +298,7 @@ struct TaskRowView: View {
 
     var body: some View {
         Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-            HStack(alignment: .center, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
                     .tracking(rank == 0 ? -0.84 : -0.144)  // P1: -0.03em at 28pt, P2/P3: -0.012em
@@ -331,8 +310,14 @@ struct TaskRowView: View {
                         Color(red: 0.922, green: 0.949, blue: 1.0) : 
                         Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
                     .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer(minLength: 0)
+                
+                if isLastRow {
+                    Link(destination: URL(string: "miranda://capture")!) {
+                        Text("+ Note")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(textColor.opacity(0.55))
+                    }
+                }
             }
             .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 2-line 28pt text), P2/P3: 4pt
             .padding(.bottom, rank == 0 ? 4 : 0)  // P1 breath
