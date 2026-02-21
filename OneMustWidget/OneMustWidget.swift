@@ -186,16 +186,16 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 0) {
-                Spacer()  // Push content down - tasks and pill stay anchored together
-                taskList
-                Spacer(minLength: 10)
-                noteButton
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 16)  // WidgetKit system margin needs at least 16pt
+        VStack(alignment: .leading, spacing: 0) {
+            // Tasks anchored to top
+            taskList
+                .padding(.top, 14)
+            
+            Spacer()
+            
+            // Pill anchored to bottom
+            noteButton
+                .padding(.bottom, 13)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
@@ -236,6 +236,7 @@ struct MediumWidgetView: View {
                         isCompleting: entry.phase.isCompleting(card.id),
                         namespace: namespace
                     )
+                    .padding(.horizontal, 14)  // Safe area edge alignment
                     .transition(
                         .asymmetric(
                             insertion: .opacity
@@ -256,7 +257,7 @@ struct MediumWidgetView: View {
             Text("That's everything for today.")
                 .font(.system(size: 15, weight: .semibold))
                 .tracking(-0.33)  // -0.022em
-                .lineSpacing(2)
+                .lineLimit(1)
                 .foregroundColor(colorScheme == .dark ? 
                     Color(red: 0.922, green: 0.949, blue: 1.0) : 
                     Color(red: 0.07, green: 0.07, blue: 0.16))
@@ -265,6 +266,7 @@ struct MediumWidgetView: View {
                     .animation(.easeIn(duration: 0.6).delay(0.42))
                 )
         }
+        .padding(.horizontal, 14)  // Safe area edge alignment
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -283,6 +285,7 @@ struct MediumWidgetView: View {
                 Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.95))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
+            .padding(.horizontal, 14)  // Internal pill padding for text
             .background(
                 Capsule()
                     .fill(colorScheme == .dark ? 
@@ -295,6 +298,7 @@ struct MediumWidgetView: View {
                         x: 0, y: 1)
             )
         }
+        .padding(.horizontal, 14)  // Safe area edge alignment
     }
 }
 
