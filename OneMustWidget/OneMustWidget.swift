@@ -188,9 +188,12 @@ struct MediumWidgetView: View {
             
             Spacer()
             
-            // Pill button only on empty state
+            // Empty state: pill button, with tasks: plain text
             if entry.priorityCards.isEmpty {
                 noteButton
+                    .padding(.bottom, 14)
+            } else {
+                plainNoteLink
                     .padding(.bottom, 14)
             }
         }
@@ -292,6 +295,20 @@ struct MediumWidgetView: View {
                         radius: colorScheme == .dark ? 4 : 3, 
                         x: 0, y: 1)
             )
+        }
+        .padding(.horizontal, 14)  // Safe area edge alignment
+    }
+    
+    @ViewBuilder
+    private var plainNoteLink: some View {
+        HStack {
+            Spacer()
+            Link(destination: URL(string: "miranda://capture")!) {
+                Text("+ Note")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(textColor.opacity(0.55))
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 14)  // Safe area edge alignment
     }
