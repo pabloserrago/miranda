@@ -260,7 +260,7 @@ struct MediumWidgetView: View {
                 .lineLimit(1)
                 .foregroundColor(colorScheme == .dark ? 
                     Color(red: 0.922, green: 0.949, blue: 1.0) : 
-                    Color(red: 0.039, green: 0.173, blue: 0.118))  // #0A2C1E - dark green
+                    Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410 - warm dark brown
                 .transition(
                     .opacity
                     .animation(.easeIn(duration: 0.6).delay(0.42))
@@ -290,10 +290,10 @@ struct MediumWidgetView: View {
                 Capsule()
                     .fill(colorScheme == .dark ? 
                         Color.white.opacity(0.13) : 
-                        Color(red: 0.039, green: 0.173, blue: 0.118))  // #0A2C1E - dark green
-                    .shadow(color: colorScheme == .dark ? 
-                        Color.black.opacity(0.25) : 
-                        Color(red: 0.07, green: 0.07, blue: 0.16).opacity(0.18), 
+                        Color(red: 0.165, green: 0.122, blue: 0.078))  // #2A1F14 - warm dark brown
+                                .shadow(color: colorScheme == .dark ? 
+                                    Color.black.opacity(0.25) : 
+                                    Color(red: 0.110, green: 0.078, blue: 0.063).opacity(0.18),  // #1C1410 shadow
                         radius: colorScheme == .dark ? 4 : 3, 
                         x: 0, y: 1)
             )
@@ -312,7 +312,7 @@ struct TaskRowView: View {
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — rank drives visual hierarchy
-    private var fontSize: CGFloat { rank == 0 ? 17 : 13 }  // P1: 17pt, P2/P3: 13pt
+    private var fontSize: CGFloat { rank == 0 ? 19 : 13 }  // P1: 19pt/700 - commanding, P2/P3: 13pt
     private var fontWeight: Font.Weight {
         if rank == 0 { return .bold }  // 700 weight - decisive
         return .regular  // 400 weight - let size do the work
@@ -329,8 +329,8 @@ struct TaskRowView: View {
             if rank == 1 { return Color(red: 0.863, green: 0.910, blue: 1.0).opacity(0.85) }  // rgba(220,232,255,0.85)
             return Color(red: 0.784, green: 0.843, blue: 1.0)  // rgba(200,215,255) - opacity applied separately
         } else {
-            // Light mode - dark green
-            return Color(red: 0.039, green: 0.173, blue: 0.118)  // #0A2C1E
+            // Light mode - warm dark brown
+            return Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
         }
     }
     
@@ -352,13 +352,13 @@ struct TaskRowView: View {
                     .opacity(finalTextOpacity)  // Opacity on Text directly for WidgetKit
                     .strikethrough(isCompleting, color: colorScheme == .dark ? 
                         Color(red: 0.922, green: 0.949, blue: 1.0) : 
-                        Color(red: 0.039, green: 0.173, blue: 0.118))  // #0A2C1E
+                        Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer(minLength: 0)
             }
             .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt, P2/P3: 4pt - tight list
-            .padding(.bottom, rank == 0 ? 3 : 0)
+            .padding(.bottom, rank == 0 ? 2 : 0)  // P1 gets 2pt bottom breath (was 3pt)
         }
         // matchedGeometryEffect: animates task promotion when previous task is removed
         .matchedGeometryEffect(id: card.id, in: namespace)
