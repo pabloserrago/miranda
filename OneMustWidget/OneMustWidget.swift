@@ -133,14 +133,14 @@ struct MediumWidgetView: View {
             // Blue gradient background
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color(red: 0.88, green: 0.90, blue: 0.98), location: 0.0),
-                    .init(color: Color(red: 0.50, green: 0.65, blue: 0.92), location: 1.0)
+                    .init(color: Color(red: 0.82, green: 0.86, blue: 0.98), location: 0.0),
+                    .init(color: Color(red: 0.45, green: 0.60, blue: 0.95), location: 1.0)
                 ]),
                 startPoint: .leading,
                 endPoint: .trailing
             )
             
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 // Show only actual cards (no empty slots)
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
                     HStack(spacing: 14) {
@@ -149,10 +149,10 @@ struct MediumWidgetView: View {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 18, weight: .regular))
                                 .foregroundColor(Color.black.opacity(0.7))
-                                .frame(width: 44, height: 44)
+                                .frame(width: 48, height: 48)
                                 .background(
                                     Circle()
-                                        .fill(Color.white.opacity(0.35))
+                                        .fill(Color.white.opacity(0.40))
                                         .background(
                                             Circle()
                                                 .fill(.ultraThinMaterial)
@@ -165,7 +165,7 @@ struct MediumWidgetView: View {
                         // Card content (text only, no emoji)
                         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
                             Text(card.simplifiedText)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(.black)
                                 .lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -190,7 +190,7 @@ struct MediumWidgetView: View {
                         Image(systemName: "plus")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 56, height: 56)
+                            .frame(width: 60, height: 60)
                             .background(Color.black)
                             .clipShape(Circle())
                     }
