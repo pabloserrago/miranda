@@ -129,11 +129,6 @@ struct CompactWidgetView: View {
             if let card = cards.first {
                 // Show first priority
                 VStack(spacing: 8) {
-                    if let emoji = card.emoji {
-                        Text(emoji)
-                            .font(.system(size: 44))
-                    }
-                    
                     Text(card.simplifiedText)
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.primary)
@@ -385,12 +380,6 @@ struct LargeWidgetView: View {
                                 .frame(width: 28, height: 28)
                                 .background(Color.yellow)
                                 .clipShape(Circle())
-                            
-                            // Emoji
-                            if let emoji = card.emoji {
-                                Text(emoji)
-                                    .font(.system(size: 24))
-                            }
                             
                             // Text
                             Text(card.simplifiedText)
