@@ -12,7 +12,6 @@ import AppIntents
 enum WidgetPhase: Codable, Equatable {
     case normal
     case completing(id: String)  // UUID as string for Codable
-    case allClear
     
     func isCompleting(_ cardID: UUID) -> Bool {
         if case .completing(let id) = self {
@@ -75,11 +74,10 @@ struct Provider: TimelineProvider {
             var updatedCards = cards
             updatedCards.remove(at: idx)
             
-            let phase2: WidgetPhase = updatedCards.isEmpty ? .allClear : .normal
             let entry2 = SimpleEntry(
                 date: currentDate.addingTimeInterval(0.5),
                 priorityCards: updatedCards,
-                phase: phase2
+                phase: .normal
             )
             
             // Two-entry arc for dopamine beat
@@ -90,8 +88,7 @@ struct Provider: TimelineProvider {
         }
         
         // Normal single-entry timeline
-        let phase: WidgetPhase = cards.isEmpty ? .allClear : .normal
-        let entry = SimpleEntry(date: currentDate, priorityCards: cards, phase: phase)
+        let entry = SimpleEntry(date: currentDate, priorityCards: cards, phase: .normal)
         
         // Refresh every 15 minutes
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
@@ -105,19 +102,15 @@ struct OneMustWidgetEntryView : View {
     @Environment(\.widgetFamily) var widgetFamily
 
     var body: some View {
-        if !entry.priorityCards.isEmpty || entry.phase == .allClear {
-            switch widgetFamily {
-            case .systemSmall:
-                CompactWidgetView(cards: entry.priorityCards)
-            case .systemMedium:
-                MediumWidgetView(entry: entry)
-            case .systemLarge:
-                LargeWidgetView(cards: entry.priorityCards)
-            default:
-                CompactWidgetView(cards: entry.priorityCards)
-            }
-        } else {
-            EmptyWidgetView()
+        switch widgetFamily {
+        case .systemSmall:
+            CompactWidgetView(cards: entry.priorityCards)
+        case .systemMedium:
+            MediumWidgetView(entry: entry)
+        case .systemLarge:
+            LargeWidgetView(cards: entry.priorityCards)
+        default:
+            CompactWidgetView(cards: entry.priorityCards)
         }
     }
 }
@@ -188,18 +181,36 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Tasks anchored to top
-            taskList
-                .padding(.top, 14)
+        ZStack(alignment: .topTrailing) {
+            // Main content
+            VStack(alignment: .leading, spacing: 0) {
+                // Tasks anchored to top
+                taskList
+                    .padding(.top, 14)
+                    .padding(.trailing, 36)  // Room for corner + mark
+                
+                Spacer()
+                
+                // Pill anchored to bottom
+                noteButton
+                    .padding(.bottom, 13)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            Spacer()
-            
-            // Pill anchored to bottom
-            noteButton
-                .padding(.bottom, 13)
+            // Corner + mark (28×28pt circle, top-right)
+            Link(destination: URL(string: "miranda://capture")!) {
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(textColor.opacity(0.75))
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle()
+                            .fill(textColor.opacity(0.14))
+                    )
+            }
+            .padding(.top, 14)
+            .padding(.trailing, 14)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
             if colorScheme == .dark {
                 LinearGradient(
@@ -223,13 +234,19 @@ struct MediumWidgetView: View {
             }
         }
     }
+    
+    private var textColor: Color {
+        colorScheme == .dark ? 
+            Color(red: 0.922, green: 0.949, blue: 1.0) : 
+            Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
+    }
 
     @ViewBuilder
     private var taskList: some View {
-        switch entry.phase {
-        case .allClear:
-            allClearView
-        case .normal, .completing:
+        // One state: ready. No distinction between "before" and "after".
+        if entry.priorityCards.isEmpty {
+            emptyReadyView
+        } else {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Array(entry.priorityCards.prefix(3).enumerated()), id: \.element.id) { index, card in
                     TaskRowView(
@@ -254,15 +271,12 @@ struct MediumWidgetView: View {
     }
 
     @ViewBuilder
-    private var allClearView: some View {
+    private var emptyReadyView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("That's everything for today.")
-                .font(.system(size: 15, weight: .semibold))
-                .tracking(-0.33)  // -0.022em
-                .lineLimit(1)
-                .foregroundColor(colorScheme == .dark ? 
-                    Color(red: 0.922, green: 0.949, blue: 1.0) : 
-                    Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410 - warm dark brown
+            Text("Capture anything.")
+                .font(.system(size: 13, weight: .regular))
+                .tracking(-0.156)  // -0.012em
+                .foregroundColor(textColor)
                 .transition(
                     .opacity
                     .animation(.easeIn(duration: 0.6).delay(0.42))
@@ -312,15 +326,11 @@ struct TaskRowView: View {
     let isCompleting: Bool
     @Environment(\.colorScheme) var colorScheme
 
-    // Typography scale — rank drives visual hierarchy
-    private var fontSize: CGFloat { rank == 0 ? 19 : 13 }  // P1: 19pt/700 - commanding, P2/P3: 13pt
+    // Typography scale — hierarchy through size alone
+    private var fontSize: CGFloat { rank == 0 ? 30 : 12 }  // P1: 30pt/800 (fills upper portion), P2/P3: 12pt/400
     private var fontWeight: Font.Weight {
-        if rank == 0 { return .bold }  // 700 weight - decisive
-        return .regular  // 400 weight - let size do the work
-    }
-    private var textOpacity: Double {
-        if isCompleting { return 0.22 }
-        return rank == 2 ? 0.36 : 1.0
+        if rank == 0 { return .heavy }  // 800 weight - headline dominance
+        return .regular  // 400 weight - supporting
     }
     
     private var textColor: Color {
@@ -328,18 +338,16 @@ struct TaskRowView: View {
             // Dark mode colors
             if rank == 0 { return Color(red: 0.922, green: 0.949, blue: 1.0) }  // rgba(235,242,255,1.00)
             if rank == 1 { return Color(red: 0.863, green: 0.910, blue: 1.0).opacity(0.85) }  // rgba(220,232,255,0.85)
-            return Color(red: 0.784, green: 0.843, blue: 1.0)  // rgba(200,215,255) - opacity applied separately
+            return Color(red: 0.784, green: 0.843, blue: 1.0)  // rgba(200,215,255)
         } else {
             // Light mode - warm dark brown
             return Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
         }
     }
     
-    // Opacity applied to Text view directly (WidgetKit requirement)
+    // Completing fade only - NO P3 opacity (WidgetKit drops it, hierarchy by size alone)
     private var finalTextOpacity: Double {
-        if isCompleting { return 0.22 }
-        if rank == 2 { return 0.30 }  // P3: 30% opacity - quieter, truly tertiary
-        return 1.0
+        return isCompleting ? 0.22 : 1.0
     }
 
     var body: some View {
@@ -347,10 +355,11 @@ struct TaskRowView: View {
             HStack(alignment: .center, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
-                    .tracking(rank == 0 ? -0.51 : -0.156)  // -0.03em and -0.012em
+                    .tracking(rank == 0 ? -0.90 : -0.144)  // P1: -0.03em, P2/P3: -0.012em
                     .lineLimit(2)
+                    .truncationMode(.tail)
                     .foregroundColor(textColor)
-                    .opacity(finalTextOpacity)  // Opacity on Text directly for WidgetKit
+                    .opacity(finalTextOpacity)  // Only for completing fade
                     .strikethrough(isCompleting, color: colorScheme == .dark ? 
                         Color(red: 0.922, green: 0.949, blue: 1.0) : 
                         Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
@@ -358,8 +367,8 @@ struct TaskRowView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt, P2/P3: 4pt - tight list
-            .padding(.bottom, rank == 0 ? 2 : 0)  // P1 gets 2pt bottom breath (was 3pt)
+            .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 30pt text), P2/P3: 4pt
+            .padding(.bottom, rank == 0 ? 4 : 0)  // P1 breath
         }
         .buttonStyle(.plain)
     }
@@ -592,10 +601,10 @@ struct OneMustWidget: Widget {
         phase: .normal
     )
     
-    // All clear
+    // Empty/ready state (no distinction between "before" and "after")
     SimpleEntry(
         date: .now.addingTimeInterval(3),
         priorityCards: [],
-        phase: .allClear
+        phase: .normal
     )
 }
