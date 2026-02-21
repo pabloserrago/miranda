@@ -308,7 +308,7 @@ struct TaskRowView: View {
                 Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
                     .tracking(rank == 0 ? -0.84 : -0.144)  // P1: -0.03em at 28pt, P2/P3: -0.012em
-                    .lineLimit(2)  // Two line minimum for P1, truncate beyond
+                    .lineLimit(rank == 0 ? 2 : 1)  // P1: 2 lines before truncating, P2/P3: 1 line
                     .truncationMode(.tail)
                     .foregroundColor(textColor)
                     .opacity(finalTextOpacity)  // Only for completing fade
@@ -316,6 +316,7 @@ struct TaskRowView: View {
                         Color(red: 0.922, green: 0.949, blue: 1.0) : 
                         Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)  // Allow vertical expansion
                 
                 if isLastRow {
                     Link(destination: URL(string: "miranda://capture")!) {
