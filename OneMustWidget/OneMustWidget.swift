@@ -123,67 +123,22 @@ struct CompactWidgetView: View {
     }
 }
 
-// MARK: - Medium Widget (Shows all 3 priorities like Reminders)
+// MARK: — Medium Widget (Tortoise Architecture)
 
 struct MediumWidgetView: View {
-    let cards: [Card]
-    
+    let entry: SimpleEntry
+    let namespace: Namespace.ID
+
     var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: 8) {
-                // Priority cards
-                ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
-                    HStack(spacing: 12) {
-                        // Frosted glass checkbox
-                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundColor(Color.black.opacity(0.7))
-                                .frame(width: 48, height: 48)
-                                .background(
-                                    Circle()
-                                        .fill(Color.white.opacity(0.40))
-                                        .background(
-                                            Circle()
-                                                .fill(.ultraThinMaterial)
-                                        )
-                                )
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(.plain)
-                        
-                        // Task text
-                        Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-                            Text(card.simplifiedText)
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor(.black)
-                                .lineLimit(2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
-                
-                Spacer()
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                taskList
+                Spacer(minLength: 10)
+                noteButton
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
-            
-            // + button
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Link(destination: URL(string: "miranda://capture")!) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(Color.black)
-                            .clipShape(Circle())
-                    }
-                    .padding(12)
-                }
-            }
+            .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
@@ -197,7 +152,110 @@ struct MediumWidgetView: View {
             )
         }
     }
+
+    @ViewBuilder
+    private var taskList: some View {
+        switch entry.phase {
+        case .allClear:
+            allClearView
+        case .normal, .completing:
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(entry.priorityCards.prefix(3).enumerated()), id: \.element.id) { index, card in
+                    TaskRowView(
+                        card: card,
+                        rank: index,
+                        isCompleting: entry.phase.isCompleting(card.id),
+                        namespace: namespace
+                    )
+                    .transition(
+                        .asymmetric(
+                            insertion: .opacity
+                                .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.09)),
+                            removal: .opacity
+                                .combined(with: .offset(y: -8))
+                                .animation(.easeIn(duration: 0.26))
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private var allClearView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("That's everything\nfor today.")
+                .font(.system(size: 15, weight: .semibold))
+                .tracking(-0.4)
+                .lineSpacing(2)
+                .foregroundColor(.black.opacity(0.9))
+                .transition(
+                    .opacity
+                    .animation(.easeIn(duration: 0.6).delay(0.42))
+                )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var noteButton: some View {
+        Link(destination: URL(string: "miranda://capture")!) {
+            HStack(spacing: 6) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Note")
+                    .font(.system(size: 13, weight: .semibold))
+                    .tracking(-0.2)
+            }
+            .foregroundColor(.white.opacity(0.95))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .shadow(color: .black.opacity(0.18), radius: 3, x: 0, y: 1)
+            )
+        }
+    }
 }
+
+// MARK: — Task Row (Rank-based Typography & matchedGeometryEffect)
+
+struct TaskRowView: View {
+    let card: Card
+    let rank: Int
+    let isCompleting: Bool
+    let namespace: Namespace.ID
+
+    // Typography scale — rank drives visual hierarchy
+    private var fontSize: CGFloat { rank == 0 ? 17 : 15 }
+    private var fontWeight: Font.Weight { rank == 0 ? .bold : .medium }
+    private var textOpacity: Double {
+        if isCompleting { return 0.22 }
+        return rank == 2 ? 0.5 : 1.0
+    }
+
+    var body: some View {
+        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+            HStack(alignment: .center, spacing: 0) {
+                Text(card.simplifiedText)
+                    .font(.system(size: fontSize, weight: fontWeight))
+                    .tracking(rank == 0 ? -0.5 : -0.2)
+                    .lineLimit(2)
+                    .foregroundColor(Color.black.opacity(textOpacity))
+                    .strikethrough(isCompleting, color: .black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, rank == 0 ? 8 : 6)
+            .padding(.bottom, rank == 0 ? 4 : 0)
+        }
+        // matchedGeometryEffect: animates task promotion
+        .matchedGeometryEffect(id: card.id, in: namespace)
+        .buttonStyle(.plain)
+        .animation(.easeOut(duration: 0.32), value: rank)
+    }
+}
+
 
 
 
