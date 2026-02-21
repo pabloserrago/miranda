@@ -173,8 +173,8 @@ struct MediumWidgetView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 8)
-                    .padding(.trailing, 8)
+                    .padding(.leading, 0)
+                    .padding(.trailing, 0)
                 }
                 
                 Spacer()
