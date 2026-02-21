@@ -212,8 +212,8 @@ struct MediumWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 0.824, green: 0.871, blue: 0.973), location: 0.0),  // rgba(210,222,248) - more color
-                        .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
+                        .init(color: Color(red: 0.976, green: 0.933, blue: 0.855), location: 0.0),  // rgba(249,238,218) - sand top
+                        .init(color: Color(red: 0.941, green: 0.882, blue: 0.769), location: 1.0)   // rgba(240,225,196) - sand bottom
                     ]),
                     startPoint: .top,
                     endPoint: .bottomTrailing
