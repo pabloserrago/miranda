@@ -188,9 +188,11 @@ struct MediumWidgetView: View {
             
             Spacer()
             
-            // + Note fixed at bottom
-            noteButton
-                .padding(.bottom, 14)
+            // Pill button only on empty state
+            if entry.priorityCards.isEmpty {
+                noteButton
+                    .padding(.bottom, 14)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
