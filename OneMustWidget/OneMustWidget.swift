@@ -253,7 +253,7 @@ struct MediumWidgetView: View {
     @ViewBuilder
     private var allClearView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("That's everything\nfor today.")
+            Text("That's everything for today.")
                 .font(.system(size: 15, weight: .semibold))
                 .tracking(-0.33)  // -0.022em
                 .lineSpacing(2)
