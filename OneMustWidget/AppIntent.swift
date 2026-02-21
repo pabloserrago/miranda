@@ -8,15 +8,6 @@
 import WidgetKit
 import AppIntents
 
-struct ConfigurationAppIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource { "Configuration" }
-    static var description: IntentDescription { "This is an example widget." }
-
-    // An example configurable parameter.
-    @Parameter(title: "Favorite Emoji", default: "😃")
-    var favoriteEmoji: String
-}
-
 // Intent to complete a priority card from widget
 struct CompleteCardIntent: AppIntent {
     static var title: LocalizedStringResource = "Complete Card"
@@ -38,16 +29,18 @@ struct CompleteCardIntent: AppIntent {
             return .result()
         }
         
-        // Trigger dual-entry timeline (dopamine beat + promotion)
-        Provider.pushCompletionTimeline(completedID: cardIdUUID)
+        // Mark which card is being completed (for dopamine beat timeline)
+        UserDefaults(suiteName: "group.com.ahad.oneMust")?.set(cardId, forKey: "completingCardID")
         
-        // Also update main app UserDefaults
+        // Remove from data layer
         let allCards = SharedCardManager.shared.loadAllCards().filter { $0.id != cardIdUUID }
         let priorityCards = SharedCardManager.shared.loadPriorityCards().filter { $0.id != cardIdUUID }
         
         SharedCardManager.shared.saveAllCards(allCards)
+        SharedCardManager.shared.savePriorityCards(priorityCards)
         SharedCardManager.shared.saveCurrentCard(priorityCards.first)
         
+        // Also update main app UserDefaults
         let encoder = JSONEncoder()
         if let cardsData = try? encoder.encode(allCards) {
             UserDefaults.standard.set(cardsData, forKey: "cards")
@@ -55,6 +48,9 @@ struct CompleteCardIntent: AppIntent {
         
         let priorityStrings = priorityCards.map { $0.id.uuidString }
         UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
+        
+        // Trigger timeline reload — Provider will build the two-entry arc
+        WidgetCenter.shared.reloadTimelines(ofKind: "OneMustWidget")
         
         return .result()
     }

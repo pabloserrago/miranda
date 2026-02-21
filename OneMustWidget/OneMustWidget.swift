@@ -4,7 +4,7 @@ import AppIntents
 
 // ═══════════════════════════════════════════════════════════════
 // Miranda Widget — Tortoise Architecture
-// Dopamine beat + matchedGeometryEffect promotion
+// Dopamine beat + layout-driven promotion animation
 // ═══════════════════════════════════════════════════════════════
 
 // MARK: — Timeline Entry with Phase
@@ -56,6 +56,40 @@ struct Provider: TimelineProvider {
         let currentDate = Date()
         let cards = SharedCardManager.shared.loadPriorityCards()
         
+        // Check if a completion was just triggered
+        if let completingIDString = UserDefaults(suiteName: "group.com.ahad.oneMust")?.string(forKey: "completingCardID"),
+           let completingID = UUID(uuidString: completingIDString),
+           let idx = cards.firstIndex(where: { $0.id == completingID }) {
+            
+            // Clear the flag immediately
+            UserDefaults(suiteName: "group.com.ahad.oneMust")?.removeObject(forKey: "completingCardID")
+            
+            // Entry 1 — dopamine beat: task struck through (500ms)
+            let entry1 = SimpleEntry(
+                date: currentDate,
+                priorityCards: cards,
+                phase: .completing(id: completingIDString)
+            )
+            
+            // Entry 2 — promotion: task removed, others promoted
+            var updatedCards = cards
+            updatedCards.remove(at: idx)
+            
+            let phase2: WidgetPhase = updatedCards.isEmpty ? .allClear : .normal
+            let entry2 = SimpleEntry(
+                date: currentDate.addingTimeInterval(0.5),
+                priorityCards: updatedCards,
+                phase: phase2
+            )
+            
+            // Two-entry arc for dopamine beat
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
+            let timeline = Timeline(entries: [entry1, entry2], policy: .after(nextUpdate))
+            completion(timeline)
+            return
+        }
+        
+        // Normal single-entry timeline
         let phase: WidgetPhase = cards.isEmpty ? .allClear : .normal
         let entry = SimpleEntry(date: currentDate, priorityCards: cards, phase: phase)
         
@@ -64,42 +98,11 @@ struct Provider: TimelineProvider {
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
     }
-    
-    // Push dual-entry timeline on completion (dopamine beat)
-    static func pushCompletionTimeline(completedID: UUID) {
-        var cards = SharedCardManager.shared.loadPriorityCards()
-        
-        guard let idx = cards.firstIndex(where: { $0.id == completedID }) else {
-            return
-        }
-        
-        // Entry 1 — dopamine beat: task struck through (500ms)
-        let entry1 = SimpleEntry(
-            date: .now,
-            priorityCards: cards,
-            phase: .completing(id: completedID.uuidString)
-        )
-        
-        // Entry 2 — promotion: task removed, others promoted
-        cards.remove(at: idx)
-        SharedCardManager.shared.savePriorityCards(cards)
-        
-        let phase2: WidgetPhase = cards.isEmpty ? .allClear : .normal
-        let entry2 = SimpleEntry(
-            date: .now.addingTimeInterval(0.5),
-            priorityCards: cards,
-            phase: phase2
-        )
-        
-        // Push both entries
-        WidgetCenter.shared.reloadTimelines(ofKind: "OneMustWidget")
-    }
 }
 
 struct OneMustWidgetEntryView : View {
     var entry: Provider.Entry
     @Environment(\.widgetFamily) var widgetFamily
-    @Namespace private var taskNamespace
 
     var body: some View {
         if !entry.priorityCards.isEmpty || entry.phase == .allClear {
@@ -107,7 +110,7 @@ struct OneMustWidgetEntryView : View {
             case .systemSmall:
                 CompactWidgetView(cards: entry.priorityCards)
             case .systemMedium:
-                MediumWidgetView(entry: entry, namespace: taskNamespace)
+                MediumWidgetView(entry: entry)
             case .systemLarge:
                 LargeWidgetView(cards: entry.priorityCards)
             default:
@@ -182,7 +185,6 @@ struct CompactWidgetView: View {
 
 struct MediumWidgetView: View {
     let entry: SimpleEntry
-    let namespace: Namespace.ID
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -233,8 +235,7 @@ struct MediumWidgetView: View {
                     TaskRowView(
                         card: card,
                         rank: index,
-                        isCompleting: entry.phase.isCompleting(card.id),
-                        namespace: namespace
+                        isCompleting: entry.phase.isCompleting(card.id)
                     )
                     .padding(.horizontal, 14)  // Safe area edge alignment
                     .transition(
@@ -248,6 +249,7 @@ struct MediumWidgetView: View {
                     )
                 }
             }
+            .animation(.easeOut(duration: 0.32), value: entry.priorityCards.map(\.id))  // Animate layout when array changes
         }
     }
 
@@ -302,13 +304,12 @@ struct MediumWidgetView: View {
     }
 }
 
-// MARK: — Task Row with Rank-based Typography & matchedGeometryEffect
+// MARK: — Task Row with Rank-based Typography
 
 struct TaskRowView: View {
     let card: Card
     let rank: Int
     let isCompleting: Bool
-    let namespace: Namespace.ID
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — rank drives visual hierarchy
@@ -360,10 +361,7 @@ struct TaskRowView: View {
             .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt, P2/P3: 4pt - tight list
             .padding(.bottom, rank == 0 ? 2 : 0)  // P1 gets 2pt bottom breath (was 3pt)
         }
-        // matchedGeometryEffect: animates task promotion when previous task is removed
-        .matchedGeometryEffect(id: card.id, in: namespace)
         .buttonStyle(.plain)
-        .animation(.easeOut(duration: 0.32), value: rank)
     }
 }
 
@@ -541,6 +539,9 @@ struct EmptyWidgetView: View {
         }
     }
 }
+
+// MARK: — Widget Entry Point
+// NOTE: @main belongs in the widget extension target ONLY, not the main app target
 
 @main
 struct OneMustWidget: Widget {
