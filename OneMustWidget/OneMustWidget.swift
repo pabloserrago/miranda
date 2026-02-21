@@ -130,10 +130,10 @@ struct MediumWidgetView: View {
     
     var body: some View {
         ZStack {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
                 // Priority cards
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
-                    HStack(spacing: 14) {
+                    HStack(spacing: 12) {
                         // Frosted glass checkbox
                         Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
                             Image(systemName: "checkmark")
@@ -166,7 +166,7 @@ struct MediumWidgetView: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(.top, 12)
             
             // + button
             VStack {
@@ -323,7 +323,7 @@ struct EmptyWidgetView: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(.top, 12)
             .padding(.bottom, 70)
             
             // + Note button in bottom right corner
