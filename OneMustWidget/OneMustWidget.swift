@@ -187,6 +187,10 @@ struct MediumWidgetView: View {
                 .padding(.top, 14)
             
             Spacer()
+            
+            // + Note fixed at bottom
+            noteButton
+                .padding(.bottom, 14)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
@@ -225,8 +229,7 @@ struct MediumWidgetView: View {
                     TaskRowView(
                         card: card,
                         rank: index,
-                        isCompleting: entry.phase.isCompleting(card.id),
-                        isLastRow: index == visibleCards.count - 1
+                        isCompleting: entry.phase.isCompleting(card.id)
                     )
                     .padding(.horizontal, 14)  // Safe area edge alignment
                     .transition(
@@ -260,6 +263,20 @@ struct MediumWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    @ViewBuilder
+    private var noteButton: some View {
+        HStack {
+            Spacer()
+            Link(destination: URL(string: "miranda://capture")!) {
+                Text("+ Note")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(textColor.opacity(0.55))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)  // Safe area edge alignment
+    }
+    
     private var textColor: Color {
         colorScheme == .dark ? 
             Color(red: 0.922, green: 0.949, blue: 1.0) : 
@@ -274,7 +291,6 @@ struct TaskRowView: View {
     let card: Card
     let rank: Int
     let isCompleting: Bool
-    let isLastRow: Bool
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — hierarchy through size and weight
@@ -304,7 +320,7 @@ struct TaskRowView: View {
 
     var body: some View {
         Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-            HStack(alignment: .firstTextBaseline, spacing: 0) {
+            HStack(alignment: .center, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
                     .tracking(rank == 0 ? -0.84 : -0.144)  // P1: -0.03em at 28pt, P2/P3: -0.012em
@@ -317,18 +333,10 @@ struct TaskRowView: View {
                         Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)  // Allow vertical expansion
-                
-                if isLastRow {
-                    Link(destination: URL(string: "miranda://capture")!) {
-                        Text("+ Note")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(textColor.opacity(0.55))
-                    }
-                    .buttonStyle(.plain)
-                }
+
+                Spacer(minLength: 0)
             }
             .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt (room for 2-line 28pt text), P2/P3: 4pt
-            .padding(.bottom, rank == 0 ? 0 : 0)  // No additional bottom padding
         }
         .buttonStyle(.plain)
     }
