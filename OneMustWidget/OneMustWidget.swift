@@ -173,12 +173,12 @@ struct MediumWidgetView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 6)
-                    .padding(.trailing, 6)
+                    
                 }
                 
                 Spacer()
             }
+            .padding(.horizontal, 16)
             .padding(.top, 16)
             
             // Pill-shaped + button in bottom right
