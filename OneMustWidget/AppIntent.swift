@@ -38,22 +38,16 @@ struct CompleteCardIntent: AppIntent {
             return .result()
         }
         
-        // Load all cards and priorities
-        var allCards = SharedCardManager.shared.loadAllCards()
-        var priorityCards = SharedCardManager.shared.loadPriorityCards()
+        // Trigger dual-entry timeline (dopamine beat + promotion)
+        Provider.pushCompletionTimeline(completedID: cardIdUUID)
         
-        // Remove the card from all cards
-        allCards.removeAll { $0.id == cardIdUUID }
+        // Also update main app UserDefaults
+        let allCards = SharedCardManager.shared.loadAllCards().filter { $0.id != cardIdUUID }
+        let priorityCards = SharedCardManager.shared.loadPriorityCards().filter { $0.id != cardIdUUID }
         
-        // Remove from priority cards
-        priorityCards.removeAll { $0.id == cardIdUUID }
-        
-        // Save updated lists
         SharedCardManager.shared.saveAllCards(allCards)
-        SharedCardManager.shared.savePriorityCards(priorityCards)
         SharedCardManager.shared.saveCurrentCard(priorityCards.first)
         
-        // Also update UserDefaults for the main app
         let encoder = JSONEncoder()
         if let cardsData = try? encoder.encode(allCards) {
             UserDefaults.standard.set(cardsData, forKey: "cards")
@@ -61,9 +55,6 @@ struct CompleteCardIntent: AppIntent {
         
         let priorityStrings = priorityCards.map { $0.id.uuidString }
         UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
-        
-        // Reload widget timeline
-        WidgetCenter.shared.reloadAllTimelines()
         
         return .result()
     }
