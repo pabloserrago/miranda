@@ -259,6 +259,12 @@ struct MediumWidgetView: View {
         .padding(.horizontal, 14)  // Safe area edge alignment
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+    
+    private var textColor: Color {
+        colorScheme == .dark ? 
+            Color(red: 0.922, green: 0.949, blue: 1.0) : 
+            Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
+    }
 
 }
 
