@@ -187,7 +187,8 @@ struct MediumWidgetView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer()  // Push content down - tasks and pill stay anchored together
                 taskList
                 Spacer(minLength: 10)
                 noteButton
@@ -307,10 +308,10 @@ struct TaskRowView: View {
     @Environment(\.colorScheme) var colorScheme
 
     // Typography scale — rank drives visual hierarchy
-    private var fontSize: CGFloat { rank == 0 ? 15 : 13 }  // P1: 15pt/650, P2/P3: 13pt/420
+    private var fontSize: CGFloat { rank == 0 ? 17 : 13 }  // P1: 17pt, P2/P3: 13pt
     private var fontWeight: Font.Weight {
-        if rank == 0 { return .semibold }  // 650 weight
-        return rank == 1 ? .regular : .regular  // 420 vs 400 (minimal diff)
+        if rank == 0 { return .bold }  // 700 weight - decisive
+        return .regular  // 400 weight - let size do the work
     }
     private var textOpacity: Double {
         if isCompleting { return 0.22 }
@@ -332,8 +333,7 @@ struct TaskRowView: View {
     // Opacity applied to Text view directly (WidgetKit requirement)
     private var finalTextOpacity: Double {
         if isCompleting { return 0.22 }
-        if rank == 2 && colorScheme == .dark { return 0.38 }
-        if rank == 2 && colorScheme == .light { return 0.36 }
+        if rank == 2 { return 0.30 }  // P3: 30% opacity - quieter, truly tertiary
         return 1.0
     }
 
@@ -351,7 +351,7 @@ struct TaskRowView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, 6)  // Tighter for 3-task layout
+            .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt, P2/P3: 4pt - tight list
             .padding(.bottom, rank == 0 ? 3 : 0)
         }
         // matchedGeometryEffect: animates task promotion when previous task is removed
