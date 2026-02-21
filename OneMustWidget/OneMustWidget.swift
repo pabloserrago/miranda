@@ -190,10 +190,6 @@ struct MediumWidgetView: View {
                     .padding(.trailing, 36)  // Room for corner + mark
                 
                 Spacer()
-                
-                // Pill anchored to bottom
-                noteButton
-                    .padding(.bottom, 13)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
@@ -286,36 +282,6 @@ struct MediumWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
-    private var noteButton: some View {
-        Link(destination: URL(string: "miranda://capture")!) {
-            HStack(spacing: 6) {
-                Image(systemName: "plus")
-                    .font(.system(size: 10, weight: .semibold))
-                Text("Note")
-                    .font(.system(size: 13, weight: .semibold))
-                    .tracking(-0.13)
-            }
-            .foregroundColor(colorScheme == .dark ? 
-                Color(red: 0.894, green: 0.933, blue: 1.0, opacity: 0.92) : 
-                Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.95))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 14)  // Internal pill padding for text
-            .background(
-                Capsule()
-                    .fill(colorScheme == .dark ? 
-                        Color.white.opacity(0.13) : 
-                        Color(red: 0.165, green: 0.122, blue: 0.078))  // #2A1F14 - warm dark brown
-                                .shadow(color: colorScheme == .dark ? 
-                                    Color.black.opacity(0.25) : 
-                                    Color(red: 0.110, green: 0.078, blue: 0.063).opacity(0.18),  // #1C1410 shadow
-                        radius: colorScheme == .dark ? 4 : 3, 
-                        x: 0, y: 1)
-            )
-        }
-        .padding(.horizontal, 14)  // Safe area edge alignment
-    }
 }
 
 // MARK: — Task Row with Rank-based Typography
