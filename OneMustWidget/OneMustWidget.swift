@@ -265,14 +265,31 @@ struct MediumWidgetView: View {
     
     @ViewBuilder
     private var noteButton: some View {
-        HStack {
-            Spacer()
-            Link(destination: URL(string: "miranda://capture")!) {
-                Text("+ Note")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(textColor.opacity(0.55))
+        Link(destination: URL(string: "miranda://capture")!) {
+            HStack(spacing: 6) {
+                Image(systemName: "plus")
+                    .font(.system(size: 10, weight: .semibold))
+                Text("Note")
+                    .font(.system(size: 13, weight: .semibold))
+                    .tracking(-0.13)
             }
-            .buttonStyle(.plain)
+            .foregroundColor(colorScheme == .dark ? 
+                Color(red: 0.894, green: 0.933, blue: 1.0, opacity: 0.92) : 
+                Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.95))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .background(
+                Capsule()
+                    .fill(colorScheme == .dark ? 
+                        Color.white.opacity(0.13) : 
+                        Color(red: 0.165, green: 0.122, blue: 0.078))  // #2A1F14 - warm dark brown
+                    .shadow(color: colorScheme == .dark ? 
+                        Color.black.opacity(0.25) : 
+                        Color(red: 0.110, green: 0.078, blue: 0.063).opacity(0.18), 
+                        radius: colorScheme == .dark ? 4 : 3, 
+                        x: 0, y: 1)
+            )
         }
         .padding(.horizontal, 14)  // Safe area edge alignment
     }
