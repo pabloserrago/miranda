@@ -260,7 +260,7 @@ struct MediumWidgetView: View {
                 .lineLimit(1)
                 .foregroundColor(colorScheme == .dark ? 
                     Color(red: 0.922, green: 0.949, blue: 1.0) : 
-                    Color(red: 0.07, green: 0.07, blue: 0.16))
+                    Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410 - dark brown
                 .transition(
                     .opacity
                     .animation(.easeIn(duration: 0.6).delay(0.42))
@@ -290,7 +290,7 @@ struct MediumWidgetView: View {
                 Capsule()
                     .fill(colorScheme == .dark ? 
                         Color.white.opacity(0.13) : 
-                        Color(red: 0.118, green: 0.118, blue: 0.220))  // #1E1E38 - softer dark
+                        Color(red: 0.165, green: 0.122, blue: 0.078))  // #2A1F14 - dark brown
                     .shadow(color: colorScheme == .dark ? 
                         Color.black.opacity(0.25) : 
                         Color(red: 0.07, green: 0.07, blue: 0.16).opacity(0.18), 
@@ -324,13 +324,13 @@ struct TaskRowView: View {
     
     private var textColor: Color {
         if colorScheme == .dark {
-            // Dark mode colors from HTML
+            // Dark mode colors
             if rank == 0 { return Color(red: 0.922, green: 0.949, blue: 1.0) }  // rgba(235,242,255,1.00)
             if rank == 1 { return Color(red: 0.863, green: 0.910, blue: 1.0).opacity(0.85) }  // rgba(220,232,255,0.85)
             return Color(red: 0.784, green: 0.843, blue: 1.0)  // rgba(200,215,255) - opacity applied separately
         } else {
-            // Light mode
-            return Color(red: 0.07, green: 0.07, blue: 0.16)
+            // Light mode - warm sand palette
+            return Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410 - dark brown
         }
     }
     
@@ -350,7 +350,9 @@ struct TaskRowView: View {
                     .lineLimit(2)
                     .foregroundColor(textColor)
                     .opacity(finalTextOpacity)  // Opacity on Text directly for WidgetKit
-                    .strikethrough(isCompleting, color: textColor)
+                    .strikethrough(isCompleting, color: colorScheme == .dark ? 
+                        Color(red: 0.922, green: 0.949, blue: 1.0) : 
+                        Color(red: 0.110, green: 0.078, blue: 0.063))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer(minLength: 0)
@@ -470,7 +472,9 @@ struct EmptyWidgetView: View {
                     .font(.system(size: 13, weight: .regular))
                     .tracking(-0.156)  // -0.012em
                     .lineSpacing(1.42)
-                    .foregroundColor(Color(red: 0.07, green: 0.07, blue: 0.16))
+                    .foregroundColor(colorScheme == .dark ? 
+                        Color(red: 0.922, green: 0.949, blue: 1.0) : 
+                        Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410 - dark brown
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
@@ -497,8 +501,14 @@ struct EmptyWidgetView: View {
                         .padding(.vertical, 10)
                         .background(
                             Capsule()
-                                .fill(Color(red: 0.10, green: 0.10, blue: 0.18))
-                                .shadow(color: Color(red: 0.07, green: 0.07, blue: 0.16).opacity(0.18), radius: 3, x: 0, y: 1)
+                                .fill(colorScheme == .dark ? 
+                                    Color.white.opacity(0.13) : 
+                                    Color(red: 0.165, green: 0.122, blue: 0.078))  // #2A1F14 - dark brown
+                                .shadow(color: colorScheme == .dark ? 
+                                    Color.black.opacity(0.25) : 
+                                    Color(red: 0.110, green: 0.078, blue: 0.063).opacity(0.18), 
+                                    radius: colorScheme == .dark ? 4 : 3, 
+                                    x: 0, y: 1)
                         )
                     }
                     .padding(.horizontal, 13)
@@ -521,8 +531,8 @@ struct EmptyWidgetView: View {
             } else {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(red: 0.824, green: 0.871, blue: 0.973), location: 0.0),  // rgba(210,222,248) - more color
-                        .init(color: Color(red: 0.737, green: 0.824, blue: 0.957), location: 1.0)
+                        .init(color: Color(red: 0.976, green: 0.933, blue: 0.855), location: 0.0),  // rgba(249,238,218) - sand top
+                        .init(color: Color(red: 0.941, green: 0.882, blue: 0.769), location: 1.0)   // rgba(240,225,196) - sand bottom
                     ]),
                     startPoint: .top,
                     endPoint: .bottomTrailing
