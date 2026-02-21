@@ -323,6 +323,7 @@ struct TaskRowView: View {
                             .font(.system(size: 12, weight: .regular))
                             .foregroundColor(textColor.opacity(0.55))
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 2-line 28pt text), P2/P3: 4pt
