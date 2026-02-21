@@ -220,7 +220,7 @@ struct MediumWidgetView: View {
             emptyReadyView
         } else {
             let visibleCards = Array(entry.priorityCards.prefix(3))
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {  // Tighter spacing between rows
                 ForEach(Array(visibleCards.enumerated()), id: \.element.id) { index, card in
                     TaskRowView(
                         card: card,
@@ -327,8 +327,8 @@ struct TaskRowView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.vertical, rank == 0 ? 8 : 4)  // P1: 8pt (room for 2-line 28pt text), P2/P3: 4pt
-            .padding(.bottom, rank == 0 ? 4 : 0)  // P1 breath
+            .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt (room for 2-line 28pt text), P2/P3: 4pt
+            .padding(.bottom, rank == 0 ? 0 : 0)  // No additional bottom padding
         }
         .buttonStyle(.plain)
     }
