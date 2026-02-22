@@ -32,17 +32,24 @@ struct CompleteCardIntent: AppIntent {
         // Mark which card is being completed (for dopamine beat timeline)
         UserDefaults(suiteName: "group.com.ahad.oneMust")?.set(cardId, forKey: "completingCardID")
         
-        // Remove from data layer
-        let allCards = SharedCardManager.shared.loadAllCards().filter { $0.id != cardIdUUID }
+        // Find the completed card before removing it
+        let allCards = SharedCardManager.shared.loadAllCards()
+        if let completedCard = allCards.first(where: { $0.id == cardIdUUID }) {
+            // Save as completed note (archive it)
+            SharedCardManager.shared.saveCompletedCard(completedCard)
+        }
+        
+        // Remove from active lists
+        let updatedAllCards = allCards.filter { $0.id != cardIdUUID }
         let priorityCards = SharedCardManager.shared.loadPriorityCards().filter { $0.id != cardIdUUID }
         
-        SharedCardManager.shared.saveAllCards(allCards)
+        SharedCardManager.shared.saveAllCards(updatedAllCards)
         SharedCardManager.shared.savePriorityCards(priorityCards)
         SharedCardManager.shared.saveCurrentCard(priorityCards.first)
         
         // Also update main app UserDefaults
         let encoder = JSONEncoder()
-        if let cardsData = try? encoder.encode(allCards) {
+        if let cardsData = try? encoder.encode(updatedAllCards) {
             UserDefaults.standard.set(cardsData, forKey: "cards")
         }
         

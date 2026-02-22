@@ -154,4 +154,38 @@ class SharedCardManager {
         
         return []
     }
+    
+    // MARK: — Completed Cards (Archive)
+    
+    // Save a completed card to the archive
+    func saveCompletedCard(_ card: Card) {
+        var completedCards = loadCompletedCards()
+        let strippedCard = stripCardEmoji(card)
+        completedCards.append(strippedCard)
+        
+        guard let defaults = sharedDefaults else {
+            print("⚠️ SharedCardManager: No shared defaults available")
+            return
+        }
+        
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(completedCards) {
+            defaults.set(data, forKey: "sharedCompletedCards")
+            defaults.synchronize()
+        }
+    }
+    
+    // Load all completed cards
+    func loadCompletedCards() -> [Card] {
+        guard let defaults = sharedDefaults else { return [] }
+        
+        let decoder = JSONDecoder()
+        
+        if let data = defaults.data(forKey: "sharedCompletedCards"),
+           let cards = try? decoder.decode([Card].self, from: data) {
+            return cards
+        }
+        
+        return []
+    }
 }
