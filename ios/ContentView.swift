@@ -229,13 +229,13 @@ struct ContentView: View {
                                                 HStack(spacing: 12) {
                                                     Image(systemName: "plus")
                                                         .font(.system(size: 20, weight: .bold))
-                                                    Text("Capture")
+                                                    Text("Note")
                                                         .font(.system(size: 20, weight: .bold))
                                                 }
                                                 .foregroundColor(.white)
                                                 .padding(.horizontal, 32)
                                                 .padding(.vertical, 16)
-                                                .background(Color.blue)
+                                                .background(Color.black)
                                                 .clipShape(Capsule())
                                             }
                                             
@@ -313,13 +313,13 @@ struct ContentView: View {
                                                         HStack(spacing: 12) {
                                                             Image(systemName: "plus")
                                                                 .font(.system(size: 20, weight: .bold))
-                                                            Text("Capture")
+                                                            Text("Note")
                                                                 .font(.system(size: 20, weight: .bold))
                                                         }
                                                         .foregroundColor(.white)
                                                         .padding(.horizontal, 32)
                                                         .padding(.vertical, 16)
-                                                        .background(Color.blue)
+                                                        .background(Color.black)
                                                         .clipShape(Capsule())
                                                     }
                                                     Spacer()
@@ -405,13 +405,13 @@ struct ContentView: View {
                                                 HStack(spacing: 12) {
                                                     Image(systemName: "plus")
                                                     .font(.system(size: 20, weight: .bold))
-                                                    Text("Capture")
+                                                    Text("Note")
                                                     .font(.system(size: 20, weight: .bold))
                                                 }
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 32)
                                             .padding(.vertical, 16)
-                                            .background(Color.blue)
+                                            .background(Color.black)
                                                 .clipShape(Capsule())
                         }
                         
@@ -575,7 +575,7 @@ struct ContentView: View {
                                             .font(.system(size: 16, weight: .regular))
                                             .foregroundColor(.secondary)
                                     } else {
-                                Text("No Recent Captures")
+                                Text("No Recent Notes")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(.secondary)
                                     
@@ -1157,7 +1157,7 @@ struct RecentCapturesDrawer: View {
                 if cards.isEmpty {
                     // No recent captures - just empty space
                     VStack(spacing: 16) {
-                        Text("No Recent Captures")
+                        Text("No Recent Notes")
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(.secondary)
                             .padding(.vertical, 20)
@@ -1530,7 +1530,7 @@ struct PriorityPickerView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 20, weight: .bold))
-                                Text("Capture")
+                                Text("Note")
                                     .font(.system(size: 20, weight: .bold))
                             }
                             .foregroundColor(.white)
@@ -2141,7 +2141,7 @@ struct CreateCardModal: View {
                 Spacer()
             }
             .padding()
-            .navigationTitle("New Capture")
+            .navigationTitle("New Note")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

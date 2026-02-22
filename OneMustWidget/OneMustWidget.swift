@@ -258,18 +258,13 @@ struct MediumWidgetView: View {
 
     @ViewBuilder
     private var emptyReadyView: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Capture anything.")
-                .font(.system(size: 13, weight: .regular))
-                .tracking(-0.156)  // -0.012em
-                .foregroundColor(textColor)
-                .transition(
-                    .opacity
-                    .animation(.easeIn(duration: 0.6).delay(0.42))
-                )
-        }
-        .padding(.horizontal, 14)  // Safe area edge alignment
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("Capture anything.")
+            .font(.system(size: 13, weight: .regular))
+            .tracking(-0.156)  // -0.012em
+            .foregroundColor(textColor)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .multilineTextAlignment(.center)
+            .padding(.bottom, 44)  // Offset upward to center above the pill button
     }
     
     @ViewBuilder
