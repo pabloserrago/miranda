@@ -29,17 +29,15 @@ struct CompleteCardIntent: AppIntent {
             return .result()
         }
         
-        // Mark which card is being completed (for dopamine beat timeline)
-        UserDefaults(suiteName: "group.com.ahad.oneMust")?.set(cardId, forKey: "completingCardID")
+        let defaults = UserDefaults(suiteName: "group.com.pabloserrano.onemust")
         
-        // Find the completed card before removing it
+        // 1. Archive the completed card as a note
         let allCards = SharedCardManager.shared.loadAllCards()
         if let completedCard = allCards.first(where: { $0.id == cardIdUUID }) {
-            // Save as completed note (archive it)
             SharedCardManager.shared.saveCompletedCard(completedCard)
         }
         
-        // Remove from active lists
+        // 2. Remove from active lists immediately (ensures card disappears)
         let updatedAllCards = allCards.filter { $0.id != cardIdUUID }
         let priorityCards = SharedCardManager.shared.loadPriorityCards().filter { $0.id != cardIdUUID }
         
@@ -47,16 +45,11 @@ struct CompleteCardIntent: AppIntent {
         SharedCardManager.shared.savePriorityCards(priorityCards)
         SharedCardManager.shared.saveCurrentCard(priorityCards.first)
         
-        // Also update main app UserDefaults
-        let encoder = JSONEncoder()
-        if let cardsData = try? encoder.encode(updatedAllCards) {
-            UserDefaults.standard.set(cardsData, forKey: "cards")
-        }
+        // 3. Set the completion flag for dopamine beat (Provider will read this)
+        defaults?.set(cardId, forKey: "completingCardID")
+        defaults?.synchronize()
         
-        let priorityStrings = priorityCards.map { $0.id.uuidString }
-        UserDefaults.standard.set(priorityStrings, forKey: "priorityCardIds")
-        
-        // Trigger timeline reload — Provider will build the two-entry arc
+        // 4. Trigger timeline reload
         WidgetCenter.shared.reloadTimelines(ofKind: "OneMustWidget")
         
         return .result()

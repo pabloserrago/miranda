@@ -4,6 +4,7 @@ import WidgetKit
 #endif
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var cards: [Card] = []
     @State private var priorityCardIds: [UUID] = [] // Up to 3 priorities
     @State private var showOneMust: Bool = false
@@ -651,6 +652,11 @@ struct ContentView: View {
         .onChange(of: priorityCardIds) { _, _ in
             saveState()
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                syncWidgetCompletions()
+            }
+        }
         .onChange(of: isSearchFocused) { _, focused in
             if focused {
                 // Expand drawer to full screen when search is focused
@@ -998,6 +1004,31 @@ struct ContentView: View {
         // Load excluded from priority IDs
         if let excludedStrings = UserDefaults.standard.array(forKey: "excludedFromPriorityIds") as? [String] {
             excludedFromPriorityIds = excludedStrings.compactMap { UUID(uuidString: $0) }
+        }
+        
+        // Sync widget completions — remove cards that were completed via widget
+        syncWidgetCompletions()
+    }
+    
+    /// Check the shared container for cards completed via the widget and remove
+    /// them from the main app state. The widget can only write to the shared
+    /// container (App Group UserDefaults), not to the app's own UserDefaults.standard.
+    /// Without this sync, completed cards reappear when the app re-saves state.
+    private func syncWidgetCompletions() {
+        let completedCards = SharedCardManager.shared.loadCompletedCards()
+        guard !completedCards.isEmpty else { return }
+        
+        let completedIDs = Set(completedCards.map { $0.id })
+        
+        // Remove completed cards from app state
+        let beforeCount = cards.count
+        cards.removeAll { completedIDs.contains($0.id) }
+        priorityCardIds.removeAll { completedIDs.contains($0) }
+        
+        // Only save if something changed
+        if cards.count != beforeCount {
+            // Clear the completed cards list so we don't re-process them
+            SharedCardManager.shared.clearCompletedCards()
         }
     }
 }

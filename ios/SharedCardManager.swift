@@ -188,4 +188,11 @@ class SharedCardManager {
         
         return []
     }
+    
+    // Clear completed cards (called after main app has synced completions)
+    func clearCompletedCards() {
+        guard let defaults = sharedDefaults else { return }
+        defaults.removeObject(forKey: "sharedCompletedCards")
+        defaults.synchronize()
+    }
 }

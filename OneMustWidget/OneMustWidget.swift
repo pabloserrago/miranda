@@ -53,36 +53,25 @@ struct Provider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         let currentDate = Date()
+        let defaults = UserDefaults(suiteName: "group.com.pabloserrano.onemust")
+        defaults?.synchronize()  // Ensure we read latest writes from Intent
+        
         let cards = SharedCardManager.shared.loadPriorityCards()
         
         // Check if a completion was just triggered
-        if let completingIDString = UserDefaults(suiteName: "group.com.ahad.oneMust")?.string(forKey: "completingCardID"),
-           let completingID = UUID(uuidString: completingIDString),
-           let idx = cards.firstIndex(where: { $0.id == completingID }) {
+        if let completingIDString = defaults?.string(forKey: "completingCardID") {
+            // Clear the flag immediately so we don't re-trigger
+            defaults?.removeObject(forKey: "completingCardID")
+            defaults?.synchronize()
             
-            // Clear the flag immediately
-            UserDefaults(suiteName: "group.com.ahad.oneMust")?.removeObject(forKey: "completingCardID")
+            // Intent already removed the card from storage.
+            // Cards loaded above may or may not still include it (race condition).
+            // Build timeline from current storage state either way.
+            let freshCards = SharedCardManager.shared.loadPriorityCards()
             
-            // Entry 1 — dopamine beat: task struck through (500ms)
-            let entry1 = SimpleEntry(
-                date: currentDate,
-                priorityCards: cards,
-                phase: .completing(id: completingIDString)
-            )
-            
-            // Entry 2 — promotion: task removed, others promoted
-            var updatedCards = cards
-            updatedCards.remove(at: idx)
-            
-            let entry2 = SimpleEntry(
-                date: currentDate.addingTimeInterval(0.5),
-                priorityCards: updatedCards,
-                phase: .normal
-            )
-            
-            // Two-entry arc for dopamine beat
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
-            let timeline = Timeline(entries: [entry1, entry2], policy: .after(nextUpdate))
+            let entry = SimpleEntry(date: currentDate, priorityCards: freshCards, phase: .normal)
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
             completion(timeline)
             return
         }
@@ -115,62 +104,66 @@ struct OneMustWidgetEntryView : View {
     }
 }
 
-// MARK: — Compact Widget (Small)
+// MARK: — Compact Widget (Small) - Tortoise Architecture Applied
 
 struct CompactWidgetView: View {
     let cards: [Card]
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        ZStack {
-            if let card = cards.first {
-                // Show first priority
-                VStack(spacing: 8) {
+        Button(intent: CompleteCardIntent(cardId: cards.first?.id.uuidString ?? "")) {
+            VStack(alignment: .leading, spacing: 0) {
+                if let card = cards.first {
+                    // P1 task - centered for small widget
                     Text(card.simplifiedText)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.primary)
+                        .font(.system(size: 20, weight: .heavy))  // 20pt/800 for small widget
+                        .tracking(-0.60)  // -0.03em
+                        .lineLimit(3)
+                        .truncationMode(.tail)
+                        .foregroundColor(textColor)
                         .multilineTextAlignment(.center)
-                        .lineLimit(5)
-                        .padding(.horizontal, 12)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                // Complete button (top right)
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-                            Image(systemName: "circle")
-                                .font(.system(size: 22, weight: .regular))
-                                .foregroundColor(.primary)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(8)
-                    }
-                    Spacer()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    // Empty state
+                    Text("Capture anything.")
+                        .font(.system(size: 13, weight: .regular))
+                        .tracking(-0.156)
+                        .foregroundColor(textColor)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
             }
-            
-            // + button in bottom right corner
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Link(destination: URL(string: "miranda://capture")!) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.primary)
-                            .frame(width: 32, height: 32)
-                            .background(Color(uiColor: .secondarySystemFill))
-                            .clipShape(Circle())
-                    }
-                    .padding(8)
-                }
-            }
+            .padding(14)
         }
+        .buttonStyle(.plain)
         .containerBackground(for: .widget) {
-            Color(uiColor: .systemBackground)
+            if colorScheme == .dark {
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(red: 0.157, green: 0.216, blue: 0.353, opacity: 0.90), location: 0.0),
+                        .init(color: Color(red: 0.086, green: 0.125, blue: 0.235, opacity: 0.96), location: 0.55),
+                        .init(color: Color(red: 0.047, green: 0.071, blue: 0.149, opacity: 0.98), location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottomTrailing
+                )
+            } else {
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(red: 0.976, green: 0.933, blue: 0.855, opacity: 1.0), location: 0.0),
+                        .init(color: Color(red: 0.941, green: 0.882, blue: 0.769, opacity: 1.0), location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottomTrailing
+                )
+            }
         }
+    }
+    
+    private var textColor: Color {
+        colorScheme == .dark ?
+            Color(red: 0.922, green: 0.949, blue: 1.0) :
+            Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
     }
 }
 
@@ -181,20 +174,31 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Tasks anchored to top
-            taskList
-                .padding(.top, 14)
+        ZStack(alignment: .bottomTrailing) {
+            // Tasks anchored to top, fill entire widget
+            VStack(alignment: .leading, spacing: 0) {
+                taskList
+                    .padding(.top, 14)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            Spacer()
-            
-            // Empty state: pill button, with tasks: plain text
+            // Note button — absolutely positioned at bottom-right via ZStack alignment
             if entry.priorityCards.isEmpty {
+                // Full-width pill for empty state
                 noteButton
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 14)
                     .padding(.bottom, 14)
             } else {
-                plainNoteLink
-                    .padding(.bottom, 14)
+                // Plain text "+ Note", fixed bottom-right
+                Link(destination: URL(string: "miranda://capture")!) {
+                    Text("+ Note")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(textColor.opacity(0.55))
+                }
+                .padding(.trailing, 14)
+                .padding(.bottom, 14)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -283,7 +287,6 @@ struct MediumWidgetView: View {
                 Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.95))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .padding(.horizontal, 14)
             .background(
                 Capsule()
                     .fill(colorScheme == .dark ? 
@@ -296,21 +299,6 @@ struct MediumWidgetView: View {
                         x: 0, y: 1)
             )
         }
-        .padding(.horizontal, 14)  // Safe area edge alignment
-    }
-    
-    @ViewBuilder
-    private var plainNoteLink: some View {
-        HStack {
-            Spacer()
-            Link(destination: URL(string: "miranda://capture")!) {
-                Text("+ Note")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(textColor.opacity(0.55))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 14)  // Safe area edge alignment
     }
     
     private var textColor: Color {
@@ -368,108 +356,169 @@ struct TaskRowView: View {
                         Color(red: 0.922, green: 0.949, blue: 1.0) : 
                         Color(red: 0.110, green: 0.078, blue: 0.063))  // #1C1410
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)  // Allow vertical expansion
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, rank == 0 ? 6 : 4)  // P1: 6pt (room for 2-line 28pt text), P2/P3: 4pt
+            .padding(.vertical, rank == 0 ? 4 : 3)  // P1: 4pt, P2/P3: 3pt — tight rhythm
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: — Large Widget (Shows all 3 priorities)
+// MARK: — Large Widget (Shows all 3 priorities) - Tortoise Architecture Applied
 
 struct LargeWidgetView: View {
     let cards: [Card]
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 10) {
-                // Show all 3 priority slots
-                ForEach(0..<3, id: \.self) { index in
-                    if index < cards.count {
-                        let card = cards[index]
-                        HStack(spacing: 12) {
-                            // Complete button (like Reminders)
-                            Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 22, weight: .regular))
-                                    .foregroundColor(.primary)
-                            }
-                            .buttonStyle(.plain)
-                            
-                            // Priority number badge
-                            Text("\(index + 1)")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.black)
-                                .frame(width: 28, height: 28)
-                                .background(Color.yellow)
-                                .clipShape(Circle())
-                            
-                            // Text
-                            Text(card.simplifiedText)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.primary)
-                                .lineLimit(2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .secondarySystemFill))
-                        .cornerRadius(16)
-                    } else {
-                        // Empty slot
-                        HStack(spacing: 12) {
-                            Image(systemName: "circle")
-                                .font(.system(size: 22, weight: .regular))
-                                .foregroundColor(.secondary.opacity(0.2))
-                            
-                            Text("\(index + 1)")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.secondary.opacity(0.3))
-                                .frame(width: 28, height: 28)
-                                .background(Color(uiColor: .tertiarySystemFill))
-                                .clipShape(Circle())
-                            
-                            Image(systemName: "lightbulb")
-                                .font(.system(size: 18))
-                                .foregroundColor(.secondary.opacity(0.3))
-                            
-                            Text("Empty slot")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.secondary.opacity(0.4))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(Color(uiColor: .tertiarySystemFill).opacity(0.5))
-                        .cornerRadius(16)
-                    }
-                }
-            }
-            .padding(14)
-            
-            // + button in bottom right corner
-            VStack {
+        VStack(alignment: .leading, spacing: 0) {
+            if cards.isEmpty {
+                // Empty state
+                Text("Capture anything.")
+                    .font(.system(size: 13, weight: .regular))
+                    .tracking(-0.156)
+                    .foregroundColor(textColor)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
                 Spacer()
-                HStack {
-                    Spacer()
-                    Link(destination: URL(string: "miranda://capture")!) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.primary)
-                            .frame(width: 36, height: 36)
-                            .background(Color(uiColor: .secondarySystemFill))
-                            .clipShape(Circle())
+                
+                largePillButton
+                    .padding(.bottom, 16)
+            } else {
+                // Task list
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
+                        LargeTaskRow(card: card, rank: index, colorScheme: colorScheme)
+                            .padding(.horizontal, 16)
                     }
-                    .padding(12)
                 }
+                .padding(.top, 16)
+                
+                Spacer()
+                
+                plainNoteLink
+                    .padding(.bottom, 16)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(for: .widget) {
-            Color(uiColor: .systemBackground)
+            if colorScheme == .dark {
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(red: 0.157, green: 0.216, blue: 0.353, opacity: 0.90), location: 0.0),
+                        .init(color: Color(red: 0.086, green: 0.125, blue: 0.235, opacity: 0.96), location: 0.55),
+                        .init(color: Color(red: 0.047, green: 0.071, blue: 0.149, opacity: 0.98), location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottomTrailing
+                )
+            } else {
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(red: 0.976, green: 0.933, blue: 0.855, opacity: 1.0), location: 0.0),
+                        .init(color: Color(red: 0.941, green: 0.882, blue: 0.769, opacity: 1.0), location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottomTrailing
+                )
+            }
         }
+    }
+    
+    @ViewBuilder
+    private var largePillButton: some View {
+        Link(destination: URL(string: "miranda://capture")!) {
+            HStack(spacing: 6) {
+                Image(systemName: "plus")
+                    .font(.system(size: 10, weight: .semibold))
+                Text("Note")
+                    .font(.system(size: 13, weight: .semibold))
+                    .tracking(-0.13)
+            }
+            .foregroundColor(colorScheme == .dark ?
+                Color(red: 0.894, green: 0.933, blue: 1.0, opacity: 0.92) :
+                Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.95))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .background(
+                Capsule()
+                    .fill(colorScheme == .dark ?
+                        Color.white.opacity(0.13) :
+                        Color(red: 0.165, green: 0.122, blue: 0.078))
+                    .shadow(color: colorScheme == .dark ?
+                        Color.black.opacity(0.25) :
+                        Color(red: 0.110, green: 0.078, blue: 0.063).opacity(0.18),
+                        radius: colorScheme == .dark ? 4 : 3,
+                        x: 0, y: 1)
+            )
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    @ViewBuilder
+    private var plainNoteLink: some View {
+        HStack {
+            Spacer()
+            Link(destination: URL(string: "miranda://capture")!) {
+                Text("+ Note")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(textColor.opacity(0.55))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    private var textColor: Color {
+        colorScheme == .dark ?
+            Color(red: 0.922, green: 0.949, blue: 1.0) :
+            Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
+    }
+}
+
+// MARK: — Large Task Row
+
+struct LargeTaskRow: View {
+    let card: Card
+    let rank: Int
+    let colorScheme: ColorScheme
+    
+    private var fontSize: CGFloat { rank == 0 ? 24 : 14 }  // P1: 24pt/800, P2/P3: 14pt/400
+    private var fontWeight: Font.Weight {
+        rank == 0 ? .heavy : .regular
+    }
+    
+    private var textColor: Color {
+        if colorScheme == .dark {
+            if rank == 0 { return Color(red: 0.922, green: 0.949, blue: 1.0) }
+            if rank == 1 { return Color(red: 0.863, green: 0.910, blue: 1.0).opacity(0.85) }
+            return Color(red: 0.784, green: 0.843, blue: 1.0)
+        } else {
+            return Color(red: 0.110, green: 0.078, blue: 0.063)  // #1C1410
+        }
+    }
+    
+    var body: some View {
+        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+            HStack(alignment: .center, spacing: 0) {
+                Text(card.simplifiedText)
+                    .font(.system(size: fontSize, weight: fontWeight))
+                    .tracking(rank == 0 ? -0.72 : -0.168)
+                    .lineLimit(rank == 0 ? 2 : 1)
+                    .truncationMode(.tail)
+                    .foregroundColor(textColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, rank == 0 ? 8 : 5)
+        }
+        .buttonStyle(.plain)
     }
 }
 
