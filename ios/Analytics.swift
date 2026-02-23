@@ -4,6 +4,14 @@ import Foundation
 class Analytics {
     static let shared = Analytics()
     
+    private let appVersion: String = {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+    }()
+    
+    private let appLanguage: String = {
+        Locale.current.language.languageCode?.identifier ?? "en"
+    }()
+    
     private init() {}
     
     // MARK: - Event Tracking
@@ -71,8 +79,46 @@ class Analytics {
         
         saveEvents(events)
         
+        // Send to Supabase (fire-and-forget)
+        sendToSupabase(event: name, properties: properties)
+        
         // Print to console for debugging
         print("📊 Analytics: \(name) - \(properties)")
+    }
+    
+    private func sendToSupabase(event: String, properties: [String: Any]) {
+        guard let url = URL(string: "\(Secrets.supabaseURL)/rest/v1/analytics") else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(Secrets.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(Secrets.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
+        
+        // Convert properties to JSON-safe types
+        var jsonProperties: [String: Any] = [:]
+        for (key, value) in properties {
+            if let boolVal = value as? Bool {
+                jsonProperties[key] = boolVal
+            } else if let intVal = value as? Int {
+                jsonProperties[key] = intVal
+            } else if let doubleVal = value as? Double {
+                jsonProperties[key] = doubleVal
+            } else {
+                jsonProperties[key] = "\(value)"
+            }
+        }
+        
+        let body: [String: Any] = [
+            "event": event,
+            "properties": jsonProperties,
+            "app_version": appVersion,
+            "language": appLanguage
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
     }
     
     private func incrementCounter(_ key: String) {
@@ -136,4 +182,3 @@ class Analytics {
         return Array(events.suffix(limit))
     }
 }
-
