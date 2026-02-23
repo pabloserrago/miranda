@@ -12,6 +12,8 @@ struct SettingsView: View {
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = true
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
+    @State private var showFeedback: Bool = false
+    @State private var showFeedbackSentToast: Bool = false
     
     private var previewCard: Card? {
         currentPriorityCard ?? lastCapture
@@ -187,9 +189,7 @@ struct SettingsView: View {
                     // 4. Submit a Request
                     Section {
                         Button(action: {
-                            if let url = URL(string: "mailto:hello@miranda.app?subject=Miranda%20Feedback") {
-                                UIApplication.shared.open(url)
-                            }
+                            showFeedback = true
                         }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "envelope.fill")
@@ -198,7 +198,7 @@ struct SettingsView: View {
                                     .frame(width: 24, height: 24)
                                 Text("Submit a Request")
                                 Spacer()
-                                Image(systemName: "arrow.up.right")
+                                Image(systemName: "chevron.right")
                                     .font(.system(size: 12))
                                     .foregroundColor(.secondary)
                             }
@@ -215,7 +215,7 @@ struct SettingsView: View {
                                     .font(.system(size: 20, weight: .bold))
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
-                                Text("Delete All Captures")
+                                Text("Delete All Notes")
                             }
                         }
                         .disabled(!hasCaptures)
@@ -288,14 +288,22 @@ struct SettingsView: View {
                     }
                 }
             }
-                .alert("Delete All Captures?", isPresented: $showDeleteConfirm) {
+                .alert("Delete All Notes?", isPresented: $showDeleteConfirm) {
                     Button("Delete All", role: .destructive) {
                         onDeleteAll()
                         dismiss()
                     }
                     Button("Cancel", role: .cancel) {}
                 } message: {
-                    Text("This will permanently delete all your captures. This action cannot be undone.")
+                    Text("This will permanently delete all your notes. This action cannot be undone.")
+                }
+                .sheet(isPresented: $showFeedback) {
+                    FeedbackView(onSuccess: {
+                        showFeedbackSentToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            showFeedbackSentToast = false
+                        }
+                    })
                 }
             }
             
@@ -316,6 +324,24 @@ struct SettingsView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showCopiedToast)
+            }
+            
+            if showFeedbackSentToast {
+                VStack {
+                    Spacer()
+                    
+                    Text("Feedback sent")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color(uiColor: .secondarySystemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                        .padding(.bottom, 50)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showFeedbackSentToast)
             }
         }
     }
