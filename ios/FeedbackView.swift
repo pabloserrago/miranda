@@ -142,12 +142,12 @@ struct FeedbackView: View {
         
         isSubmitting = true
         
-        let url = URL(string: "https://umlqnctceqhcxkklpplc.supabase.co/rest/v1/feedback")!
+        let url = URL(string: "\(Secrets.supabaseURL)/rest/v1/feedback")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbHFuY3RjZXFoY3hra2xwcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MDA1MTksImV4cCI6MjA4NzM3NjUxOX0.8HHTP7xQ2Aaf_LdsdoWEE0B8MKXr_St1kMx0z6CIBVw", forHTTPHeaderField: "apikey")
-        request.setValue("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbHFuY3RjZXFoY3hra2xwcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MDA1MTksImV4cCI6MjA4NzM3NjUxOX0.8HHTP7xQ2Aaf_LdsdoWEE0B8MKXr_St1kMx0z6CIBVw", forHTTPHeaderField: "Authorization")
+        request.setValue(Secrets.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(Secrets.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
         
         let body: [String: String] = [
             "category": selectedCategory.rawValue,
