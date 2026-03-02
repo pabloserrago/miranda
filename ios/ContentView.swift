@@ -33,8 +33,8 @@ struct ContentView: View {
     @State private var draggedCard: Card? = nil
     @State private var draggedCardOffset: CGSize = .zero
     
-    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
-    @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = true
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
+    @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     
     private let maxVisibleCards = 6
     
@@ -1099,7 +1099,7 @@ struct RecentCapturesDrawer: View {
     
     @State private var offset: CGFloat = 0
     @GestureState private var dragOffset: CGFloat = 0
-    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     
     private let collapsedHeight: CGFloat = 120
     private let expandedHeight: CGFloat = 600
@@ -1477,7 +1477,7 @@ struct PriorityPickerView: View {
     let onCaptureText: () -> Void
     let onCaptureVoice: () -> Void
     @Environment(\.dismiss) var dismiss
-    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     
     var body: some View {
         NavigationView {

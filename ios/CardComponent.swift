@@ -28,7 +28,7 @@ enum CardVariant: Equatable {
                 Color(red: 0.98, green: 0.80, blue: 0.60)   // Deeper orange/gold bottom
             ]
         case .cardDrawer:
-            // Adaptive color for drawer cards - Light: #F2F2F7, Dark: #1C1C1E
+            // Plain color for drawer cards - #F2F2F7
             return [
                 Color(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255)
             ]
@@ -62,15 +62,7 @@ struct CardComponent: View {
     var body: some View {
         Text(text)
             .font(.system(size: fontSize, weight: .regular))
-            .foregroundColor(
-                variant == .cardDrawer 
-                    ? Color(uiColor: UIColor { traitCollection in
-                        traitCollection.userInterfaceStyle == .dark
-                            ? .white  // Dark mode: white text
-                            : UIColor.black.withAlphaComponent(0.85)  // Light mode: black text
-                    })
-                    : variant.textColor
-            )
+            .foregroundColor(variant.textColor)
             .multilineTextAlignment(.leading)
             .lineLimit(6)
             .truncationMode(.tail)
@@ -98,14 +90,9 @@ struct CardComponent: View {
                             )
                         )
                     } else if variant == .cardDrawer {
-                        // Adaptive plain color for drawer cards
-                        // Light mode: #F2F2F7, Dark mode: #1C1C1E
+                        // Plain solid color for drawer cards
                         return AnyView(
-                            Color(uiColor: UIColor { traitCollection in
-                                traitCollection.userInterfaceStyle == .dark
-                                    ? UIColor(red: 0x1C/255, green: 0x1C/255, blue: 0x1E/255, alpha: 1) // Dark mode: #1C1C1E
-                                    : UIColor(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255, alpha: 1) // Light mode: #F2F2F7
-                            })
+                            variant.gradientColors[0]
                         )
                     } else {
                         return AnyView(
@@ -230,15 +217,6 @@ struct CardBoost: View {
 #Preview("Card Variants") {
     ScrollView {
         VStack(spacing: 20) {
-            Text("card-drawer")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            CardComponent(
-                text: "This is a drawer card with plain background.",
-                variant: .cardDrawer,
-                minHeight: 100
-            )
-            
             Text("card-default")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -246,6 +224,15 @@ struct CardBoost: View {
                 text: "Test example of something to do.",
                 variant: .cardDefault,
                 minHeight: 200
+            )
+            
+            Text("card-drawer")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            CardComponent(
+                text: "This is a drawer card with plain background.",
+                variant: .cardDrawer,
+                minHeight: 100
             )
             
             Text("card-onboarding")

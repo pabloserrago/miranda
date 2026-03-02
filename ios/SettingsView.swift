@@ -8,8 +8,8 @@ struct SettingsView: View {
     let lastCapture: Card?
     let hasCaptures: Bool
     @Environment(\.dismiss) var dismiss
-    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = true
-    @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = true
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
+    @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
