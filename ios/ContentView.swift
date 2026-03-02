@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 #if canImport(WidgetKit)
 import WidgetKit
 #endif
@@ -271,6 +272,7 @@ struct ContentView: View {
                                                     onLongPress: {
                                                         let generator = UIImpactFeedbackGenerator(style: .medium)
                                                         generator.impactOccurred()
+                                                        syncPriorityOrder()
                                                         draggedCard = priorityCard
                                                     }
                                                 )
@@ -279,6 +281,13 @@ struct ContentView: View {
                                                 .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
                                                 .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
                                                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
+                                                .onDrop(of: [UTType.text], delegate: CardDropDelegate(
+                                                    destinationIndex: index,
+                                                    draggedCard: $draggedCard,
+                                                    priorityCardIds: $priorityCardIds,
+                                                    cards: autoPriorityCards,
+                                                    onReorder: { saveState() }
+                                                ))
                                         }
                                         
                                         // Widget onboarding card (when 1-2 cards exist)
@@ -346,6 +355,7 @@ struct ContentView: View {
                                                         onLongPress: {
                                                             let generator = UIImpactFeedbackGenerator(style: .medium)
                                                             generator.impactOccurred()
+                                                            syncPriorityOrder()
                                                             draggedCard = priorityCard
                                                         }
                                                     )
@@ -354,6 +364,13 @@ struct ContentView: View {
                                                     .scaleEffect(draggedCard?.id == priorityCard.id ? 1.08 : 1.0)
                                                     .zIndex(draggedCard?.id == priorityCard.id ? 100 : 0)
                                                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: draggedCard?.id)
+                                                    .onDrop(of: [UTType.text], delegate: CardDropDelegate(
+                                                        destinationIndex: index,
+                                                        draggedCard: $draggedCard,
+                                                        priorityCardIds: $priorityCardIds,
+                                                        cards: autoPriorityCards,
+                                                        onReorder: { saveState() }
+                                                    ))
                                                 }
                                                 
                                                 if showWidgetCard {
@@ -861,6 +878,16 @@ struct ContentView: View {
         }
         
         return nil
+    }
+    
+    private func syncPriorityOrder() {
+        let eligibleIds = Set(cards.filter { !excludedFromPriorityIds.contains($0.id) }.map { $0.id })
+        var newOrder = priorityCardIds.filter { eligibleIds.contains($0) }
+        let missing = cards
+            .filter { eligibleIds.contains($0.id) && !newOrder.contains($0.id) }
+            .sorted { $0.timestamp > $1.timestamp }
+        newOrder.append(contentsOf: missing.map { $0.id })
+        priorityCardIds = newOrder
     }
     
     private func addToPriorities(_ cardId: UUID) {
