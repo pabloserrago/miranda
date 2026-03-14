@@ -1200,20 +1200,20 @@ struct RecentCapturesDrawer: View {
                             onCreateCard("", false)
                         }) {
                             ZStack {
-                                // Color base
+                                // Color base - make it more vibrant
                                 Circle()
-                                    .fill(AppColor.Surface.button)
+                                    .fill(AppColor.Surface.button.opacity(0.9))
                                     .frame(width: 56, height: 56)
                                 
                                 // Material glass effect on top
                                 Circle()
                                     .fill(Color.clear)
                                     .frame(width: 56, height: 56)
-                                    .background(.thinMaterial)
+                                    .background(.ultraThinMaterial)
                                 
                                 // Stroke
                                 Circle()
-                                    .stroke(AppColor.Border.subtle, lineWidth: 1.5)
+                                    .stroke(AppColor.Border.subtle.opacity(0.6), lineWidth: 1.5)
                                     .frame(width: 56, height: 56)
                                 
                                 // Icon
@@ -1221,7 +1221,7 @@ struct RecentCapturesDrawer: View {
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(AppColor.Text.primary)
                             }
-                            .shadow(color: AppColor.shadow.opacity(0.2), radius: 8, x: 0, y: 4)
+                            .shadow(color: AppColor.shadow.opacity(0.15), radius: 6, x: 0, y: 3)
                             .compositingGroup()
                             .clipShape(Circle())
                         }
