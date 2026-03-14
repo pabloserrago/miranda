@@ -116,16 +116,13 @@ enum AppColor {
         
         // UIKit compatibility (UIColor versions)
         static let primaryUIColor: UIColor = UIColor { traitCollection in
-            traitCollection.userInterfaceStyle == .dark ? Palette.neutral900 : Palette.neutral50
+            traitCollection.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral50
         }
         static let secondaryUIColor: UIColor = UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral50
         }
         static let tertiaryUIColor: UIColor = UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral100
-        }
-        static let buttonUIColor: UIColor = UIColor { traitCollection in
-            traitCollection.userInterfaceStyle == .dark ? Palette.neutral200 : Palette.neutral800
         }
     }
     
