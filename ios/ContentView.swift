@@ -583,13 +583,21 @@ struct ContentView: View {
                                             startWithDictation = false
                                             showCreateModal = true
                                         }) {
-                                            Image(systemName: "plus")
-                                            .font(.system(size: 20, weight: .semibold))
-                                            .foregroundColor(AppColor.Action.destructiveIcon)
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.white)
+                                                
+                                                Circle()
+                                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                                
+                                                Image(systemName: "plus")
+                                                    .font(.system(size: 20, weight: .semibold))
+                                                    .foregroundColor(Color.black.opacity(0.75))
+                                            }
                                             .frame(width: 48, height: 48)
-                                            .background(AppColor.overlay)
-                                            .clipShape(Circle())
+                                            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                                         }
+                                        .buttonStyle(.plain)
                                     }
                                 .padding(.horizontal, 20)
                                 .padding(.top, 16)
