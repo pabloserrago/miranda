@@ -1964,13 +1964,12 @@ struct SwipeableCardRow: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color.clear)
+                            .fill(AppColor.Action.archive)
                             .frame(width: 50, height: 50)
-                            .background(
-                                ZStack {
-                                    AppColor.Action.archive
-                                    Color.clear.background(.thinMaterial)
-                                }
+                            .overlay(
+                                Circle()
+                                    .fill(Color.clear)
+                                    .background(.thinMaterial)
                             )
                             .overlay(
                                 Circle()
@@ -2390,13 +2389,12 @@ struct OneMustCardView: View {
             }) {
                 ZStack {
                     Circle()
-                        .fill(Color.clear)
+                        .fill(AppColor.Text.primary.opacity(0.25))
                         .frame(width: 44, height: 44)
-                        .background(
-                            ZStack {
-                                AppColor.Text.primary.opacity(0.25)
-                                Color.clear.background(.thinMaterial)
-                            }
+                        .overlay(
+                            Circle()
+                                .fill(Color.clear)
+                                .background(.thinMaterial)
                         )
                         .overlay(
                             Circle()
