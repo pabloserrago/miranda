@@ -7,33 +7,45 @@ import SwiftUI
 enum Palette {
 
     // Neutrals
-    static let white       = UIColor(white: 1.0, alpha: 1.0)
-    static let black       = UIColor(white: 0.0, alpha: 1.0)
-    static let black85     = UIColor(white: 0.0, alpha: 0.85)
-    static let black45     = UIColor(white: 0.0, alpha: 0.45)
-    static let black08     = UIColor(white: 0.0, alpha: 0.08)
-    static let black09     = UIColor(white: 0.0, alpha: 0.09)
-    static let white55     = UIColor(white: 1.0, alpha: 0.55)
-    static let white20     = UIColor(white: 1.0, alpha: 0.20)
-    static let white15     = UIColor(white: 1.0, alpha: 0.15)
+    static let white   = UIColor(white: 1.0, alpha: 1.0)
+    static let black   = UIColor(white: 0.0, alpha: 1.0)
+    static let black85 = UIColor(white: 0.0, alpha: 0.85)
+    static let black40 = UIColor(white: 0.0, alpha: 0.40)
+    static let black10 = UIColor(white: 0.0, alpha: 0.10)
 
-    // Grays
-    static let gray900     = UIColor(red: 0x1C/255, green: 0x1C/255, blue: 0x1E/255, alpha: 1.0)  // #1C1C1E
-    static let gray800     = UIColor(red: 0x2C/255, green: 0x2C/255, blue: 0x2E/255, alpha: 1.0)  // #2C2C2E
-    static let gray700     = UIColor(red: 0x3A/255, green: 0x3A/255, blue: 0x3C/255, alpha: 1.0)  // #3A3A3C
-    static let gray100     = UIColor(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255, alpha: 1.0)  // #F2F2F7
+    // Green (actions)
+    static let green      = UIColor(red: 0.20, green: 0.78, blue: 0.35, alpha: 1.0)
+    static let greenLight = UIColor(red: 0.30, green: 0.85, blue: 0.40, alpha: 1.0)
 
-    // Green
-    static let green500    = UIColor(red: 0.20, green: 0.78, blue: 0.35, alpha: 1.0)
-    static let green400    = UIColor(red: 0.30, green: 0.85, blue: 0.40, alpha: 1.0)
+    // Green (text accent — darker for readability)
+    static let greenText      = UIColor(red: 0.20, green: 0.65, blue: 0.25, alpha: 1.0)
+    static let greenTextLight = UIColor(red: 0.40, green: 0.85, blue: 0.45, alpha: 1.0)
 
     // Yellow
-    static let yellow500   = UIColor(red: 1.0, green: 0.80, blue: 0.0, alpha: 1.0)
-    static let yellow400   = UIColor(red: 1.0, green: 0.84, blue: 0.04, alpha: 1.0)
+    static let yellow      = UIColor(red: 1.0, green: 0.80, blue: 0.0, alpha: 1.0)
+    static let yellowLight = UIColor(red: 1.0, green: 0.84, blue: 0.04, alpha: 1.0)
 
-    // Accent green (text)
-    static let accent500   = UIColor(red: 0.20, green: 0.65, blue: 0.25, alpha: 1.0)
-    static let accent400   = UIColor(red: 0.40, green: 0.85, blue: 0.45, alpha: 1.0)
+    // Red & Blue
+    static let red  = UIColor.systemRed
+    static let blue = UIColor.systemBlue
+
+    // Gradient: Card Default
+    static let blueLight = UIColor(red: 0xCC/255, green: 0xDA/255, blue: 0xF7/255, alpha: 1.0)
+    static let bluePale  = UIColor(red: 0xE7/255, green: 0xED/255, blue: 0xF9/255, alpha: 1.0)
+    static let blueMid   = UIColor(red: 0x60/255, green: 0x90/255, blue: 0xEA/255, alpha: 1.0)
+
+    // Gradient: Onboarding
+    static let lavenderLight = UIColor(red: 0.92, green: 0.92, blue: 0.98, alpha: 1.0)
+    static let lavenderDark  = UIColor(red: 0.88, green: 0.88, blue: 0.96, alpha: 1.0)
+
+    // Gradient: Boost
+    static let peachLight = UIColor(red: 1.0, green: 0.92, blue: 0.75, alpha: 1.0)
+    static let peachDark  = UIColor(red: 0.98, green: 0.80, blue: 0.60, alpha: 1.0)
+
+    // Gradient: Boost wrapper
+    static let pinkLight = UIColor(red: 0.95, green: 0.80, blue: 0.92, alpha: 1.0)
+    static let pinkDark  = UIColor(red: 0.90, green: 0.75, blue: 0.90, alpha: 1.0)
+    static let purple    = UIColor(red: 0.45, green: 0.25, blue: 0.70, alpha: 1.0)
 }
 
 // ============================================================
@@ -45,52 +57,61 @@ enum AppColor {
     // MARK: Text
 
     enum Text {
-        /// Primary text: black85 (light) / white (dark)
-        static let primary = adaptive(light: Palette.black85, dark: Palette.white)
-
-        /// Secondary text: black45 (light) / white55 (dark)
-        static let secondary = adaptive(light: Palette.black45, dark: Palette.white55)
-
-        /// Accent text: accent500 (light) / accent400 (dark)
-        static let accent = adaptive(light: Palette.accent500, dark: Palette.accent400)
+        static let primary   = adaptive(light: Palette.black85, dark: Palette.white)
+        static let secondary = adaptive(light: Palette.black40, dark: Palette.white.withAlphaComponent(0.55))
+        static let accent    = adaptive(light: Palette.greenText, dark: Palette.greenTextLight)
+        static let inverse   = Color(Palette.white)
+        static let tertiary  = Color(Palette.black40)
     }
 
     // MARK: Background
 
     enum Background {
-        /// Main screen: gray100 (light) / gray900 (dark)
-        static let primary = adaptive(light: Palette.gray100, dark: Palette.gray900)
-
-        /// Drawer, secondary surfaces: white (light) / gray800 (dark)
-        static let secondary = adaptive(light: Palette.white, dark: Palette.gray800)
-
-        /// Card surface: gray100 (light) / gray800 (dark)
-        static let card = adaptive(light: Palette.gray100, dark: Palette.gray800)
-
-        /// Elevated card: white (light) / gray700 (dark)
-        static let cardElevated = adaptive(light: Palette.white, dark: Palette.gray700)
+        static let primary      = adaptive(light: Palette.black10, dark: Palette.black85)
+        static let secondary    = adaptive(light: Palette.white, dark: Palette.black85)
+        static let card         = adaptive(light: Palette.black10, dark: Palette.black85)
+        static let cardElevated = adaptive(light: Palette.white, dark: Palette.black85)
     }
 
     // MARK: Actions
 
     enum Action {
-        /// Complete button: green500 (light) / green400 (dark)
-        static let complete = adaptive(light: Palette.green500, dark: Palette.green400)
+        static let complete        = adaptive(light: Palette.green, dark: Palette.greenLight)
+        static let priority        = adaptive(light: Palette.yellow, dark: Palette.yellowLight)
+        static let destructive     = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.20))
+        static let destructiveIcon = adaptive(light: Palette.black, dark: Palette.white)
+    }
 
-        /// Priority button: yellow500 (light) / yellow400 (dark)
-        static let priority = adaptive(light: Palette.yellow500, dark: Palette.yellow400)
+    // MARK: Gradients
 
-        /// Destructive / dismiss fill: black08 (light) / white20 (dark)
-        static let destructive = adaptive(light: Palette.black08, dark: Palette.white20)
+    enum Gradient {
+        static let cardDefault: [Color] = [
+            Color(Palette.blueLight), Color(Palette.bluePale), Color(Palette.blueMid)
+        ]
+        static let cardOnboarding: [Color] = [
+            Color(Palette.lavenderLight), Color(Palette.lavenderDark)
+        ]
+        static let cardBoost: [Color] = [
+            Color(Palette.peachLight), Color(Palette.peachDark)
+        ]
+        static let boostWrapper: [Color] = [
+            Color(Palette.pinkLight), Color(Palette.pinkDark)
+        ]
+        static let boostAccent = Color(Palette.purple)
     }
 
     // MARK: Surface helpers
 
-    /// Overlay tint: black08 (light) / white15 (dark)
-    static let overlay = adaptive(light: Palette.black08, dark: Palette.white15)
+    static let overlay      = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.15))
+    static let scrim        = Color(Palette.black40)
+    static let shadow       = Color(Palette.black10)
+    static let shadowMedium = Color(Palette.black10)
 
-    /// Drop shadow
-    static let shadow = Color(Palette.black09)
+    static let slotFill   = Color(Palette.white.withAlphaComponent(0.05))
+    static let slotStroke = Color(Palette.white.withAlphaComponent(0.15))
+    static let slotCircle = Color(Palette.white.withAlphaComponent(0.10))
+    static let slotIcon   = Color(Palette.white.withAlphaComponent(0.35))
+    static let slotLabel  = Color(Palette.white.withAlphaComponent(0.35))
 
     // MARK: - Helper
 
@@ -104,24 +125,11 @@ enum AppColor {
 // ============================================================
 
 enum AppFont {
-    /// 38pt bold rounded - full-screen card title
-    static let title1 = Font.system(size: 38, weight: .bold, design: .rounded)
-
-    /// 22pt semibold - section headers
-    static let title2 = Font.system(size: 22, weight: .semibold)
-
-    /// 20pt bold - primary buttons, nav actions
-    static let title3 = Font.system(size: 20, weight: .bold)
-
-    /// 18pt medium - card body text, picker items
-    static let body1 = Font.system(size: 18, weight: .medium)
-
-    /// 16pt medium - list row text, search field
-    static let body2 = Font.system(size: 16, weight: .medium)
-
-    /// 13pt medium - labels, small UI elements
-    static let caption = Font.system(size: 13, weight: .medium)
-
-    /// 12pt regular - fine print, timestamps
+    static let title1   = Font.system(size: 38, weight: .bold, design: .rounded)
+    static let title2   = Font.system(size: 22, weight: .semibold)
+    static let title3   = Font.system(size: 20, weight: .bold)
+    static let body1    = Font.system(size: 18, weight: .medium)
+    static let body2    = Font.system(size: 16, weight: .medium)
+    static let caption  = Font.system(size: 13, weight: .medium)
     static let footnote = Font.system(size: 12, weight: .regular)
 }

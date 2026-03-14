@@ -21,13 +21,13 @@ struct AnalyticsDebugView: View {
                                 Spacer()
                                 Text("\(stats[key] as? Int ?? 0)")
                                     .font(.body.monospacedDigit())
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColor.Text.secondary)
                             }
                             .padding(.vertical, 4)
                         }
                     }
                     .padding()
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color(Palette.black10))
                     .cornerRadius(12)
                     
                     // Recent Events Section
@@ -46,18 +46,18 @@ struct AnalyticsDebugView: View {
                                 if let timestamp = event["timestamp"] as? TimeInterval {
                                     Text(formatDate(timestamp))
                                         .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(AppColor.Text.secondary)
                                 }
                                 
                                 ForEach(Array(event.keys.filter { $0 != "event" && $0 != "timestamp" }.sorted()), id: \.self) { key in
                                     Text("\(key): \(String(describing: event[key] ?? ""))")
                                         .font(.caption)
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(Color(Palette.blue))
                                 }
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.gray.opacity(0.1))
+                            .background(Color(Palette.black10))
                             .cornerRadius(8)
                         }
                     }

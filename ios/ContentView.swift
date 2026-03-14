@@ -229,7 +229,7 @@ struct ContentView: View {
                                                     Text("Note")
                                                         .font(.system(size: 20, weight: .bold))
                                                 }
-                                                .foregroundColor(.white)
+                                                .foregroundColor(AppColor.Text.inverse)
                                                 .padding(.horizontal, 32)
                                                 .padding(.vertical, 16)
                                                 .background(AppColor.Text.primary)
@@ -321,7 +321,7 @@ struct ContentView: View {
                                                             Text("Note")
                                                                 .font(.system(size: 20, weight: .bold))
                                                         }
-                                                        .foregroundColor(.white)
+                                                        .foregroundColor(AppColor.Text.inverse)
                                                         .padding(.horizontal, 32)
                                                         .padding(.vertical, 16)
                                                         .background(AppColor.Text.primary)
@@ -421,7 +421,7 @@ struct ContentView: View {
                                                     Text("Note")
                                                     .font(.system(size: 20, weight: .bold))
                                                 }
-                                            .foregroundColor(.white)
+                                            .foregroundColor(AppColor.Text.inverse)
                                             .padding(.horizontal, 32)
                                             .padding(.vertical, 16)
                                             .background(AppColor.Text.primary)
@@ -448,13 +448,11 @@ struct ContentView: View {
                             }) {
                                 Image(systemName: "tortoise.fill")
                                     .font(.system(size: 20))
-                                    .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                        traitCollection.userInterfaceStyle == .dark ? .white : .black
-                                    }))
+                                    .foregroundColor(AppColor.Action.destructiveIcon)
                                     .frame(width: 44, height: 44)
                                     .background(.ultraThinMaterial)
                                     .clipShape(Circle())
-                                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
+                                    .shadow(color: AppColor.shadowMedium, radius: 8, x: 0, y: 2)
                             }
                             
                             Spacer()
@@ -515,15 +513,9 @@ struct ContentView: View {
                                             }) {
                                                 Image(systemName: "mic.fill")
                                                 .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                                    traitCollection.userInterfaceStyle == .dark ? .white : .black
-                                                }))
+                                                .foregroundColor(AppColor.Action.destructiveIcon)
                                                 .frame(width: 48, height: 48)
-                                                .background(Color(uiColor: UIColor { traitCollection in
-                                                    traitCollection.userInterfaceStyle == .dark
-                                                        ? UIColor(white: 1.0, alpha: 0.15) // Dark mode: semi-transparent white
-                                                        : UIColor(white: 0.0, alpha: 0.08) // Light mode: semi-transparent black
-                                                }))
+                                                .background(AppColor.overlay)
                                                 .clipShape(Circle())
                                             }
                                         }
@@ -536,15 +528,9 @@ struct ContentView: View {
                                         }) {
                                             Image(systemName: "plus")
                                             .font(.system(size: 20, weight: .semibold))
-                                            .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                                traitCollection.userInterfaceStyle == .dark ? .white : .black
-                                            }))
+                                            .foregroundColor(AppColor.Action.destructiveIcon)
                                             .frame(width: 48, height: 48)
-                                            .background(Color(uiColor: UIColor { traitCollection in
-                                                traitCollection.userInterfaceStyle == .dark
-                                                    ? UIColor(white: 1.0, alpha: 0.15) // Dark mode: semi-transparent white
-                                                    : UIColor(white: 0.0, alpha: 0.08) // Light mode: semi-transparent black
-                                            }))
+                                            .background(AppColor.overlay)
                                             .clipShape(Circle())
                                         }
                                     }
@@ -1061,7 +1047,7 @@ struct TortoiseCompletionView: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            AppColor.scrim
             .ignoresSafeArea()
             
             VStack(spacing: 24) {
@@ -1073,11 +1059,11 @@ struct TortoiseCompletionView: View {
                 
                 Text("Well done!")
                     .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColor.Text.inverse)
                 
                 Text("Slow and steady wins the race")
                     .font(.system(size: 18))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(Color(Palette.white))
             }
             .opacity(opacity)
             .onAppear {
@@ -1148,7 +1134,7 @@ struct RecentCapturesDrawer: View {
                             }) {
                                 Image(systemName: "mic.fill")
                                     .font(.system(size: 22, weight: .semibold))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 56, height: 56)
                                     .background(Color(uiColor: .secondarySystemBackground))
                                     .clipShape(Circle())
@@ -1161,7 +1147,7 @@ struct RecentCapturesDrawer: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 22, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(AppColor.Text.inverse)
                                 .frame(width: 56, height: 56)
                                 .background(AppColor.Text.primary)
                                 .clipShape(Circle())
@@ -1235,7 +1221,7 @@ struct RecentCapturesDrawer: View {
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color(uiColor: .systemBackground))
-                    .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: -8)
+                    .shadow(color: AppColor.shadowMedium, radius: 20, x: 0, y: -8)
             )
             .frame(height: collapsedHeight + offset + dragOffset)
             .frame(maxHeight: expandedHeight)
@@ -1286,30 +1272,30 @@ struct EmptyPrioritySlot: View {
         Button(action: onTap) {
             ZStack {
                 RoundedRectangle(cornerRadius: min(80, height * 0.2))
-                    .fill(Color.white.opacity(0.03))
+                    .fill(AppColor.slotFill)
                     .overlay(
                         RoundedRectangle(cornerRadius: min(80, height * 0.2))
                             .strokeBorder(lineWidth: 2)
-                            .foregroundColor(.white.opacity(0.15))
+                            .foregroundColor(AppColor.slotStroke)
                     )
                 
                 VStack(spacing: height > 200 ? 12 : 6) {
                     // Circular lightbulb button in center
                     ZStack {
                         Circle()
-                            .fill(Color.white.opacity(0.1))
+                            .fill(AppColor.slotCircle)
                             .frame(width: min(80, height * 0.3), height: min(80, height * 0.3))
                         
                         Image(systemName: "lightbulb")
                             .font(.system(size: min(32, height * 0.12), weight: .medium))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(AppColor.slotIcon)
                     }
                     
                     // Slot indicator
                     if height > 150 {
                         Text("Priority \(slotNumber)")
                             .font(.system(size: min(13, height * 0.04), weight: .medium))
-                            .foregroundColor(.white.opacity(0.3))
+                            .foregroundColor(AppColor.slotLabel)
                     }
                 }
             }
@@ -1342,12 +1328,12 @@ struct DismissibleOnboardingCard: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(AppColor.Action.destructive)
                             .frame(width: 50, height: 50)
                         
                         Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .heavy))
-                            .foregroundColor(.gray)
+                            .foregroundColor(AppColor.Text.tertiary)
                     }
                 }
                 .padding(.trailing, 20)
@@ -1416,12 +1402,12 @@ struct WidgetOnboardingCard: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(AppColor.Action.destructive)
                             .frame(width: 50, height: 50)
                         
                         Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .heavy))
-                            .foregroundColor(.gray)
+                            .foregroundColor(AppColor.Text.tertiary)
                     }
                 }
                 .padding(.trailing, 20)
@@ -1435,7 +1421,7 @@ struct WidgetOnboardingCard: View {
                     + Text("Easy-peasy.").bold()
                 }
                 .font(.system(size: 18))
-                .foregroundColor(.black.opacity(0.85))
+                .foregroundColor(AppColor.Text.primary)
                 .fixedSize(horizontal: false, vertical: true)
                 
                 Spacer()
@@ -1450,7 +1436,7 @@ struct WidgetOnboardingCard: View {
                 )
             )
             .cornerRadius(35)
-            .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+            .shadow(color: AppColor.shadow, radius: 3, x: 0, y: 3)
             .offset(x: offset)
             .gesture(
                 DragGesture(minimumDistance: 10)
@@ -1552,7 +1538,7 @@ struct PriorityPickerView: View {
                                 Text("Note")
                                     .font(.system(size: 20, weight: .bold))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(AppColor.Text.inverse)
                             .padding(.horizontal, 40)
                             .padding(.vertical, 16)
                             .background(AppColor.Text.primary)
@@ -1645,16 +1631,12 @@ struct HeroCardView: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color(uiColor: UIColor { traitCollection in
-                                return traitCollection.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.2) : UIColor.black.withAlphaComponent(0.15)
-                            }))
+                            .fill(AppColor.Action.destructive)
                             .frame(width: 60, height: 60)
                         
                         Image(systemName: "lightbulb.slash.fill")
                             .font(.system(size: 24, weight: .heavy))
-                            .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
-                            }))
+                            .foregroundColor(AppColor.Action.destructiveIcon)
                     }
                 }
                 .padding(.leading, 20)
@@ -1675,12 +1657,12 @@ struct HeroCardView: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(Color.green)
+                                .fill(AppColor.Action.complete)
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "checkmark")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.white)
+                                .foregroundColor(AppColor.Text.inverse)
                         }
                     }
                     
@@ -1695,12 +1677,12 @@ struct HeroCardView: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(Color.gray.opacity(0.3))
+                                .fill(AppColor.Action.destructive)
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "trash.fill")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.gray)
+                                .foregroundColor(AppColor.Text.tertiary)
                         }
                     }
                 }
@@ -1901,12 +1883,12 @@ struct SwipeableCardRow: View {
                 }) {
                 ZStack {
                     Circle()
-                        .fill(Color.yellow)
+                        .fill(AppColor.Action.priority)
                         .frame(width: 60, height: 60)
                     
                     Image(systemName: "lightbulb.fill")
                         .font(.system(size: 26, weight: .heavy))
-                        .foregroundColor(.white)
+                        .foregroundColor(AppColor.Text.inverse)
                     }
                 }
                 .padding(.leading, 16)
@@ -1927,12 +1909,12 @@ struct SwipeableCardRow: View {
                     }) {
                 ZStack {
                     Circle()
-                                .fill(Color.green)
+                                .fill(AppColor.Action.complete)
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "checkmark")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.white)
+                                .foregroundColor(AppColor.Text.inverse)
                         }
                     }
                     
@@ -1947,12 +1929,12 @@ struct SwipeableCardRow: View {
                     }) {
                         ZStack {
                             Circle()
-                                .fill(Color.gray.opacity(0.3))
+                                .fill(AppColor.Action.destructive)
                                 .frame(width: 50, height: 50)
                             
                             Image(systemName: "trash.fill")
                                 .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(.gray)
+                                .foregroundColor(AppColor.Text.tertiary)
                         }
                     }
                 }
@@ -2260,7 +2242,7 @@ struct OneMustCardView: View {
                                 Text("Complete")
                                     .font(.system(size: 18, weight: .semibold))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(AppColor.Action.complete)
@@ -2281,7 +2263,7 @@ struct OneMustCardView: View {
                                 Text("Turn this on")
                                     .font(.system(size: 16, weight: .semibold))
                             }
-                            .foregroundColor(.black)
+                            .foregroundColor(AppColor.Text.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                             .background(AppColor.Action.priority)
@@ -2297,7 +2279,7 @@ struct OneMustCardView: View {
                                 Text("Complete")
                                     .font(.system(size: 18, weight: .semibold))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(AppColor.Action.complete)
@@ -2314,9 +2296,7 @@ struct OneMustCardView: View {
                                     Text("Turn this off")
                                         .font(.system(size: 16, weight: .semibold))
                                 }
-                                .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                    traitCollection.userInterfaceStyle == .dark ? .white : .black
-                                }))
+                                .foregroundColor(AppColor.Action.destructiveIcon)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .background(Color(uiColor: .secondarySystemBackground))

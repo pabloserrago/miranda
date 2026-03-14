@@ -31,7 +31,7 @@ struct SettingsView: View {
                             ZStack {
                                 // Background gradient (like iOS wallpaper)
                                 LinearGradient(
-                                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.05)],
+                                    colors: [Color(Palette.blue).opacity(0.1), Color(Palette.purple).opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -67,15 +67,15 @@ struct SettingsView: View {
                                     .frame(height: 140)
                                     .background(Color(uiColor: .systemBackground))
                                     .cornerRadius(20)
-                                    .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
+                                    .shadow(color: AppColor.shadowMedium, radius: 6, x: 0, y: 3)
                                     .padding(.horizontal, 24)
                                     
                                     // iOS app icons below
                                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: .red)
-                                        AppIcon(name: "Messages", icon: "message.fill", color: .green)
-                                        AppIcon(name: "Mail", icon: "envelope.fill", color: .blue)
-                                        AppIcon(name: "Phone", icon: "phone.fill", color: .green)
+                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: Color(Palette.red))
+                                        AppIcon(name: "Messages", icon: "message.fill", color: AppColor.Action.complete)
+                                        AppIcon(name: "Mail", icon: "envelope.fill", color: Color(Palette.blue))
+                                        AppIcon(name: "Phone", icon: "phone.fill", color: AppColor.Action.complete)
                                     }
                                     .padding(.horizontal, 24)
                                     .padding(.top, 8)
@@ -167,7 +167,7 @@ struct SettingsView: View {
                                     .overlay(
                                         Text("M")
                                             .font(.system(size: 20, weight: .bold))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(AppColor.Text.inverse)
                                     )
                             }
                             
@@ -319,7 +319,7 @@ struct SettingsView: View {
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .secondarySystemBackground))
                         .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                        .shadow(color: AppColor.shadowMedium, radius: 8, x: 0, y: 4)
                         .padding(.bottom, 50)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
@@ -337,7 +337,7 @@ struct SettingsView: View {
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .secondarySystemBackground))
                         .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                        .shadow(color: AppColor.shadowMedium, radius: 8, x: 0, y: 4)
                         .padding(.bottom, 50)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
@@ -374,7 +374,7 @@ struct InstructionStep: View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(AppColor.Text.inverse)
                 .frame(width: 28, height: 28)
                 .background(Color.accentColor)
                 .clipShape(Circle())
@@ -398,12 +398,12 @@ struct AppIcon: View {
                     .frame(width: 56, height: 56)
                 
                 RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 2)
+                    .strokeBorder(Color(Palette.white.withAlphaComponent(0.2)), lineWidth: 2)
                     .frame(width: 56, height: 56)
                 
                 Image(systemName: icon)
                     .font(.system(size: 28))
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColor.Text.inverse)
             }
             
             Text(name)

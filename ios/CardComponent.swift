@@ -9,26 +9,10 @@ enum CardVariant: Equatable {
     
     var gradientColors: [Color] {
         switch self {
-        case .cardDefault:
-            return [
-                Color(red: 0xC4/255, green: 0xD5/255, blue: 0xF7/255),   // 0% - #C4D5F7
-                Color(red: 0xE7/255, green: 0xED/255, blue: 0xF9/255),   // 33% - #E7EDF9
-                Color(red: 0xCC/255, green: 0xDA/255, blue: 0xF7/255),   // 64% - #CCDAF7
-                Color(red: 0x60/255, green: 0x90/255, blue: 0xEA/255)    // 100% - #6090EA
-            ]
-        case .cardOnboarding:
-            return [
-                Color(red: 0.92, green: 0.92, blue: 0.98),  // Very light lavender top
-                Color(red: 0.88, green: 0.88, blue: 0.96)   // Light lavender bottom
-            ]
-        case .cardBoost:
-            // Inner card gradient (orange/yellow)
-            return [
-                Color(red: 1.0, green: 0.92, blue: 0.75),   // Light orange/peach top
-                Color(red: 0.98, green: 0.80, blue: 0.60)   // Deeper orange/gold bottom
-            ]
-        case .cardDrawer:
-            return [AppColor.Background.card]
+        case .cardDefault:    return AppColor.Gradient.cardDefault
+        case .cardOnboarding: return AppColor.Gradient.cardOnboarding
+        case .cardBoost:      return AppColor.Gradient.cardBoost
+        case .cardDrawer:     return [AppColor.Background.card]
         }
     }
     
@@ -152,13 +136,8 @@ struct CardBoost: View {
     var innerCornerRadius: CGFloat = 28
     
     // Pink/purple wrapper gradient
-    private let wrapperGradient = [
-        Color(red: 0.95, green: 0.80, blue: 0.92),  // Light pink top
-        Color(red: 0.90, green: 0.75, blue: 0.90)   // Deeper pink/purple bottom
-    ]
-    
-    // Purple accent color for label and icon
-    private let accentColor = Color(red: 0.45, green: 0.25, blue: 0.70)
+    private let wrapperGradient = AppColor.Gradient.boostWrapper
+    private let accentColor = AppColor.Gradient.boostAccent
     
     var body: some View {
         VStack(spacing: 0) {
