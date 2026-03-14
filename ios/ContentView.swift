@@ -1199,18 +1199,13 @@ struct RecentCapturesDrawer: View {
                         Button(action: {
                             onCreateCard("", false)
                         }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white)
-                                
-                                Image(systemName: "plus")
-                                    .font(.system(size: 22, weight: .semibold))
-                                    .foregroundColor(.black)
-                            }
-                            .frame(width: 56, height: 56)
+                            Image(systemName: "plus")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(.black)
+                                .frame(width: 56, height: 56)
+                                .background(Color.white, in: Circle())
                         }
                         .buttonStyle(.plain)
-                        .tint(.clear)
                     }
                 }
                 .padding(.horizontal, 24)
