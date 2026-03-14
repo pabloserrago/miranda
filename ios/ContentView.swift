@@ -1970,14 +1970,14 @@ struct SwipeableCardRow: View {
                                 ZStack {
                                     Color.clear
                                         .background(.ultraThinMaterial)
-                                    AppColor.Text.primary.opacity(0.15)
+                                    AppColor.Text.primary.opacity(0.25)
                                 }
                             )
                         .overlay(
                             Circle()
-                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 1.5)
+                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 2)
                         )
-                        .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
+                        .shadow(color: AppColor.Text.primary.opacity(0.2), radius: 6, x: 0, y: 3)
                     
                     Image(systemName: "archivebox.fill")
                         .font(.system(size: 20, weight: .semibold))
@@ -2282,13 +2282,14 @@ struct OneMustCardView: View {
                                 ZStack {
                                     Color.clear
                                         .background(.ultraThinMaterial)
-                                    AppColor.Action.complete.opacity(0.4)
+                                    AppColor.Action.complete.opacity(0.7)
                                 }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.complete.opacity(0.5), lineWidth: 1)
+                                    .stroke(AppColor.Action.complete.opacity(0.8), lineWidth: 1.5)
                             )
+                            .shadow(color: AppColor.Action.complete.opacity(0.3), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2313,13 +2314,14 @@ struct OneMustCardView: View {
                                 ZStack {
                                     Color.clear
                                         .background(.ultraThinMaterial)
-                                    AppColor.Action.priority.opacity(0.4)
+                                    AppColor.Action.priority.opacity(0.7)
                                 }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.priority.opacity(0.5), lineWidth: 1)
+                                    .stroke(AppColor.Action.priority.opacity(0.8), lineWidth: 1.5)
                             )
+                            .shadow(color: AppColor.Action.priority.opacity(0.3), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2339,13 +2341,14 @@ struct OneMustCardView: View {
                                 ZStack {
                                     Color.clear
                                         .background(.ultraThinMaterial)
-                                    AppColor.Action.complete.opacity(0.4)
+                                    AppColor.Action.complete.opacity(0.7)
                                 }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.complete.opacity(0.5), lineWidth: 1)
+                                    .stroke(AppColor.Action.complete.opacity(0.8), lineWidth: 1.5)
                             )
+                            .shadow(color: AppColor.Action.complete.opacity(0.3), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2366,13 +2369,14 @@ struct OneMustCardView: View {
                                     ZStack {
                                         Color.clear
                                             .background(.ultraThinMaterial)
-                                        AppColor.Text.primary.opacity(0.1)
+                                        AppColor.Text.primary.opacity(0.2)
                                     }
                                 )
                                 .overlay(
                                     Capsule()
-                                        .stroke(AppColor.Text.primary.opacity(0.2), lineWidth: 1)
+                                        .stroke(AppColor.Text.primary.opacity(0.4), lineWidth: 1.5)
                                 )
+                                .shadow(color: AppColor.Text.primary.opacity(0.15), radius: 6, x: 0, y: 3)
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
@@ -2414,7 +2418,7 @@ struct OneMustCardView: View {
             .padding(.leading, 16)
             .padding(.top, 16)
         }
-        .background(Color(uiColor: .systemBackground))
+        .background(AppColor.systemBackground)
     }
 }
 
