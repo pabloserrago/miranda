@@ -8,7 +8,6 @@ import WidgetKit
 struct KeyboardTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
-    @Binding var isFocused: Bool
     
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
@@ -24,6 +23,10 @@ struct KeyboardTextField: UIViewRepresentable {
             context.coordinator.placeholderLabel.topAnchor.constraint(equalTo: textView.topAnchor, constant: 16),
             context.coordinator.placeholderLabel.leadingAnchor.constraint(equalTo: textView.leadingAnchor, constant: 21)
         ])
+        // Force keyboard to appear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            textView.becomeFirstResponder()
+        }
         return textView
     }
     
@@ -32,14 +35,6 @@ struct KeyboardTextField: UIViewRepresentable {
             textView.text = text
         }
         context.coordinator.placeholderLabel.isHidden = !text.isEmpty
-        
-        if isFocused && !textView.isFirstResponder {
-            DispatchQueue.main.async {
-                textView.becomeFirstResponder()
-            }
-        } else if !isFocused && textView.isFirstResponder {
-            textView.resignFirstResponder()
-        }
     }
     
     func makeCoordinator() -> Coordinator {
@@ -2102,7 +2097,6 @@ struct CreateCardModal: View {
     let startWithDictation: Bool
     let onSave: () -> Void
     let onCancel: () -> Void
-    @FocusState private var isFocused: Bool
     
     let allCommonHints = [
         "Flush the toilet 🚽",
@@ -2171,7 +2165,7 @@ struct CreateCardModal: View {
         NavigationView {
             VStack(spacing: 20) {
                 // Input field - using UITextView wrapper to ensure keyboard appears
-                KeyboardTextField(text: $text, placeholder: "What do you want to capture?", isFocused: $isFocused)
+                KeyboardTextField(text: $text, placeholder: "What do you want to capture?")
                     .frame(minHeight: 120)
                     .cornerRadius(12)
                 
@@ -2238,11 +2232,6 @@ struct CreateCardModal: View {
             .onAppear {
                 // Pick 3 random hints
                 commonHints = Array(allCommonHints.shuffled().prefix(3))
-            }
-            .task {
-                // Delay to ensure sheet is fully presented before focusing
-                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
-                isFocused = true
             }
         }
     }
