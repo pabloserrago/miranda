@@ -1966,21 +1966,19 @@ struct SwipeableCardRow: View {
                         Circle()
                             .fill(AppColor.Action.archive)
                             .frame(width: 50, height: 50)
+                            .background(.thinMaterial)
                             .overlay(
                                 Circle()
-                                    .fill(Color.clear)
-                                    .background(.thinMaterial)
+                                    .stroke(AppColor.Action.archive.opacity(0.6), lineWidth: 2.5)
                             )
-                            .overlay(
-                                Circle()
-                                    .stroke(AppColor.Action.archive.opacity(0.3), lineWidth: 2)
-                            )
-                            .shadow(color: AppColor.Action.archive.opacity(0.4), radius: 6, x: 0, y: 3)
+                            .shadow(color: AppColor.Action.archive.opacity(0.5), radius: 8, x: 0, y: 4)
                     
                         Image(systemName: "archivebox.fill")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(AppColor.Text.inverse)
                     }
+                    .compositingGroup()
+                    .clipShape(Circle())
                 }
                 .padding(.trailing, 16)
                 .opacity(offset < -20 ? 1 : 0)
@@ -2389,23 +2387,21 @@ struct OneMustCardView: View {
             }) {
                 ZStack {
                     Circle()
-                        .fill(AppColor.Text.primary.opacity(0.25))
+                        .fill(AppColor.Text.primary.opacity(0.3))
                         .frame(width: 44, height: 44)
+                        .background(.thinMaterial)
                         .overlay(
                             Circle()
-                                .fill(Color.clear)
-                                .background(.thinMaterial)
+                                .stroke(AppColor.Text.primary.opacity(0.6), lineWidth: 2.5)
                         )
-                        .overlay(
-                            Circle()
-                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 2)
-                        )
-                        .shadow(color: AppColor.Text.primary.opacity(0.2), radius: 6, x: 0, y: 3)
+                        .shadow(color: AppColor.Text.primary.opacity(0.3), radius: 8, x: 0, y: 4)
                     
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(AppColor.Icon.foregroundGradient)
                 }
+                .compositingGroup()
+                .clipShape(Circle())
             }
             .padding(.leading, 16)
             .padding(.top, 16)
