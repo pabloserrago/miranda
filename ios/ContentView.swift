@@ -1199,11 +1199,31 @@ struct RecentCapturesDrawer: View {
                         Button(action: {
                             onCreateCard("", false)
                         }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .semibold))
-                                .foregroundColor(.black)
-                                .frame(width: 56, height: 56)
-                                .background(Color.white, in: Circle())
+                            ZStack {
+                                // Color base
+                                Circle()
+                                    .fill(AppColor.Surface.button)
+                                    .frame(width: 56, height: 56)
+                                
+                                // Material glass effect on top
+                                Circle()
+                                    .fill(Color.clear)
+                                    .frame(width: 56, height: 56)
+                                    .background(.thinMaterial)
+                                
+                                // Stroke
+                                Circle()
+                                    .stroke(AppColor.Border.subtle, lineWidth: 1.5)
+                                    .frame(width: 56, height: 56)
+                                
+                                // Icon
+                                Image(systemName: "plus")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .foregroundColor(AppColor.Text.primary)
+                            }
+                            .shadow(color: AppColor.shadow.opacity(0.2), radius: 8, x: 0, y: 4)
+                            .compositingGroup()
+                            .clipShape(Circle())
                         }
                         .buttonStyle(.plain)
                     }
