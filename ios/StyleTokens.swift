@@ -113,6 +113,17 @@ enum AppColor {
         
         // Card background: subtle tint
         static let card = adaptive(light: Palette.neutral100, dark: Palette.neutral800)
+        
+        // UIKit compatibility (UIColor versions)
+        static let primaryUIColor: UIColor = UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? Palette.neutral900 : Palette.neutral50
+        }
+        static let secondaryUIColor: UIColor = UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral50
+        }
+        static let tertiaryUIColor: UIColor = UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral100
+        }
     }
     
     // MARK: Border
@@ -220,10 +231,10 @@ enum AppColor {
     static let shadow = Color(Palette.neutral800)
     static let shadowMedium = Color(Palette.neutral800)
     
-    /// System backgrounds (adaptive)
-    static let systemBackground = Color(uiColor: .systemBackground)
-    static let secondarySystemBackground = Color(uiColor: .secondarySystemBackground)
-    static let tertiarySystemBackground = Color(uiColor: .tertiarySystemBackground)
+    /// System backgrounds (derived from ramps)
+    static let systemBackground = Surface.primary
+    static let secondarySystemBackground = Surface.secondary
+    static let tertiarySystemBackground = Surface.tertiary
     
     /// UI element colors
     static let dragHandle = Color(Palette.neutral500)

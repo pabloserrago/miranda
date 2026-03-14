@@ -12,7 +12,7 @@ struct KeyboardTextField: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
         textView.font = .systemFont(ofSize: 18)
-        textView.backgroundColor = .secondarySystemBackground
+        textView.backgroundColor = AppColor.Surface.secondaryUIColor
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         textView.delegate = context.coordinator
         textView.isScrollEnabled = true
@@ -1190,7 +1190,7 @@ struct RecentCapturesDrawer: View {
                                     .font(.system(size: 22, weight: .semibold))
                                     .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 56, height: 56)
-                                    .background(AppColor.secondarySystemBackground)
+                                    .background(AppColor.Surface.secondary)
                                     .clipShape(Circle())
                             }
                         }
@@ -1274,7 +1274,7 @@ struct RecentCapturesDrawer: View {
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(AppColor.systemBackground)
+                    .fill(AppColor.Surface.primary)
                     .shadow(color: AppColor.shadowMedium, radius: 20, x: 0, y: -8)
             )
             .frame(height: collapsedHeight + offset + dragOffset)
@@ -1574,7 +1574,7 @@ struct PriorityPickerView: View {
                                     .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 60, height: 60)
-                                    .background(AppColor.secondarySystemBackground)
+                                    .background(AppColor.Surface.secondary)
                                     .clipShape(Circle())
                             }
                         }
@@ -2075,7 +2075,7 @@ struct CardRowView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
-        .background(AppColor.secondarySystemBackground)
+        .background(AppColor.Surface.secondary)
         .cornerRadius(12)
         .contentShape(Rectangle())
         .opacity(opacity)
@@ -2179,7 +2179,7 @@ struct CreateCardModal: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(AppColor.tertiarySystemBackground)
+                            .background(AppColor.Surface.tertiary)
                             .cornerRadius(10)
                         }
                     }
@@ -2384,7 +2384,7 @@ struct OneMustCardView: View {
                         }
                     }
                 }
-                .background(AppColor.systemBackground)
+                .background(AppColor.Surface.primary)
             }
             
             // X close button -- always visible with liquid glass style
@@ -2422,7 +2422,7 @@ struct OneMustCardView: View {
             .padding(.leading, 16)
             .padding(.top, 16)
         }
-        .background(AppColor.systemBackground)
+        .background(AppColor.Surface.primary)
     }
 }
 

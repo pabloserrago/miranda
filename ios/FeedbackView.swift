@@ -55,7 +55,7 @@ struct FeedbackView: View {
                                         )
                                         .foregroundColor(
                                             selectedCategory == category
-                                                ? Color(uiColor: .systemBackground)
+                                                ? AppColor.Surface.primary
                                                 : .primary
                                         )
                                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -103,7 +103,7 @@ struct FeedbackView: View {
                         HStack(spacing: 8) {
                             if isSubmitting {
                                 ProgressView()
-                                    .tint(Color(uiColor: .systemBackground))
+                                    .tint(AppColor.Surface.primary)
                             }
                             Text(isSubmitting ? "Sending..." : "Submit")
                                 .font(.system(size: 16, weight: .semibold))
@@ -111,7 +111,7 @@ struct FeedbackView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(canSubmit ? AppColor.Text.primary : Color(uiColor: .tertiarySystemFill))
-                        .foregroundColor(canSubmit ? Color(uiColor: .systemBackground) : AppColor.Text.secondary)
+                        .foregroundColor(canSubmit ? AppColor.Surface.primary : AppColor.Text.secondary)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .disabled(!canSubmit)
