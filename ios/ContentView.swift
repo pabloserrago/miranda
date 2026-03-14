@@ -622,7 +622,6 @@ struct ContentView: View {
                                     .padding(.bottom, 40 + geometry.safeAreaInsets.bottom)
                                 }
                             }
-                            Spacer()
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
