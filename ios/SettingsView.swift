@@ -56,7 +56,7 @@ struct SettingsView: View {
                                         
                                         Text(previewCard?.simplifiedText ?? "Your priority")
                                             .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(AppColor.Text.primary)
                                             .lineLimit(3)
                                             .multilineTextAlignment(.center)
                                             .padding(.horizontal, 12)
@@ -177,7 +177,7 @@ struct SettingsView: View {
                             
                             Text("Soon")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(AppColor.Text.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .background(Color.secondary.opacity(0.15))
@@ -200,7 +200,7 @@ struct SettingsView: View {
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColor.Text.secondary)
                             }
                         }
                     }
@@ -240,7 +240,7 @@ struct SettingsView: View {
                                 Text("Version")
                                 Spacer()
                                 Text("1.0.0")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColor.Text.secondary)
                             }
                         }
                     }
@@ -314,7 +314,7 @@ struct SettingsView: View {
                     
                     Text("Version copied")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(AppColor.Text.primary)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .secondarySystemBackground))
@@ -332,7 +332,7 @@ struct SettingsView: View {
                     
                     Text("Feedback sent")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(AppColor.Text.primary)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .secondarySystemBackground))
@@ -408,7 +408,7 @@ struct AppIcon: View {
             
             Text(name)
                 .font(.system(size: 11))
-                .foregroundColor(.primary)
+                .foregroundColor(AppColor.Text.primary)
         }
     }
 }
@@ -423,7 +423,7 @@ struct DevComponentsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-default")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     
                     CardComponent(
                         text: "Test example of something to do.",
@@ -436,7 +436,7 @@ struct DevComponentsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-drawer")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     
                     CardComponent(
                         text: "Drawer card with plain background (adaptive for light/dark mode).",
@@ -449,7 +449,7 @@ struct DevComponentsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-onboarding")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     
                     CardOnboarding(minHeight: 200)
                 }
@@ -458,7 +458,7 @@ struct DevComponentsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-boost")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     
                     CardBoost(
                         text: "Test example of something to do.",
@@ -471,7 +471,7 @@ struct DevComponentsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-default (long text)")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     
                     CardComponent(
                         text: "This is a much longer piece of text that should demonstrate how the card handles overflow and truncation when there's too much content to display.",

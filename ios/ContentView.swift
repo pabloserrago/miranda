@@ -184,11 +184,7 @@ struct ContentView: View {
                     ZStack(alignment: .bottom) {
                         // Main content area
                 ZStack {
-                            Color(uiColor: UIColor { traitCollection in
-                                traitCollection.userInterfaceStyle == .dark
-                                    ? UIColor(red: 0x1C/255, green: 0x1C/255, blue: 0x1E/255, alpha: 1) // Dark mode: #1C1C1E
-                                    : UIColor(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255, alpha: 1) // Light mode: #F2F2F7
-                            })
+                            AppColor.Background.primary
                         .ignoresSafeArea()
                     
                         VStack(spacing: 0) {
@@ -236,7 +232,7 @@ struct ContentView: View {
                                                 .foregroundColor(.white)
                                                 .padding(.horizontal, 32)
                                                 .padding(.vertical, 16)
-                                                .background(Color.black)
+                                                .background(AppColor.Text.primary)
                                                 .clipShape(Capsule())
                                             }
                                             
@@ -328,7 +324,7 @@ struct ContentView: View {
                                                         .foregroundColor(.white)
                                                         .padding(.horizontal, 32)
                                                         .padding(.vertical, 16)
-                                                        .background(Color.black)
+                                                        .background(AppColor.Text.primary)
                                                         .clipShape(Capsule())
                                                     }
                                                     Spacer()
@@ -428,7 +424,7 @@ struct ContentView: View {
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 32)
                                             .padding(.vertical, 16)
-                                            .background(Color.black)
+                                            .background(AppColor.Text.primary)
                                                 .clipShape(Capsule())
                         }
                         
@@ -488,7 +484,7 @@ struct ContentView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "magnifyingglass")
                                             .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(AppColor.Text.secondary)
                                         
                                         TextField("Find...", text: $searchText)
                                             .font(.system(size: 17))
@@ -502,7 +498,7 @@ struct ContentView: View {
                                             }) {
                                                 Image(systemName: "xmark.circle.fill")
                                                     .font(.system(size: 16))
-                                                    .foregroundColor(.secondary)
+                                                    .foregroundColor(AppColor.Text.secondary)
                                             }
                                         }
                                     }
@@ -590,11 +586,11 @@ struct ContentView: View {
                                     if !searchText.isEmpty {
                                         Text("No results for \"\(searchText)\"")
                                             .font(.system(size: 16, weight: .regular))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(AppColor.Text.secondary)
                                     } else {
                                 Text("No Recent Notes")
                                     .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColor.Text.secondary)
                                     
                                     #if DEBUG
                                     Text("Debug: \(cards.count) cards, \(excludedFromPriorityIds.count) excluded, \(autoPriorityCardIds.count) priorities")
@@ -644,11 +640,7 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
-                        .background(Color(uiColor: UIColor { traitCollection in
-                            traitCollection.userInterfaceStyle == .dark
-                                ? UIColor(red: 0x2C/255, green: 0x2C/255, blue: 0x2E/255, alpha: 1) // Dark mode: #2C2C2E
-                                : UIColor(red: 0xFF/255, green: 0xFF/255, blue: 0xFF/255, alpha: 1) // Light mode: #FFFFFF
-                        }))
+                        .background(AppColor.Background.secondary)
                         .cornerRadius(20, corners: [.topLeft, .topRight])
                         .ignoresSafeArea(edges: .bottom)
                         .offset(y: geometry.safeAreaInsets.bottom)
@@ -1143,8 +1135,8 @@ struct RecentCapturesDrawer: View {
                 // Header with action buttons
                 HStack {
                     Text("Recent")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .font(AppFont.title2)
+                        .foregroundColor(AppColor.Text.primary)
                     
                     Spacer()
                     
@@ -1171,7 +1163,7 @@ struct RecentCapturesDrawer: View {
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 56, height: 56)
-                                .background(Color.black)
+                                .background(AppColor.Text.primary)
                                 .clipShape(Circle())
                         }
                     }
@@ -1186,7 +1178,7 @@ struct RecentCapturesDrawer: View {
                     VStack(spacing: 16) {
                         Text("No Recent Notes")
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColor.Text.secondary)
                             .padding(.vertical, 20)
                                 .frame(maxWidth: .infinity, alignment: .top)
                         
@@ -1227,7 +1219,7 @@ struct RecentCapturesDrawer: View {
                                         Spacer()
                                         Text("More")
                                             .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(AppColor.Text.secondary)
                                         Spacer()
                                     }
                                     .padding(.vertical, 12)
@@ -1520,11 +1512,11 @@ struct PriorityPickerView: View {
                     VStack(spacing: 12) {
                         Text("No other captures")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(AppColor.Text.primary)
                         
                         Text("Capture something new to set as a priority")
                             .font(.system(size: 15))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColor.Text.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
@@ -1540,7 +1532,7 @@ struct PriorityPickerView: View {
                             }) {
                                 Image(systemName: "mic.fill")
                                     .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 60, height: 60)
                                     .background(Color(uiColor: .secondarySystemBackground))
                                     .clipShape(Circle())
@@ -1563,7 +1555,7 @@ struct PriorityPickerView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 40)
                             .padding(.vertical, 16)
-                            .background(Color.black)
+                            .background(AppColor.Text.primary)
                             .clipShape(Capsule())
                         }
                     }
@@ -1594,13 +1586,13 @@ struct PriorityPickerView: View {
                             
                             Text(card.simplifiedText)
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(.primary)
+                                .foregroundColor(AppColor.Text.primary)
                                 .lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Image(systemName: "lightbulb")
                                 .font(.system(size: 20))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(AppColor.Text.secondary)
                         }
                         .padding(.vertical, 12)
                     }
@@ -2043,7 +2035,7 @@ struct CardRowView: View {
             // Text content
             Text(card.simplifiedText)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.primary)
+                .foregroundColor(AppColor.Text.primary)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -2151,11 +2143,11 @@ struct CreateCardModal: View {
                             HStack {
                                 Text(hint)
                                     .font(.system(size: 15))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(AppColor.Text.primary)
                                 Spacer()
                                 Image(systemName: "arrow.up.left")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColor.Text.secondary)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
@@ -2197,7 +2189,7 @@ struct CreateCardModal: View {
                             Text("Generate")
                                 .font(.system(size: 16, weight: .semibold))
                         }
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -2243,8 +2235,8 @@ struct OneMustCardView: View {
                     
                     // Text (scrollable)
                     Text(card.simplifiedText)
-                        .font(.system(size: 38, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
+                        .font(AppFont.title1)
+                        .foregroundColor(AppColor.Text.primary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     
@@ -2271,7 +2263,7 @@ struct OneMustCardView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.green)
+                            .background(AppColor.Action.complete)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2292,7 +2284,7 @@ struct OneMustCardView: View {
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color.yellow)
+                            .background(AppColor.Action.priority)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2308,7 +2300,7 @@ struct OneMustCardView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.green)
+                            .background(AppColor.Action.complete)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)

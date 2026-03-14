@@ -34,7 +34,7 @@ struct FeedbackView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Category")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColor.Text.secondary)
                         
                         HStack(spacing: 10) {
                             ForEach(FeedbackCategory.allCases, id: \.self) { category in
@@ -50,7 +50,7 @@ struct FeedbackView: View {
                                         .frame(maxWidth: .infinity)
                                         .background(
                                             selectedCategory == category
-                                                ? Color.primary
+                                                ? AppColor.Text.primary
                                                 : Color(uiColor: .tertiarySystemFill)
                                         )
                                         .foregroundColor(
@@ -69,7 +69,7 @@ struct FeedbackView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Message")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColor.Text.secondary)
                         
                         TextEditor(text: $feedbackText)
                             .frame(minHeight: 120)
@@ -95,7 +95,7 @@ struct FeedbackView: View {
                     // Privacy notice
                     Text("Reports are anonymous. Only app version (\(appVersion)) and language (\(appLanguage)) are included.")
                         .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColor.Text.secondary)
                         .padding(.bottom, 8)
                     
                     // Submit button
@@ -110,8 +110,8 @@ struct FeedbackView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(canSubmit ? Color.primary : Color(uiColor: .tertiarySystemFill))
-                        .foregroundColor(canSubmit ? Color(uiColor: .systemBackground) : .secondary)
+                        .background(canSubmit ? AppColor.Text.primary : Color(uiColor: .tertiarySystemFill))
+                        .foregroundColor(canSubmit ? Color(uiColor: .systemBackground) : AppColor.Text.secondary)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .disabled(!canSubmit)
@@ -124,7 +124,7 @@ struct FeedbackView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColor.Text.secondary)
                     }
                 }
             }

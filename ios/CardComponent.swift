@@ -28,15 +28,12 @@ enum CardVariant: Equatable {
                 Color(red: 0.98, green: 0.80, blue: 0.60)   // Deeper orange/gold bottom
             ]
         case .cardDrawer:
-            // Plain color for drawer cards - #F2F2F7
-            return [
-                Color(red: 0xF2/255, green: 0xF2/255, blue: 0xF7/255)
-            ]
+            return [AppColor.Background.card]
         }
     }
     
     var textColor: Color {
-        return .black.opacity(0.85)
+        return AppColor.Text.primary
     }
     
     var hasShadow: Bool {
@@ -107,7 +104,7 @@ struct CardComponent: View {
             )
             .cornerRadius(cornerRadius)
             .shadow(
-                color: variant.hasShadow ? .black.opacity(0.09) : .clear,
+                color: variant.hasShadow ? AppColor.shadow : .clear,
                 radius: variant.hasShadow ? 3 : 0,
                 x: 0,
                 y: variant.hasShadow ? 3 : 0
@@ -124,10 +121,10 @@ struct CardOnboarding: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Capture anything that's in your mind. Like a dream, idea or to-do. ")
                 .font(.system(size: 18, weight: .regular))
-                .foregroundColor(.black.opacity(0.85))
+                .foregroundColor(AppColor.Text.primary)
             + Text("Simple.")
                 .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.black.opacity(0.85))
+                .foregroundColor(AppColor.Text.primary)
         }
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -142,7 +139,7 @@ struct CardOnboarding: View {
             )
         )
         .cornerRadius(cornerRadius)
-        .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+        .shadow(color: AppColor.shadow, radius: 3, x: 0, y: 3)
     }
 }
 
@@ -184,7 +181,7 @@ struct CardBoost: View {
             // Inner card with orange/yellow gradient
             Text(text)
                 .font(.system(size: 18, weight: .regular))
-                .foregroundColor(.black.opacity(0.85))
+                .foregroundColor(AppColor.Text.primary)
                 .multilineTextAlignment(.leading)
                 .lineLimit(6)
                 .truncationMode(.tail)
@@ -209,7 +206,7 @@ struct CardBoost: View {
             )
         )
         .cornerRadius(outerCornerRadius)
-        .shadow(color: .black.opacity(0.09), radius: 3, x: 0, y: 3)
+        .shadow(color: AppColor.shadow, radius: 3, x: 0, y: 3)
     }
 }
 
