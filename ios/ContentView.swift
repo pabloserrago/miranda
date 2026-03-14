@@ -785,12 +785,10 @@ struct ContentView: View {
         
         let originalText = newCardText
         let actionText = actionTransformEnabled ? transformToAction(originalText) : originalText
-        let emoji = findEmoji(for: actionText)
-        
         let newCard = Card(
             originalText: originalText,
             simplifiedText: actionText,
-            emoji: emoji,
+            emoji: nil,
             timestamp: Date()
         )
         
