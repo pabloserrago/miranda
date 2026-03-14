@@ -2183,12 +2183,8 @@ struct CreateCardModal: View {
                 // Pick 3 random hints
                 commonHints = Array(allCommonHints.shuffled().prefix(3))
                 
-                if startWithDictation {
-                    // Small delay then trigger dictation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        isFocused = true
-                    }
-                } else {
+                // Small delay to ensure sheet is fully presented before focusing
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     isFocused = true
                 }
             }
