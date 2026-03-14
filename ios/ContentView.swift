@@ -1968,9 +1968,9 @@ struct SwipeableCardRow: View {
                             .frame(width: 50, height: 50)
                             .background(
                                 ZStack {
+                                    AppColor.Text.primary.opacity(0.1)
                                     Color.clear
-                                        .background(.ultraThinMaterial)
-                                    AppColor.Text.primary.opacity(0.25)
+                                        .background(.thinMaterial)
                                 }
                             )
                         .overlay(
@@ -2280,9 +2280,9 @@ struct OneMustCardView: View {
                             .padding(.vertical, 16)
                             .background(
                                 ZStack {
+                                    AppColor.Action.complete.opacity(0.3)
                                     Color.clear
-                                        .background(.ultraThinMaterial)
-                                    AppColor.Action.complete.opacity(0.7)
+                                        .background(.thinMaterial)
                                 }
                             )
                             .overlay(
@@ -2312,9 +2312,9 @@ struct OneMustCardView: View {
                             .padding(.vertical, 14)
                             .background(
                                 ZStack {
+                                    AppColor.Action.priority.opacity(0.3)
                                     Color.clear
-                                        .background(.ultraThinMaterial)
-                                    AppColor.Action.priority.opacity(0.7)
+                                        .background(.thinMaterial)
                                 }
                             )
                             .overlay(
@@ -2339,9 +2339,9 @@ struct OneMustCardView: View {
                             .padding(.vertical, 16)
                             .background(
                                 ZStack {
+                                    AppColor.Action.complete.opacity(0.3)
                                     Color.clear
-                                        .background(.ultraThinMaterial)
-                                    AppColor.Action.complete.opacity(0.7)
+                                        .background(.thinMaterial)
                                 }
                             )
                             .overlay(
@@ -2367,9 +2367,9 @@ struct OneMustCardView: View {
                                 .padding(.vertical, 14)
                                 .background(
                                     ZStack {
+                                        AppColor.Text.primary.opacity(0.1)
                                         Color.clear
-                                            .background(.ultraThinMaterial)
-                                        AppColor.Text.primary.opacity(0.2)
+                                            .background(.thinMaterial)
                                     }
                                 )
                                 .overlay(
@@ -2399,9 +2399,9 @@ struct OneMustCardView: View {
                         .frame(width: 44, height: 44)
                         .background(
                             ZStack {
+                                AppColor.Text.primary.opacity(0.1)
                                 Color.clear
-                                    .background(.ultraThinMaterial)
-                                AppColor.Text.primary.opacity(0.15)
+                                    .background(.thinMaterial)
                             }
                         )
                         .overlay(
