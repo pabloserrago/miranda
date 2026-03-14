@@ -1201,15 +1201,16 @@ struct RecentCapturesDrawer: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(AppColor.Surface.secondary)
+                                    .fill(Color.white)
                                 
                                 Image(systemName: "plus")
                                     .font(.system(size: 22, weight: .semibold))
-                                    .foregroundColor(AppColor.Text.primary)
+                                    .foregroundColor(.black)
                             }
                             .frame(width: 56, height: 56)
                         }
                         .buttonStyle(.plain)
+                        .tint(.clear)
                     }
                 }
                 .padding(.horizontal, 24)
