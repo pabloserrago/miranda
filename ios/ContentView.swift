@@ -1866,6 +1866,9 @@ struct SwipeableCardRow: View {
     
     @State private var offset: CGFloat = 0
     @State private var isDragging: Bool = false
+    @State private var dragDirection: DragDirection? = nil
+    
+    private enum DragDirection { case horizontal, vertical }
     
     var body: some View {
         ZStack {
@@ -1951,29 +1954,32 @@ struct SwipeableCardRow: View {
                 verticalPadding: 20
             )
             .offset(x: offset)
-            .gesture(
-                DragGesture(minimumDistance: 10)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 15)
                     .onChanged { gesture in
+                        if dragDirection == nil {
+                            dragDirection = abs(gesture.translation.width) > abs(gesture.translation.height)
+                                ? .horizontal : .vertical
+                        }
+                        guard dragDirection == .horizontal else { return }
                         isDragging = true
-                        let translation = gesture.translation.width
-                        offset = max(-140, min(120, translation))
+                        offset = max(-140, min(120, gesture.translation.width))
                     }
                     .onEnded { gesture in
+                        defer { dragDirection = nil }
+                        guard dragDirection == .horizontal else { return }
                         isDragging = false
                         let translation = gesture.translation.width
                         
                         if translation > 50 {
-                            // Right swipe - reveal priority button (don't auto-trigger)
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                 offset = 100
                             }
                         } else if translation < -50 {
-                            // Left swipe - reveal action buttons (don't auto-complete)
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                 offset = -140
                             }
                         } else {
-                            // Spring back
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                 offset = 0
                             }
