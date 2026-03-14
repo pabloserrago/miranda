@@ -114,8 +114,8 @@ enum AppColor {
         // Card background: subtle tint
         static let card = adaptive(light: Palette.neutral100, dark: Palette.neutral800)
         
-        // Button background: dark in light mode, light in dark mode (inverse)
-        static let button = adaptive(light: Palette.neutral800, dark: Palette.neutral200)
+        // Button background: light in light mode, dark in dark mode (inverse)
+        static let button = adaptive(light: Palette.neutral200, dark: Palette.neutral700)
         
         // UIKit compatibility (UIColor versions)
         static let primaryUIColor: UIColor = UIColor { traitCollection in
