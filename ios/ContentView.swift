@@ -1966,19 +1966,21 @@ struct SwipeableCardRow: View {
                         Circle()
                             .fill(Color.clear)
                             .frame(width: 50, height: 50)
-                            .background(.thinMaterial)
-                            .overlay(
-                                AppColor.Text.primary.opacity(0.15)
+                            .background(
+                                ZStack {
+                                    AppColor.Action.archive
+                                    Color.clear.background(.thinMaterial)
+                                }
                             )
-                        .overlay(
-                            Circle()
-                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 2)
-                        )
-                        .shadow(color: AppColor.Text.primary.opacity(0.2), radius: 6, x: 0, y: 3)
+                            .overlay(
+                                Circle()
+                                    .stroke(AppColor.Action.archive.opacity(0.3), lineWidth: 2)
+                            )
+                            .shadow(color: AppColor.Action.archive.opacity(0.4), radius: 6, x: 0, y: 3)
                     
-                    Image(systemName: "archivebox.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(AppColor.Icon.foregroundGradient)
+                        Image(systemName: "archivebox.fill")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(AppColor.Text.inverse)
                     }
                 }
                 .padding(.trailing, 16)
@@ -2268,22 +2270,24 @@ struct OneMustCardView: View {
                         Button(action: { onComplete() }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 20, weight: .semibold))
+                                    .font(.system(size: 20, weight: .heavy))
                                 Text("Complete")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 18, weight: .bold))
                             }
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(.thinMaterial)
-                            .overlay(
-                                AppColor.Action.complete.opacity(0.8)
+                            .background(
+                                ZStack {
+                                    AppColor.Action.complete
+                                    Color.clear.background(.thinMaterial)
+                                }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.complete.opacity(0.8), lineWidth: 1.5)
+                                    .stroke(AppColor.Action.complete.opacity(0.3), lineWidth: 1.5)
                             )
-                            .shadow(color: AppColor.Action.complete.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .shadow(color: AppColor.Action.complete.opacity(0.4), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2297,22 +2301,24 @@ struct OneMustCardView: View {
                         }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "lightbulb.fill")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 18, weight: .heavy))
                                 Text("Turn this on")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.system(size: 16, weight: .bold))
                             }
                             .foregroundColor(AppColor.Text.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(.thinMaterial)
-                            .overlay(
-                                AppColor.Action.priority.opacity(0.8)
+                            .background(
+                                ZStack {
+                                    AppColor.Action.priority
+                                    Color.clear.background(.thinMaterial)
+                                }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.priority.opacity(0.8), lineWidth: 1.5)
+                                    .stroke(AppColor.Action.priority.opacity(0.3), lineWidth: 1.5)
                             )
-                            .shadow(color: AppColor.Action.priority.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .shadow(color: AppColor.Action.priority.opacity(0.4), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2321,22 +2327,24 @@ struct OneMustCardView: View {
                         Button(action: { onComplete() }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 20, weight: .semibold))
+                                    .font(.system(size: 20, weight: .heavy))
                                 Text("Complete")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 18, weight: .bold))
                             }
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(.thinMaterial)
-                            .overlay(
-                                AppColor.Action.complete.opacity(0.8)
+                            .background(
+                                ZStack {
+                                    AppColor.Action.complete
+                                    Color.clear.background(.thinMaterial)
+                                }
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(AppColor.Action.complete.opacity(0.8), lineWidth: 1.5)
+                                    .stroke(AppColor.Action.complete.opacity(0.3), lineWidth: 1.5)
                             )
-                            .shadow(color: AppColor.Action.complete.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .shadow(color: AppColor.Action.complete.opacity(0.4), radius: 8, x: 0, y: 4)
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2346,22 +2354,24 @@ struct OneMustCardView: View {
                             Button(action: { removePriority() }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "lightbulb.slash.fill")
-                                        .font(.system(size: 18, weight: .semibold))
+                                        .font(.system(size: 18, weight: .heavy))
                                     Text("Turn this off")
-                                        .font(.system(size: 16, weight: .semibold))
+                                        .font(.system(size: 16, weight: .bold))
                                 }
                                 .foregroundColor(AppColor.Text.primary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(.thinMaterial)
-                                .overlay(
-                                    AppColor.Text.primary.opacity(0.15)
+                                .background(
+                                    ZStack {
+                                        AppColor.Text.primary.opacity(0.25)
+                                        Color.clear.background(.thinMaterial)
+                                    }
                                 )
                                 .overlay(
                                     Capsule()
-                                        .stroke(AppColor.Text.primary.opacity(0.4), lineWidth: 1.5)
+                                        .stroke(AppColor.Text.primary.opacity(0.3), lineWidth: 1.5)
                                 )
-                                .shadow(color: AppColor.Text.primary.opacity(0.15), radius: 6, x: 0, y: 3)
+                                .shadow(color: AppColor.Text.primary.opacity(0.2), radius: 6, x: 0, y: 3)
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
@@ -2384,19 +2394,18 @@ struct OneMustCardView: View {
                         .frame(width: 44, height: 44)
                         .background(
                             ZStack {
-                                AppColor.Text.primary.opacity(0.1)
-                                Color.clear
-                                    .background(.thinMaterial)
+                                AppColor.Text.primary.opacity(0.25)
+                                Color.clear.background(.thinMaterial)
                             }
                         )
                         .overlay(
                             Circle()
-                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 1.5)
+                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 2)
                         )
-                        .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
+                        .shadow(color: AppColor.Text.primary.opacity(0.2), radius: 6, x: 0, y: 3)
                     
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(AppColor.Icon.foregroundGradient)
                 }
             }

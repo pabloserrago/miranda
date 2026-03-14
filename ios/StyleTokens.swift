@@ -103,6 +103,7 @@ enum AppColor {
     enum Action {
         static let complete        = adaptive(light: Palette.green, dark: Palette.greenLight)
         static let priority        = adaptive(light: Palette.yellow, dark: Palette.yellowLight)
+        static let archive         = adaptive(light: Palette.blue, dark: Palette.blueHigh)
         static let destructive     = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.20))
         static let destructiveIcon = adaptive(light: Palette.black, dark: Palette.white)
         static let red             = adaptive(light: Palette.red, dark: Palette.redLight)
