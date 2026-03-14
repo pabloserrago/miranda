@@ -1201,7 +1201,7 @@ struct RecentCapturesDrawer: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 22, weight: .semibold))
-                                .foregroundColor(AppColor.Text.inverse)
+                                .foregroundColor(AppColor.Text.primary)
                                 .frame(width: 56, height: 56)
                                 .background(AppColor.Surface.button)
                                 .clipShape(Circle())
