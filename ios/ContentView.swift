@@ -2416,17 +2416,37 @@ struct OneMustCardView: View {
                             ZStack {
                                 Color.clear
                                     .background(.ultraThinMaterial)
-                                AppColor.Text.primary.opacity(0.1)
+                                AppColor.Text.primary.opacity(0.15)
                             }
                         )
                         .overlay(
                             Circle()
-                                .stroke(AppColor.Text.primary.opacity(0.2), lineWidth: 1)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            AppColor.Text.primary.opacity(0.4),
+                                            AppColor.Text.primary.opacity(0.2)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1.5
+                                )
                         )
+                        .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
                     
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(AppColor.Text.primary.opacity(0.8))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    AppColor.Text.primary.opacity(0.9),
+                                    AppColor.Text.primary.opacity(0.7)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 }
             }
             .padding(.leading, 16)
