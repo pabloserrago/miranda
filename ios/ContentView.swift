@@ -4,6 +4,68 @@ import UniformTypeIdentifiers
 import WidgetKit
 #endif
 
+// Helper to force keyboard appearance
+struct KeyboardTextField: UIViewRepresentable {
+    @Binding var text: String
+    let placeholder: String
+    @Binding var isFocused: Bool
+    
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.font = .systemFont(ofSize: 18)
+        textView.backgroundColor = .secondarySystemBackground
+        textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        textView.delegate = context.coordinator
+        textView.isScrollEnabled = true
+        textView.text = text
+        context.coordinator.placeholderLabel.text = placeholder
+        textView.addSubview(context.coordinator.placeholderLabel)
+        NSLayoutConstraint.activate([
+            context.coordinator.placeholderLabel.topAnchor.constraint(equalTo: textView.topAnchor, constant: 16),
+            context.coordinator.placeholderLabel.leadingAnchor.constraint(equalTo: textView.leadingAnchor, constant: 21)
+        ])
+        return textView
+    }
+    
+    func updateUIView(_ textView: UITextView, context: Context) {
+        if textView.text != text {
+            textView.text = text
+        }
+        context.coordinator.placeholderLabel.isHidden = !text.isEmpty
+        
+        if isFocused && !textView.isFirstResponder {
+            DispatchQueue.main.async {
+                textView.becomeFirstResponder()
+            }
+        } else if !isFocused && textView.isFirstResponder {
+            textView.resignFirstResponder()
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UITextViewDelegate {
+        let parent: KeyboardTextField
+        let placeholderLabel = UILabel()
+        
+        init(_ parent: KeyboardTextField) {
+            self.parent = parent
+            super.init()
+            placeholderLabel.text = parent.placeholder
+            placeholderLabel.textColor = .placeholderText
+            placeholderLabel.font = .systemFont(ofSize: 18)
+            placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text
+            placeholderLabel.isHidden = !textView.text.isEmpty
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var cards: [Card] = []
@@ -2108,19 +2170,10 @@ struct CreateCardModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Input field
-                TextField("What do you want to capture?", text: $text, axis: .vertical)
-                    .textFieldStyle(.plain)
-                    .padding()
-                    .font(.system(size: 18))
-                    .focused($isFocused)
-                    .lineLimit(5...10)
+                // Input field - using UITextView wrapper to ensure keyboard appears
+                KeyboardTextField(text: $text, placeholder: "What do you want to capture?", isFocused: $isFocused)
                     .frame(minHeight: 120)
-                    .background(Color(uiColor: .secondarySystemBackground))
                     .cornerRadius(12)
-                    .onTapGesture {
-                        isFocused = true
-                    }
                 
                 // Quick suggestions below input
                 VStack(alignment: .leading, spacing: 12) {
