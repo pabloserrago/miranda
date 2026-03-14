@@ -126,7 +126,7 @@ struct CompactWidgetView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     // Empty state
-                    Text("Clear your mind of to-dos.\nPick one thing to start.")
+                    Text("Capture anything.")
                         .font(.system(size: 13, weight: .regular))
                         .tracking(-0.156)
                         .foregroundColor(textColor)
@@ -181,7 +181,6 @@ struct MediumWidgetView: View {
                     .padding(.top, 14)
                 Spacer(minLength: 0)
             }
-            .padding(.bottom, entry.priorityCards.isEmpty ? 0 : 28)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             // Note button — absolutely positioned at bottom-right via ZStack alignment
@@ -259,7 +258,7 @@ struct MediumWidgetView: View {
 
     @ViewBuilder
     private var emptyReadyView: some View {
-        Text("Clear your mind of to-dos.\nPick one thing to start.")
+        Text("Capture anything.")
             .font(.system(size: 13, weight: .regular))
             .tracking(-0.156)  // -0.012em
             .foregroundColor(textColor)
@@ -338,17 +337,10 @@ struct TaskRowView: View {
         return isCompleting ? 0.22 : 1.0
     }
 
-    private var displayText: String {
-        if rank == 2 && card.simplifiedText.count > 39 {
-            return String(card.simplifiedText.prefix(39)) + "..."
-        }
-        return card.simplifiedText
-    }
-
     var body: some View {
         Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
             HStack(alignment: .center, spacing: 0) {
-                Text(displayText)
+                Text(card.simplifiedText)
                     .font(.system(size: fontSize, weight: fontWeight))
                     .tracking(rank == 0 ? -0.84 : -0.144)  // P1: -0.03em at 28pt, P2/P3: -0.012em
                     .lineLimit(rank == 0 ? 2 : 1)  // P1: 2 lines before truncating, P2/P3: 1 line
@@ -378,7 +370,7 @@ struct LargeWidgetView: View {
         VStack(alignment: .leading, spacing: 0) {
             if cards.isEmpty {
                 // Empty state
-                Text("Clear your mind of to-dos.\nPick one thing to start.")
+                Text("Capture anything.")
                     .font(.system(size: 13, weight: .regular))
                     .tracking(-0.156)
                     .foregroundColor(textColor)
@@ -531,7 +523,7 @@ struct EmptyWidgetView: View {
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Clear your mind of to-dos.\nPick one thing to start.")
+                Text("Capture anything.")
                     .font(.system(size: 13, weight: .regular))
                     .tracking(-0.156)  // -0.012em
                     .lineSpacing(1.42)
