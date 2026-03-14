@@ -29,23 +29,45 @@ enum Palette {
     static let red  = UIColor.systemRed
     static let blue = UIColor.systemBlue
 
-    // Gradient: Card Default
+    // ---- Light mode gradients ----
+
+    // Card Default (pastel blue)
     static let blueLight = UIColor(red: 0xCC/255, green: 0xDA/255, blue: 0xF7/255, alpha: 1.0)
     static let bluePale  = UIColor(red: 0xE7/255, green: 0xED/255, blue: 0xF9/255, alpha: 1.0)
     static let blueMid   = UIColor(red: 0x60/255, green: 0x90/255, blue: 0xEA/255, alpha: 1.0)
 
-    // Gradient: Onboarding
+    // Onboarding (lavender)
     static let lavenderLight = UIColor(red: 0.92, green: 0.92, blue: 0.98, alpha: 1.0)
-    static let lavenderDark  = UIColor(red: 0.88, green: 0.88, blue: 0.96, alpha: 1.0)
+    static let lavenderMid   = UIColor(red: 0.88, green: 0.88, blue: 0.96, alpha: 1.0)
 
-    // Gradient: Boost
+    // Boost (peach)
     static let peachLight = UIColor(red: 1.0, green: 0.92, blue: 0.75, alpha: 1.0)
-    static let peachDark  = UIColor(red: 0.98, green: 0.80, blue: 0.60, alpha: 1.0)
+    static let peachMid   = UIColor(red: 0.98, green: 0.80, blue: 0.60, alpha: 1.0)
 
-    // Gradient: Boost wrapper
+    // Boost wrapper (pink)
     static let pinkLight = UIColor(red: 0.95, green: 0.80, blue: 0.92, alpha: 1.0)
-    static let pinkDark  = UIColor(red: 0.90, green: 0.75, blue: 0.90, alpha: 1.0)
+    static let pinkMid   = UIColor(red: 0.90, green: 0.75, blue: 0.90, alpha: 1.0)
     static let purple    = UIColor(red: 0.45, green: 0.25, blue: 0.70, alpha: 1.0)
+
+    // ---- Dark mode gradients ----
+
+    // Card Default (deep navy)
+    static let navyDeep   = UIColor(red: 0x1A/255, green: 0x25/255, blue: 0x40/255, alpha: 1.0)
+    static let navyMid    = UIColor(red: 0x1F/255, green: 0x2D/255, blue: 0x4A/255, alpha: 1.0)
+    static let navyBright = UIColor(red: 0x2D/255, green: 0x45/255, blue: 0x70/255, alpha: 1.0)
+
+    // Onboarding (deep violet)
+    static let violetDeep = UIColor(red: 0x20/255, green: 0x1C/255, blue: 0x30/255, alpha: 1.0)
+    static let violetMid  = UIColor(red: 0x2D/255, green: 0x26/255, blue: 0x42/255, alpha: 1.0)
+
+    // Boost (deep amber)
+    static let amberDeep = UIColor(red: 0x35/255, green: 0x22/255, blue: 0x0E/255, alpha: 1.0)
+    static let amberMid  = UIColor(red: 0x4A/255, green: 0x2E/255, blue: 0x12/255, alpha: 1.0)
+
+    // Boost wrapper (deep plum)
+    static let plumDeep    = UIColor(red: 0x2A/255, green: 0x15/255, blue: 0x25/255, alpha: 1.0)
+    static let plumMid     = UIColor(red: 0x38/255, green: 0x1C/255, blue: 0x32/255, alpha: 1.0)
+    static let purpleLight = UIColor(red: 0.60, green: 0.40, blue: 0.85, alpha: 1.0)
 }
 
 // ============================================================
@@ -82,23 +104,28 @@ enum AppColor {
         static let destructiveIcon = adaptive(light: Palette.black, dark: Palette.white)
     }
 
-    // MARK: Gradients
+    // MARK: Gradients (adaptive light/dark)
 
     enum Gradient {
         static let cardDefault: [Color] = [
-            Color(Palette.blueLight), Color(Palette.bluePale),
-            Color(Palette.blueLight), Color(Palette.blueMid)
+            adaptive(light: Palette.blueLight, dark: Palette.navyDeep),
+            adaptive(light: Palette.bluePale, dark: Palette.navyMid),
+            adaptive(light: Palette.blueLight, dark: Palette.navyDeep),
+            adaptive(light: Palette.blueMid, dark: Palette.navyBright)
         ]
         static let cardOnboarding: [Color] = [
-            Color(Palette.lavenderLight), Color(Palette.lavenderDark)
+            adaptive(light: Palette.lavenderLight, dark: Palette.violetDeep),
+            adaptive(light: Palette.lavenderMid, dark: Palette.violetMid)
         ]
         static let cardBoost: [Color] = [
-            Color(Palette.peachLight), Color(Palette.peachDark)
+            adaptive(light: Palette.peachLight, dark: Palette.amberDeep),
+            adaptive(light: Palette.peachMid, dark: Palette.amberMid)
         ]
         static let boostWrapper: [Color] = [
-            Color(Palette.pinkLight), Color(Palette.pinkDark)
+            adaptive(light: Palette.pinkLight, dark: Palette.plumDeep),
+            adaptive(light: Palette.pinkMid, dark: Palette.plumMid)
         ]
-        static let boostAccent = Color(Palette.purple)
+        static let boostAccent = adaptive(light: Palette.purple, dark: Palette.purpleLight)
     }
 
     // MARK: Surface helpers
@@ -116,7 +143,7 @@ enum AppColor {
 
     // MARK: - Helper
 
-    private static func adaptive(light: UIColor, dark: UIColor) -> Color {
+    fileprivate static func adaptive(light: UIColor, dark: UIColor) -> Color {
         Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? dark : light })
     }
 }
