@@ -2118,6 +2118,9 @@ struct CreateCardModal: View {
                     .frame(minHeight: 120)
                     .background(Color(uiColor: .secondarySystemBackground))
                     .cornerRadius(12)
+                    .onTapGesture {
+                        isFocused = true
+                    }
                 
                 // Quick suggestions below input
                 VStack(alignment: .leading, spacing: 12) {
@@ -2182,11 +2185,11 @@ struct CreateCardModal: View {
             .onAppear {
                 // Pick 3 random hints
                 commonHints = Array(allCommonHints.shuffled().prefix(3))
-                
-                // Small delay to ensure sheet is fully presented before focusing
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isFocused = true
-                }
+            }
+            .task {
+                // Delay to ensure sheet is fully presented before focusing
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+                isFocused = true
             }
         }
     }
