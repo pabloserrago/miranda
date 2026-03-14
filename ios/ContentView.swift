@@ -1201,7 +1201,7 @@ struct RecentCapturesDrawer: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(Color(Palette.neutral50))
+                                    .fill(AppColor.Surface.secondary)
                                 
                                 Image(systemName: "plus")
                                     .font(.system(size: 22, weight: .semibold))
