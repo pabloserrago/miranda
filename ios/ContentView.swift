@@ -1203,7 +1203,7 @@ struct RecentCapturesDrawer: View {
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundColor(AppColor.Text.inverse)
                                 .frame(width: 56, height: 56)
-                                .background(AppColor.Text.primary)
+                                .background(AppColor.Surface.button)
                                 .clipShape(Circle())
                         }
                     }
