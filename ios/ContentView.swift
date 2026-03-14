@@ -1953,46 +1953,33 @@ struct SwipeableCardRow: View {
                 
                 Spacer()
                 
-                // Action buttons (right side - swipe left)
-                HStack(spacing: 12) {
-                    // Green checkmark/done button
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            offset = 0
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            onComplete()
-                        }
-                    }) {
-                ZStack {
-                    Circle()
-                                .fill(AppColor.Action.complete)
-                                .frame(width: 50, height: 50)
-                            
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(AppColor.Text.inverse)
-                        }
+                // Archive button (right side - swipe left)
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        offset = 0
                     }
-                    
-                    // Trash/delete button (neutral style)
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            offset = 0
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            onDelete()
-                        }
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(AppColor.Action.destructive)
-                                .frame(width: 50, height: 50)
-                            
-                            Image(systemName: "trash.fill")
-                                .font(.system(size: 20, weight: .heavy))
-                                .foregroundColor(AppColor.Text.tertiary)
-                        }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        onComplete() // Archive action (reusing complete handler for now)
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                ZStack {
+                                    Color.clear
+                                        .background(.ultraThinMaterial)
+                                    AppColor.Text.primary.opacity(0.2)
+                                }
+                            )
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Circle()
+                                    .stroke(AppColor.Text.primary.opacity(0.3), lineWidth: 1)
+                            )
+                        
+                        Image(systemName: "archivebox.fill")
+                            .font(.system(size: 20, weight: .heavy))
+                            .foregroundColor(AppColor.Text.primary)
                     }
                 }
                 .padding(.trailing, 16)
