@@ -1973,34 +1973,15 @@ struct SwipeableCardRow: View {
                                     AppColor.Text.primary.opacity(0.15)
                                 }
                             )
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                AppColor.Text.primary.opacity(0.4),
-                                                AppColor.Text.primary.opacity(0.2)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1.5
-                                    )
-                            )
-                            .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
-                        
-                        Image(systemName: "archivebox.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        AppColor.Text.primary.opacity(0.9),
-                                        AppColor.Text.primary.opacity(0.7)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                        .overlay(
+                            Circle()
+                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 1.5)
+                        )
+                        .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "archivebox.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(AppColor.Icon.foregroundGradient)
                     }
                 }
                 .padding(.trailing, 16)
@@ -2421,32 +2402,13 @@ struct OneMustCardView: View {
                         )
                         .overlay(
                             Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            AppColor.Text.primary.opacity(0.4),
-                                            AppColor.Text.primary.opacity(0.2)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1.5
-                                )
+                                .stroke(AppColor.Icon.strokeGradient, lineWidth: 1.5)
                         )
                         .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
                     
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [
-                                    AppColor.Text.primary.opacity(0.9),
-                                    AppColor.Text.primary.opacity(0.7)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(AppColor.Icon.foregroundGradient)
                 }
             }
             .padding(.leading, 16)

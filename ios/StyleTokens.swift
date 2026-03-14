@@ -132,6 +132,30 @@ enum AppColor {
         static let boostAccent = adaptive(light: Palette.purple, dark: Palette.purpleLight)
     }
 
+    // MARK: Icon gradients
+    
+    enum Icon {
+        /// Gradient for liquid glass icon foregrounds (top-left to bottom-right)
+        static let foregroundGradient = LinearGradient(
+            colors: [
+                Text.primary.opacity(0.9),
+                Text.primary.opacity(0.7)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        
+        /// Gradient for liquid glass button strokes
+        static let strokeGradient = LinearGradient(
+            colors: [
+                Text.primary.opacity(0.4),
+                Text.primary.opacity(0.2)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
     // MARK: Surface helpers
 
     static let overlay      = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.15))
