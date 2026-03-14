@@ -162,6 +162,16 @@ enum AppColor {
     static let scrim        = Color(Palette.black40)
     static let shadow       = Color(Palette.black10)
     static let shadowMedium = Color(Palette.black10)
+    
+    /// System backgrounds (adaptive)
+    static let systemBackground         = Color(uiColor: .systemBackground)
+    static let secondarySystemBackground = Color(uiColor: .secondarySystemBackground)
+    static let tertiarySystemBackground  = Color(uiColor: .tertiarySystemBackground)
+    
+    /// UI element colors
+    static let dragHandle     = Color.secondary.opacity(0.3)
+    static let debugText      = Color.secondary.opacity(0.7)
+    static let emptyStateIcon = Color.secondary.opacity(0.5)
 
     static let slotFill   = Color(Palette.white.withAlphaComponent(0.05))
     static let slotStroke = Color(Palette.white.withAlphaComponent(0.15))

@@ -529,7 +529,7 @@ struct ContentView: View {
                             VStack(spacing: 0) {
                                 // Drag handle
                                 RoundedRectangle(cornerRadius: 3)
-                                    .fill(Color.secondary.opacity(0.3))
+                                    .fill(AppColor.dragHandle)
                                     .frame(width: 40, height: 5)
                                     .padding(.top, 12)
                                 
@@ -638,7 +638,7 @@ struct ContentView: View {
                                     #if DEBUG
                                     Text("Debug: \(cards.count) cards, \(excludedFromPriorityIds.count) excluded, \(autoPriorityCardIds.count) priorities")
                                         .font(.system(size: 10))
-                                        .foregroundColor(.secondary.opacity(0.7))
+                                        .foregroundColor(AppColor.debugText)
                                     #endif
                                     }
                                 }
@@ -1117,7 +1117,7 @@ struct TortoiseCompletionView: View {
                 
                 Text("Slow and steady wins the race")
                     .font(.system(size: 18))
-                    .foregroundColor(Color(Palette.white))
+                    .foregroundColor(AppColor.Text.inverse)
             }
             .opacity(opacity)
             .onAppear {
@@ -1168,7 +1168,7 @@ struct RecentCapturesDrawer: View {
             VStack(spacing: 0) {
                 // Drag handle
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.secondary.opacity(0.3))
+                    .fill(AppColor.dragHandle)
                     .frame(width: 40, height: 5)
                     .padding(.top, 12)
                 
@@ -1190,7 +1190,7 @@ struct RecentCapturesDrawer: View {
                                     .font(.system(size: 22, weight: .semibold))
                                     .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 56, height: 56)
-                                    .background(Color(uiColor: .secondarySystemBackground))
+                                    .background(AppColor.secondarySystemBackground)
                                     .clipShape(Circle())
                             }
                         }
@@ -1274,7 +1274,7 @@ struct RecentCapturesDrawer: View {
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(uiColor: .systemBackground))
+                    .fill(AppColor.systemBackground)
                     .shadow(color: AppColor.shadowMedium, radius: 20, x: 0, y: -8)
             )
             .frame(height: collapsedHeight + offset + dragOffset)
@@ -1547,7 +1547,7 @@ struct PriorityPickerView: View {
                     
                     Image(systemName: "tray")
                         .font(.system(size: 60))
-                        .foregroundColor(.secondary.opacity(0.5))
+                        .foregroundColor(AppColor.emptyStateIcon)
                     
                     VStack(spacing: 12) {
                         Text("No other captures")
@@ -1574,7 +1574,7 @@ struct PriorityPickerView: View {
                                     .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(AppColor.Text.primary)
                                     .frame(width: 60, height: 60)
-                                    .background(Color(uiColor: .secondarySystemBackground))
+                                    .background(AppColor.secondarySystemBackground)
                                     .clipShape(Circle())
                             }
                         }
@@ -2071,7 +2071,7 @@ struct CardRowView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
-        .background(Color(uiColor: .secondarySystemBackground))
+        .background(AppColor.secondarySystemBackground)
         .cornerRadius(12)
         .contentShape(Rectangle())
         .opacity(opacity)
@@ -2175,7 +2175,7 @@ struct CreateCardModal: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(Color(uiColor: .tertiarySystemBackground))
+                            .background(AppColor.tertiarySystemBackground)
                             .cornerRadius(10)
                         }
                     }
@@ -2380,7 +2380,7 @@ struct OneMustCardView: View {
                         }
                     }
                 }
-                .background(Color(uiColor: .systemBackground))
+                .background(AppColor.systemBackground)
             }
             
             // X close button -- always visible with liquid glass style
