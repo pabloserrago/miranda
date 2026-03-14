@@ -1970,17 +1970,37 @@ struct SwipeableCardRow: View {
                                 ZStack {
                                     Color.clear
                                         .background(.ultraThinMaterial)
-                                    AppColor.Text.primary.opacity(0.2)
+                                    AppColor.Text.primary.opacity(0.15)
                                 }
                             )
                             .overlay(
                                 Circle()
-                                    .stroke(AppColor.Text.primary.opacity(0.3), lineWidth: 1)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                AppColor.Text.primary.opacity(0.4),
+                                                AppColor.Text.primary.opacity(0.2)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1.5
+                                    )
                             )
+                            .shadow(color: AppColor.Text.primary.opacity(0.1), radius: 4, x: 0, y: 2)
                         
                         Image(systemName: "archivebox.fill")
-                            .font(.system(size: 20, weight: .heavy))
-                            .foregroundColor(AppColor.Text.primary)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        AppColor.Text.primary.opacity(0.9),
+                                        AppColor.Text.primary.opacity(0.7)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                     }
                 }
                 .padding(.trailing, 16)
