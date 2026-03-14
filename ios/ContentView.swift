@@ -1206,6 +1206,7 @@ struct RecentCapturesDrawer: View {
                                 .background(Color(Palette.neutral50))
                                 .clipShape(Circle())
                         }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 24)
