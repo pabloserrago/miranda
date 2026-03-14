@@ -100,7 +100,7 @@ enum AppColor {
     
     enum Surface {
         // Primary surface: main background
-        static let primary = adaptive(light: Palette.neutral50, dark: Palette.neutral900)
+        static let primary = adaptive(light: Palette.neutral200, dark: Palette.neutral700)
         
         // Secondary surface: elevated/card background
         static let secondary = adaptive(light: Palette.neutral50, dark: Palette.neutral800)
