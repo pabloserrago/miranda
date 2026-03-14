@@ -86,7 +86,8 @@ enum AppColor {
 
     enum Gradient {
         static let cardDefault: [Color] = [
-            Color(Palette.blueLight), Color(Palette.bluePale), Color(Palette.blueMid)
+            Color(Palette.blueLight), Color(Palette.bluePale),
+            Color(Palette.blueLight), Color(Palette.blueMid)
         ]
         static let cardOnboarding: [Color] = [
             Color(Palette.lavenderLight), Color(Palette.lavenderDark)
