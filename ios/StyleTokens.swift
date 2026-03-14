@@ -138,8 +138,8 @@ enum AppColor {
         /// Gradient for liquid glass icon foregrounds (top-left to bottom-right)
         static let foregroundGradient = LinearGradient(
             colors: [
-                Text.primary.opacity(0.9),
-                Text.primary.opacity(0.7)
+                Color(Palette.black85),
+                Color(Palette.black85)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -148,8 +148,8 @@ enum AppColor {
         /// Gradient for liquid glass button strokes
         static let strokeGradient = LinearGradient(
             colors: [
-                Text.primary.opacity(0.4),
-                Text.primary.opacity(0.2)
+                Color(Palette.black40),
+                Color(Palette.black10)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
