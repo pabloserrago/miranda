@@ -31,7 +31,7 @@ struct SettingsView: View {
                             ZStack {
                                 // Background gradient (like iOS wallpaper)
                                 LinearGradient(
-                                    colors: [Color(Palette.blue).opacity(0.1), Color(Palette.purple).opacity(0.05)],
+                                    colors: [AppColor.Action.blue.opacity(0.1), Color(Palette.purple).opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -72,9 +72,9 @@ struct SettingsView: View {
                                     
                                     // iOS app icons below
                                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: Color(Palette.red))
+                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: AppColor.Action.red)
                                         AppIcon(name: "Messages", icon: "message.fill", color: AppColor.Action.complete)
-                                        AppIcon(name: "Mail", icon: "envelope.fill", color: Color(Palette.blue))
+                                        AppIcon(name: "Mail", icon: "envelope.fill", color: AppColor.Action.blue)
                                         AppIcon(name: "Phone", icon: "phone.fill", color: AppColor.Action.complete)
                                     }
                                     .padding(.horizontal, 24)

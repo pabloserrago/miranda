@@ -52,7 +52,7 @@ struct AnalyticsDebugView: View {
                                 ForEach(Array(event.keys.filter { $0 != "event" && $0 != "timestamp" }.sorted()), id: \.self) { key in
                                     Text("\(key): \(String(describing: event[key] ?? ""))")
                                         .font(.caption)
-                                        .foregroundColor(Color(Palette.blue))
+                                        .foregroundColor(AppColor.Action.blue)
                                 }
                             }
                             .padding()

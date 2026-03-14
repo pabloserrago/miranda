@@ -104,6 +104,8 @@ enum AppColor {
         static let priority        = adaptive(light: Palette.yellow, dark: Palette.yellowLight)
         static let destructive     = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.20))
         static let destructiveIcon = adaptive(light: Palette.black, dark: Palette.white)
+        static let red             = adaptive(light: Palette.red, dark: Palette.redLight)
+        static let blue            = adaptive(light: Palette.blue, dark: Palette.blueHigh)
     }
 
     // MARK: Gradients (adaptive light/dark)
