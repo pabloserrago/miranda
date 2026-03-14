@@ -1186,13 +1186,33 @@ struct RecentCapturesDrawer: View {
                             Button(action: {
                                 onCreateCard("", true)
                             }) {
-                                Image(systemName: "mic.fill")
-                                    .font(.system(size: 22, weight: .semibold))
-                                    .foregroundColor(AppColor.Text.primary)
-                                    .frame(width: 56, height: 56)
-                                    .background(AppColor.Surface.secondary)
-                                    .clipShape(Circle())
+                                ZStack {
+                                    // Color base
+                                    Circle()
+                                        .fill(AppColor.Surface.button.opacity(0.9))
+                                        .frame(width: 56, height: 56)
+                                    
+                                    // Material glass effect on top
+                                    Circle()
+                                        .fill(Color.clear)
+                                        .frame(width: 56, height: 56)
+                                        .background(.ultraThinMaterial)
+                                    
+                                    // Stroke
+                                    Circle()
+                                        .stroke(AppColor.Border.subtle.opacity(0.6), lineWidth: 1.5)
+                                        .frame(width: 56, height: 56)
+                                    
+                                    // Icon
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 22, weight: .bold))
+                                        .foregroundColor(AppColor.Text.primary)
+                                }
+                                .shadow(color: AppColor.shadow.opacity(0.15), radius: 6, x: 0, y: 3)
+                                .compositingGroup()
+                                .clipShape(Circle())
                             }
+                            .buttonStyle(.plain)
                         }
                         
                         // Add button
