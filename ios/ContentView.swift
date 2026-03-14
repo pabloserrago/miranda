@@ -1966,12 +1966,9 @@ struct SwipeableCardRow: View {
                         Circle()
                             .fill(Color.clear)
                             .frame(width: 50, height: 50)
-                            .background(
-                                ZStack {
-                                    AppColor.Text.primary.opacity(0.1)
-                                    Color.clear
-                                        .background(.thinMaterial)
-                                }
+                            .background(.thinMaterial)
+                            .overlay(
+                                AppColor.Text.primary.opacity(0.15)
                             )
                         .overlay(
                             Circle()
@@ -2278,12 +2275,9 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(
-                                ZStack {
-                                    AppColor.Action.complete.opacity(0.3)
-                                    Color.clear
-                                        .background(.thinMaterial)
-                                }
+                            .background(.thinMaterial)
+                            .overlay(
+                                AppColor.Action.complete.opacity(0.8)
                             )
                             .overlay(
                                 Capsule()
@@ -2310,12 +2304,9 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(
-                                ZStack {
-                                    AppColor.Action.priority.opacity(0.3)
-                                    Color.clear
-                                        .background(.thinMaterial)
-                                }
+                            .background(.thinMaterial)
+                            .overlay(
+                                AppColor.Action.priority.opacity(0.8)
                             )
                             .overlay(
                                 Capsule()
@@ -2337,12 +2328,9 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(
-                                ZStack {
-                                    AppColor.Action.complete.opacity(0.3)
-                                    Color.clear
-                                        .background(.thinMaterial)
-                                }
+                            .background(.thinMaterial)
+                            .overlay(
+                                AppColor.Action.complete.opacity(0.8)
                             )
                             .overlay(
                                 Capsule()
@@ -2365,12 +2353,9 @@ struct OneMustCardView: View {
                                 .foregroundColor(AppColor.Text.primary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(
-                                    ZStack {
-                                        AppColor.Text.primary.opacity(0.1)
-                                        Color.clear
-                                            .background(.thinMaterial)
-                                    }
+                                .background(.thinMaterial)
+                                .overlay(
+                                    AppColor.Text.primary.opacity(0.15)
                                 )
                                 .overlay(
                                     Capsule()
