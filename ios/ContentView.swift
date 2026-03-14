@@ -2230,143 +2230,129 @@ struct OneMustCardView: View {
     let onComplete: () -> Void
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                ScrollView {
-                    VStack(spacing: 50) {
-                        Spacer(minLength: 50)
-                        
-                        // Emoji
-                        if let emoji = card.emoji {
-                            Text(emoji)
-                                .font(.system(size: 120))
-                        }
-                        
-                        // Text (scrollable)
-                        Text(card.simplifiedText)
-                            .font(.system(size: 38, weight: .bold, design: .rounded))
-                            .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                        
-                        Spacer(minLength: isPriority ? 120 : 120)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                
-                // Fixed bottom toolbar with action buttons
-                VStack {
-                    Spacer()
+        ZStack(alignment: .topLeading) {
+            ScrollView {
+                VStack(spacing: 50) {
+                    Spacer(minLength: 50)
                     
-                    VStack(spacing: 12) {
-                        Divider()
-                        
-                        if !isPriority {
-                            // Complete button (primary action)
-                            Button(action: {
-                                onComplete()
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 20, weight: .semibold))
-                                    Text("Complete")
-                                        .font(.system(size: 18, weight: .semibold))
-                                }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.green)
-                                .clipShape(Capsule())
+                    // Emoji
+                    if let emoji = card.emoji {
+                        Text(emoji)
+                            .font(.system(size: 120))
+                    }
+                    
+                    // Text (scrollable)
+                    Text(card.simplifiedText)
+                        .font(.system(size: 38, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                    
+                    Spacer(minLength: 120)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            
+            // Fixed bottom toolbar with action buttons
+            VStack {
+                Spacer()
+                
+                VStack(spacing: 12) {
+                    Divider()
+                    
+                    if !isPriority {
+                        Button(action: { onComplete() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                Text("Complete")
+                                    .font(.system(size: 18, weight: .semibold))
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                            
-                            // Make Priority button (secondary action)
-                            Button(action: {
-                                onSetPriority()
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    onDismiss()
-                                }
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "lightbulb.fill")
-                                        .font(.system(size: 18, weight: .semibold))
-                                    Text("Turn this on")
-                                        .font(.system(size: 16, weight: .semibold))
-                                }
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.yellow)
-                                .clipShape(Capsule())
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 16)
-                        } else {
-                            // Complete button (primary action)
-                            Button(action: {
-                                onComplete()
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 20, weight: .semibold))
-                                    Text("Complete")
-                                        .font(.system(size: 18, weight: .semibold))
-                                }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                                .background(Color.green)
-                                .clipShape(Capsule())
+                            .background(Color.green)
+                            .clipShape(Capsule())
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        
+                        Button(action: {
+                            onSetPriority()
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                onDismiss()
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                            
-                            // Remove Priority button (secondary action)
-                            if let removePriority = onRemovePriority {
-                            Button(action: {
-                                removePriority()
-                            }) {
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                Text("Turn this on")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.yellow)
+                            .clipShape(Capsule())
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
+                    } else {
+                        Button(action: { onComplete() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                Text("Complete")
+                                    .font(.system(size: 18, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.green)
+                            .clipShape(Capsule())
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        
+                        if let removePriority = onRemovePriority {
+                            Button(action: { removePriority() }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "lightbulb.slash.fill")
-                                            .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                            return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
-                                        }))
+                                        .font(.system(size: 18, weight: .semibold))
                                     Text("Turn this off")
-                                            .font(.system(size: 16, weight: .semibold))
+                                        .font(.system(size: 16, weight: .semibold))
                                 }
                                 .foregroundColor(Color(uiColor: UIColor { traitCollection in
-                                    return traitCollection.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
+                                    traitCollection.userInterfaceStyle == .dark ? .white : .black
                                 }))
                                 .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 14)
+                                .padding(.vertical, 14)
                                 .background(Color(uiColor: .secondarySystemBackground))
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
-                            }
+                            .padding(.bottom, 16)
                         }
                     }
-                    .background(Color(uiColor: .systemBackground))
                 }
+                .background(Color(uiColor: .systemBackground))
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            onDismiss()
-                        }
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
+            
+            // X close button -- always visible
+            Button(action: {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    onDismiss()
                 }
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 30))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundColor(.primary.opacity(0.6))
             }
+            .padding(.leading, 16)
+            .padding(.top, 16)
         }
+        .background(Color(uiColor: .systemBackground))
     }
 }
 
