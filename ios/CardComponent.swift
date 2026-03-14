@@ -103,10 +103,10 @@ struct CardOnboarding: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Capture anything that's in your mind. Like a dream, idea or to-do. ")
+            Text("Clear your mind of to-dos. ")
                 .font(.system(size: 18, weight: .regular))
                 .foregroundColor(AppColor.Text.primary)
-            + Text("Simple.")
+            + Text("Pick one thing to start.")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(AppColor.Text.primary)
         }
