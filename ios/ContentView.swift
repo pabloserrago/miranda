@@ -1963,20 +1963,28 @@ struct SwipeableCardRow: View {
                     }
                 }) {
                     ZStack {
+                        // Color base
                         Circle()
                             .fill(AppColor.Action.archive)
                             .frame(width: 50, height: 50)
+                        
+                        // Material glass effect on top
+                        Circle()
+                            .fill(Color.clear)
+                            .frame(width: 50, height: 50)
                             .background(.thinMaterial)
-                            .overlay(
-                                Circle()
-                                    .stroke(AppColor.Action.archive.opacity(0.6), lineWidth: 2.5)
-                            )
-                            .shadow(color: AppColor.Action.archive.opacity(0.5), radius: 8, x: 0, y: 4)
-                    
+                        
+                        // Stroke
+                        Circle()
+                            .stroke(AppColor.Action.archive.opacity(0.5), lineWidth: 2)
+                            .frame(width: 50, height: 50)
+                        
+                        // Icon
                         Image(systemName: "archivebox.fill")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(AppColor.Text.inverse)
                     }
+                    .shadow(color: AppColor.Action.archive.opacity(0.4), radius: 10, x: 0, y: 4)
                     .compositingGroup()
                     .clipShape(Circle())
                 }
@@ -2386,20 +2394,28 @@ struct OneMustCardView: View {
                 }
             }) {
                 ZStack {
+                    // Color base
                     Circle()
                         .fill(AppColor.Text.primary.opacity(0.3))
                         .frame(width: 44, height: 44)
-                        .background(.thinMaterial)
-                        .overlay(
-                            Circle()
-                                .stroke(AppColor.Text.primary.opacity(0.6), lineWidth: 2.5)
-                        )
-                        .shadow(color: AppColor.Text.primary.opacity(0.3), radius: 8, x: 0, y: 4)
                     
+                    // Material glass effect on top
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: 44, height: 44)
+                        .background(.thinMaterial)
+                    
+                    // Stroke
+                    Circle()
+                        .stroke(AppColor.Text.primary.opacity(0.5), lineWidth: 2)
+                        .frame(width: 44, height: 44)
+                    
+                    // Icon
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(AppColor.Icon.foregroundGradient)
                 }
+                .shadow(color: AppColor.Text.primary.opacity(0.25), radius: 10, x: 0, y: 4)
                 .compositingGroup()
                 .clipShape(Circle())
             }
