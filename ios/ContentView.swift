@@ -805,7 +805,7 @@ struct ContentView: View {
         }
             
             // Track analytics
-            Analytics.shared.trackCardCreated(hasEmoji: emoji != nil)
+            Analytics.shared.trackCardCreated(hasEmoji: false)
             
             // Reset and close modal
             newCardText = ""
