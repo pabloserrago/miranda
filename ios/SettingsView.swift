@@ -31,7 +31,7 @@ struct SettingsView: View {
                             ZStack {
                                 // Background gradient (like iOS wallpaper)
                                 LinearGradient(
-                                    colors: [AppColor.Action.blue.opacity(0.1), Color(Palette.purple).opacity(0.05)],
+                                    colors: [AppColor.Status.info.opacity(0.1), AppColor.Status.accent.opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -398,7 +398,7 @@ struct AppIcon: View {
                     .frame(width: 56, height: 56)
                 
                 RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color(Palette.white.withAlphaComponent(0.2)), lineWidth: 2)
+                    .strokeBorder(AppColor.Border.subtle, lineWidth: 2)
                     .frame(width: 56, height: 56)
                 
                 Image(systemName: icon)

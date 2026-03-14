@@ -241,7 +241,7 @@ struct ContentView: View {
                     ZStack(alignment: .bottom) {
                         // Main content area
                 ZStack {
-                            AppColor.Background.primary
+                            AppColor.Surface.primary
                         .ignoresSafeArea()
                     
                         VStack(spacing: 0) {
@@ -682,7 +682,7 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: drawerState.height(screenHeight: geometry.size.height) + geometry.safeAreaInsets.bottom)
-                        .background(AppColor.Background.secondary)
+                        .background(AppColor.Surface.secondary)
                         .cornerRadius(20, corners: [.topLeft, .topRight])
                         .ignoresSafeArea(edges: .bottom)
                         .offset(y: geometry.safeAreaInsets.bottom)

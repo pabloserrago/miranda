@@ -27,7 +27,7 @@ struct AnalyticsDebugView: View {
                         }
                     }
                     .padding()
-                    .background(Color(Palette.black10))
+                    .background(AppColor.Surface.card)
                     .cornerRadius(12)
                     
                     // Recent Events Section
@@ -57,7 +57,7 @@ struct AnalyticsDebugView: View {
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(Palette.black10))
+                            .background(AppColor.Surface.card)
                             .cornerRadius(8)
                         }
                     }
