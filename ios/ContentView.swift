@@ -1187,30 +1187,23 @@ struct RecentCapturesDrawer: View {
                                 onCreateCard("", true)
                             }) {
                                 ZStack {
-                                    // Color base
                                     Circle()
-                                        .fill(AppColor.Surface.button.opacity(0.9))
+                                        .fill(AppColor.Surface.button)
                                         .frame(width: 56, height: 56)
                                     
-                                    // Material glass effect on top
                                     Circle()
-                                        .fill(Color.clear)
+                                        .fill(.ultraThinMaterial)
                                         .frame(width: 56, height: 56)
-                                        .background(.ultraThinMaterial)
                                     
-                                    // Stroke
                                     Circle()
                                         .stroke(AppColor.Border.subtle.opacity(0.6), lineWidth: 1.5)
                                         .frame(width: 56, height: 56)
                                     
-                                    // Icon
                                     Image(systemName: "mic.fill")
                                         .font(.system(size: 22, weight: .bold))
                                         .foregroundColor(AppColor.Text.primary)
                                 }
                                 .shadow(color: AppColor.shadow.opacity(0.15), radius: 6, x: 0, y: 3)
-                                .compositingGroup()
-                                .clipShape(Circle())
                             }
                             .buttonStyle(.plain)
                         }
@@ -1220,30 +1213,23 @@ struct RecentCapturesDrawer: View {
                             onCreateCard("", false)
                         }) {
                             ZStack {
-                                // Color base - full opacity so it shows through material
                                 Circle()
                                     .fill(AppColor.Surface.button)
                                     .frame(width: 56, height: 56)
                                 
-                                // Material glass effect on top
                                 Circle()
-                                    .fill(Color.clear)
+                                    .fill(.ultraThinMaterial)
                                     .frame(width: 56, height: 56)
-                                    .background(.ultraThinMaterial)
                                 
-                                // Stroke
                                 Circle()
                                     .stroke(AppColor.Border.subtle.opacity(0.6), lineWidth: 1.5)
                                     .frame(width: 56, height: 56)
                                 
-                                // Icon
                                 Image(systemName: "plus")
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(AppColor.Text.primary)
                             }
                             .shadow(color: AppColor.shadow.opacity(0.15), radius: 6, x: 0, y: 3)
-                            .compositingGroup()
-                            .clipShape(Circle())
                         }
                         .buttonStyle(.plain)
                     }
