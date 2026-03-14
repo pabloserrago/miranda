@@ -2289,7 +2289,17 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(AppColor.Action.complete)
+                            .background(
+                                ZStack {
+                                    Color.clear
+                                        .background(.ultraThinMaterial)
+                                    AppColor.Action.complete.opacity(0.4)
+                                }
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(AppColor.Action.complete.opacity(0.5), lineWidth: 1)
+                            )
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2310,7 +2320,17 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(AppColor.Action.priority)
+                            .background(
+                                ZStack {
+                                    Color.clear
+                                        .background(.ultraThinMaterial)
+                                    AppColor.Action.priority.opacity(0.4)
+                                }
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(AppColor.Action.priority.opacity(0.5), lineWidth: 1)
+                            )
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2326,7 +2346,17 @@ struct OneMustCardView: View {
                             .foregroundColor(AppColor.Text.inverse)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(AppColor.Action.complete)
+                            .background(
+                                ZStack {
+                                    Color.clear
+                                        .background(.ultraThinMaterial)
+                                    AppColor.Action.complete.opacity(0.4)
+                                }
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(AppColor.Action.complete.opacity(0.5), lineWidth: 1)
+                            )
                             .clipShape(Capsule())
                         }
                         .padding(.horizontal, 20)
@@ -2340,10 +2370,20 @@ struct OneMustCardView: View {
                                     Text("Turn this off")
                                         .font(.system(size: 16, weight: .semibold))
                                 }
-                                .foregroundColor(AppColor.Action.destructiveIcon)
+                                .foregroundColor(AppColor.Text.primary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(Color(uiColor: .secondarySystemBackground))
+                                .background(
+                                    ZStack {
+                                        Color.clear
+                                            .background(.ultraThinMaterial)
+                                        AppColor.Text.primary.opacity(0.1)
+                                    }
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(AppColor.Text.primary.opacity(0.2), lineWidth: 1)
+                                )
                                 .clipShape(Capsule())
                             }
                             .padding(.horizontal, 20)
