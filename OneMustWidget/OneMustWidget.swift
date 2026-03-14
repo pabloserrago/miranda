@@ -59,7 +59,7 @@ struct Provider: TimelineProvider {
         let cards = SharedCardManager.shared.loadPriorityCards()
         
         // Check if a completion was just triggered
-        if let completingIDString = defaults?.string(forKey: "completingCardID") {
+        if defaults?.string(forKey: "completingCardID") != nil {
             // Clear the flag immediately so we don't re-trigger
             defaults?.removeObject(forKey: "completingCardID")
             defaults?.synchronize()
