@@ -100,7 +100,7 @@ enum AppColor {
     
     enum Surface {
         // Primary surface: main background
-        static let primary = adaptive(light: Palette.neutral50, dark: Palette.neutral900)
+        static let primary = adaptive(light: Palette.neutral50, dark: Palette.neutral800)
         
         // Secondary surface: elevated/card background
         static let secondary = adaptive(light: Palette.neutral50, dark: Palette.neutral800)
@@ -113,9 +113,6 @@ enum AppColor {
         
         // Card background: subtle tint
         static let card = adaptive(light: Palette.neutral100, dark: Palette.neutral800)
-        
-        // Button background: dark in light mode, light in dark mode (inverse)
-        static let button = adaptive(light: Palette.neutral800, dark: Palette.neutral200)
         
         // UIKit compatibility (UIColor versions)
         static let primaryUIColor: UIColor = UIColor { traitCollection in
