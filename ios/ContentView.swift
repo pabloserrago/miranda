@@ -2381,16 +2381,31 @@ struct OneMustCardView: View {
                 .background(Color(uiColor: .systemBackground))
             }
             
-            // X close button -- always visible
+            // X close button -- always visible with liquid glass style
             Button(action: {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     onDismiss()
                 }
             }) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 30))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundColor(.primary.opacity(0.6))
+                ZStack {
+                    Circle()
+                        .fill(
+                            ZStack {
+                                Color.clear
+                                    .background(.ultraThinMaterial)
+                                AppColor.Text.primary.opacity(0.1)
+                            }
+                        )
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Circle()
+                                .stroke(AppColor.Text.primary.opacity(0.2), lineWidth: 1)
+                        )
+                    
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColor.Text.primary.opacity(0.8))
+                }
             }
             .padding(.leading, 16)
             .padding(.top, 16)
