@@ -1227,6 +1227,7 @@ struct RecentCapturesDrawer: View {
                             .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                         }
                         .buttonStyle(.plain)
+                        .drawingGroup()
                     }
                 }
                 .padding(.horizontal, 24)
