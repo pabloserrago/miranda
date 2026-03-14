@@ -10,7 +10,10 @@ enum Palette {
     static let white   = UIColor(white: 1.0, alpha: 1.0)
     static let black   = UIColor(white: 0.0, alpha: 1.0)
     static let black85 = UIColor(white: 0.0, alpha: 0.85)
+    static let black70 = UIColor(white: 0.0, alpha: 0.70)
+    static let black50 = UIColor(white: 0.0, alpha: 0.50)
     static let black40 = UIColor(white: 0.0, alpha: 0.40)
+    static let black30 = UIColor(white: 0.0, alpha: 0.30)
     static let black10 = UIColor(white: 0.0, alpha: 0.10)
 
     // Green (actions)
@@ -169,9 +172,9 @@ enum AppColor {
     static let tertiarySystemBackground  = Color(uiColor: .tertiarySystemBackground)
     
     /// UI element colors
-    static let dragHandle     = Color.secondary.opacity(0.3)
-    static let debugText      = Color.secondary.opacity(0.7)
-    static let emptyStateIcon = Color.secondary.opacity(0.5)
+    static let dragHandle     = Color(Palette.black30)
+    static let debugText      = Color(Palette.black70)
+    static let emptyStateIcon = Color(Palette.black50)
 
     static let slotFill   = Color(Palette.white.withAlphaComponent(0.05))
     static let slotStroke = Color(Palette.white.withAlphaComponent(0.15))
