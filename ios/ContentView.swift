@@ -1220,9 +1220,9 @@ struct RecentCapturesDrawer: View {
                             onCreateCard("", false)
                         }) {
                             ZStack {
-                                // Color base - make it more vibrant
+                                // Color base - full opacity so it shows through material
                                 Circle()
-                                    .fill(AppColor.Surface.button.opacity(0.9))
+                                    .fill(AppColor.Surface.button)
                                     .frame(width: 56, height: 56)
                                 
                                 // Material glass effect on top
