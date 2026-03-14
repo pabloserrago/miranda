@@ -26,8 +26,10 @@ enum Palette {
     static let yellowLight = UIColor(red: 1.0, green: 0.84, blue: 0.04, alpha: 1.0)
 
     // Red & Blue
-    static let red  = UIColor.systemRed
-    static let blue = UIColor.systemBlue
+    static let red      = UIColor(red: 0.90, green: 0.22, blue: 0.21, alpha: 1.0)
+    static let redLight = UIColor(red: 1.0, green: 0.35, blue: 0.37, alpha: 1.0)
+    static let blue      = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
+    static let blueHigh = UIColor(red: 0.25, green: 0.61, blue: 1.0, alpha: 1.0)
 
     // ---- Light mode gradients ----
 
