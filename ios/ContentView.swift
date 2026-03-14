@@ -1214,22 +1214,17 @@ struct RecentCapturesDrawer: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(Color(white: 0.95))
-                                    .frame(width: 56, height: 56)
+                                    .fill(Color.white)
                                 
                                 Circle()
-                                    .fill(.ultraThinMaterial)
-                                    .frame(width: 56, height: 56)
-                                
-                                Circle()
-                                    .stroke(AppColor.Border.subtle.opacity(0.6), lineWidth: 1.5)
-                                    .frame(width: 56, height: 56)
+                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
                                 
                                 Image(systemName: "plus")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .foregroundColor(AppColor.Text.primary)
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundColor(Color.black.opacity(0.75))
                             }
-                            .shadow(color: AppColor.shadow.opacity(0.15), radius: 6, x: 0, y: 3)
+                            .frame(width: 56, height: 56)
+                            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                         }
                         .buttonStyle(.plain)
                     }
