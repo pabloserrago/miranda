@@ -10,10 +10,8 @@ enum Palette {
     static let white   = UIColor(white: 1.0, alpha: 1.0)
     static let black   = UIColor(white: 0.0, alpha: 1.0)
     static let black85 = UIColor(white: 0.0, alpha: 0.85)
-    static let black70 = UIColor(white: 0.0, alpha: 0.70)
-    static let black50 = UIColor(white: 0.0, alpha: 0.50)
-    static let black40 = UIColor(white: 0.0, alpha: 0.40)
-    static let black30 = UIColor(white: 0.0, alpha: 0.30)
+    static let black60 = UIColor(white: 0.0, alpha: 0.60)
+    static let black45 = UIColor(white: 0.0, alpha: 0.45)
     static let black10 = UIColor(white: 0.0, alpha: 0.10)
 
     // Green (actions)
@@ -85,10 +83,10 @@ enum AppColor {
 
     enum Text {
         static let primary   = adaptive(light: Palette.black85, dark: Palette.white)
-        static let secondary = adaptive(light: Palette.black40, dark: Palette.white.withAlphaComponent(0.55))
+        static let secondary = adaptive(light: Palette.black45, dark: Palette.white.withAlphaComponent(0.55))
         static let accent    = adaptive(light: Palette.greenText, dark: Palette.greenTextLight)
         static let inverse   = Color(Palette.white)
-        static let tertiary  = Color(Palette.black40)
+        static let tertiary  = Color(Palette.black45)
     }
 
     // MARK: Background
@@ -151,7 +149,7 @@ enum AppColor {
         /// Gradient for liquid glass button strokes
         static let strokeGradient = LinearGradient(
             colors: [
-                Color(Palette.black40),
+                Color(Palette.black45),
                 Color(Palette.black10)
             ],
             startPoint: .topLeading,
@@ -162,7 +160,7 @@ enum AppColor {
     // MARK: Surface helpers
 
     static let overlay      = adaptive(light: Palette.black10, dark: Palette.white.withAlphaComponent(0.15))
-    static let scrim        = Color(Palette.black40)
+    static let scrim        = Color(Palette.black45)
     static let shadow       = Color(Palette.black10)
     static let shadowMedium = Color(Palette.black10)
     
@@ -172,9 +170,9 @@ enum AppColor {
     static let tertiarySystemBackground  = Color(uiColor: .tertiarySystemBackground)
     
     /// UI element colors
-    static let dragHandle     = Color(Palette.black30)
-    static let debugText      = Color(Palette.black70)
-    static let emptyStateIcon = Color(Palette.black50)
+    static let dragHandle     = Color(Palette.black45)
+    static let debugText      = Color(Palette.black60)
+    static let emptyStateIcon = Color(Palette.black60)
 
     static let slotFill   = Color(Palette.white.withAlphaComponent(0.05))
     static let slotStroke = Color(Palette.white.withAlphaComponent(0.15))
