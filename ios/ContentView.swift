@@ -1214,7 +1214,7 @@ struct RecentCapturesDrawer: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(AppColor.Surface.button)
+                                    .fill(Color(white: 0.95))
                                     .frame(width: 56, height: 56)
                                 
                                 Circle()
