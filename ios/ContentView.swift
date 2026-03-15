@@ -570,17 +570,17 @@ struct ContentView: View {
                                             }) {
                                                 ZStack {
                                                     Circle()
-                                                        .fill(Color.white)
+                                                        .fill(AppColor.Surface.button)
                                                     
                                                     Circle()
-                                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                                        .stroke(AppColor.Border.subtle.opacity(0.3), lineWidth: 1)
                                                     
                                                     Image(systemName: "mic.fill")
                                                         .font(.system(size: 20, weight: .semibold))
-                                                        .foregroundColor(Color.black.opacity(0.75))
+                                                        .foregroundColor(AppColor.Text.primary)
                                                 }
                                                 .frame(width: 48, height: 48)
-                                                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                                                .shadow(color: AppColor.shadow.opacity(0.1), radius: 10, x: 0, y: 4)
                                             }
                                             .buttonStyle(.plain)
                                         }
@@ -593,17 +593,17 @@ struct ContentView: View {
                                         }) {
                                             ZStack {
                                                 Circle()
-                                                    .fill(Color.white)
+                                                    .fill(AppColor.Surface.button)
                                                 
                                                 Circle()
-                                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                                    .stroke(AppColor.Border.subtle.opacity(0.3), lineWidth: 1)
                                                 
                                                 Image(systemName: "plus")
                                                     .font(.system(size: 20, weight: .semibold))
-                                                    .foregroundColor(Color.black.opacity(0.75))
+                                                    .foregroundColor(AppColor.Text.primary)
                                             }
                                             .frame(width: 48, height: 48)
-                                            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                                            .shadow(color: AppColor.shadow.opacity(0.1), radius: 10, x: 0, y: 4)
                                         }
                                         .buttonStyle(.plain)
                                     }
@@ -1230,7 +1230,7 @@ struct RecentCapturesDrawer: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.white)
+                                    .fill(AppColor.Surface.secondary)
                                 
                                 Circle()
                                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
