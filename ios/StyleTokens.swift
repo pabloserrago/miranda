@@ -203,9 +203,12 @@ enum AppColor {
         static let boostAccent = adaptive(light: Palette.purple600, dark: Palette.purple500)
     }
     
-    // MARK: Icon gradients
+    // MARK: Icon
     
     enum Icon {
+        /// Primary icon color (adaptive)
+        static let primary = adaptive(light: Palette.neutral900, dark: Palette.neutral50)
+        
         /// Gradient for liquid glass icon foregrounds
         static let foregroundGradient = LinearGradient(
             colors: [

@@ -2451,7 +2451,7 @@ struct OneMustCardView: View {
                     // Icon
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(AppColor.Icon.foregroundGradient)
+                        .foregroundColor(AppColor.Icon.primary)
                 }
                 .shadow(color: AppColor.Text.primary.opacity(0.25), radius: 10, x: 0, y: 4)
                 .compositingGroup()
