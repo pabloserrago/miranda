@@ -44,7 +44,7 @@ enum Palette {
     static let red50  = UIColor(red: 1.0, green: 0.40, blue: 0.40, alpha: 1.0)  // Lightest
     static let red100 = UIColor(red: 1.0, green: 0.35, blue: 0.37, alpha: 1.0)  // Light
     static let red200 = UIColor(red: 0.95, green: 0.25, blue: 0.25, alpha: 1.0)
-    static let red300 = UIColor(red: 0.90, green: 0.22, blue: 0.21, alpha: 1.0)  // Base
+    static let red300 = UIColor(red: 0.92, green: 0.34, blue: 0.28, alpha: 1.0)  // Base
     static let red400 = UIColor(red: 0.80, green: 0.18, blue: 0.18, alpha: 1.0)
     static let red500 = UIColor(red: 0.70, green: 0.15, blue: 0.15, alpha: 1.0)
     static let red600 = UIColor(red: 0.60, green: 0.12, blue: 0.12, alpha: 1.0)
@@ -91,6 +91,9 @@ enum AppColor {
         
         // Tertiary text: low contrast
         static let tertiary = adaptive(light: Palette.neutral400, dark: Palette.neutral500)
+        
+        // Accent text: red
+        static let accent = adaptive(light: Palette.red300, dark: Palette.red100)
         
         // Inverse text: for use on colored backgrounds
         static let inverse = Color(Palette.neutral50)
