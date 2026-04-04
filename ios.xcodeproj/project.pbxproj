@@ -73,6 +73,7 @@
 			membershipExceptions = (
 				Card.swift,
 				SharedCardManager.swift,
+				StyleTokens.swift,
 			);
 			target = F70EB5672EB1289A00EB70BF /* OneMustWidgetExtension */;
 		};

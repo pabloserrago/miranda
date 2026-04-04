@@ -11,120 +11,91 @@ struct FeedbackView: View {
     @State private var feedbackText: String = ""
     @State private var isSubmitting: Bool = false
     @State private var showError: Bool = false
-    
+
     var onSuccess: (() -> Void)?
-    
+
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
     }
-    
+
     private var appLanguage: String {
         Locale.current.language.languageCode?.identifier ?? "en"
     }
-    
+
     private var canSubmit: Bool {
         !feedbackText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSubmitting
     }
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 VStack(spacing: 20) {
-                    // Category picker
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Category")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(AppColor.Text.secondary)
-                        
-                        HStack(spacing: 10) {
+                            .font(AppFont.label)
+                            .foregroundColor(Material.Text.secondary)
+
+                        Picker("Category", selection: $selectedCategory) {
                             ForEach(FeedbackCategory.allCases, id: \.self) { category in
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedCategory = category
-                                    }
-                                }) {
-                                    Text(category.rawValue)
-                                        .font(.system(size: 14, weight: .medium))
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 10)
-                                        .frame(maxWidth: .infinity)
-                                        .background(
-                                            selectedCategory == category
-                                                ? AppColor.Text.primary
-                                                : Color(uiColor: .tertiarySystemFill)
-                                        )
-                                        .foregroundColor(
-                                            selectedCategory == category
-                                                ? Color(uiColor: .systemBackground)
-                                                : .primary
-                                        )
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                }
-                                .buttonStyle(.plain)
+                                Text(category.rawValue).tag(category)
                             }
                         }
+                        .pickerStyle(.segmented)
                     }
-                    
-                    // Message field
+
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Message")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(AppColor.Text.secondary)
-                        
-                        TextEditor(text: $feedbackText)
-                            .frame(minHeight: 120)
-                            .padding(8)
-                            .background(Color(uiColor: .tertiarySystemFill))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .overlay(
-                                Group {
-                                    if feedbackText.isEmpty {
-                                        Text("Describe your feedback...")
-                                            .foregroundColor(.secondary.opacity(0.5))
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 16)
-                                            .allowsHitTesting(false)
-                                    }
-                                },
-                                alignment: .topLeading
-                            )
+                            .font(AppFont.label)
+                            .foregroundColor(Material.Text.secondary)
+
+                        ZStack(alignment: .topLeading) {
+                            TextEditor(text: $feedbackText)
+                                .scrollContentBackground(.hidden)
+                                .frame(minHeight: 120)
+                                .padding(8)
+
+                            if feedbackText.isEmpty {
+                                Text("Describe your feedback...")
+                                    .foregroundColor(Material.Text.secondary.opacity(0.5))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 16)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                        .background(Material.Control.fillTertiary)
+                        .clipShape(RoundedRectangle(cornerRadius: Material.Shape.control))
                     }
-                    
+
                     Spacer()
-                    
-                    // Privacy notice
+
                     Text("Reports are anonymous. Only app version (\(appVersion)) and language (\(appLanguage)) are included.")
-                        .font(.system(size: 12))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.caption)
+                        .foregroundColor(Material.Text.secondary)
                         .padding(.bottom, 8)
-                    
-                    // Submit button
+
                     Button(action: submitFeedback) {
                         HStack(spacing: 8) {
                             if isSubmitting {
                                 ProgressView()
-                                    .tint(Color(uiColor: .systemBackground))
+                                    .tint(Material.Text.inverse)
                             }
                             Text(isSubmitting ? "Sending..." : "Submit")
-                                .font(.system(size: 16, weight: .semibold))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(canSubmit ? AppColor.Text.primary : Color(uiColor: .tertiarySystemFill))
-                        .foregroundColor(canSubmit ? Color(uiColor: .systemBackground) : AppColor.Text.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .buttonStyle(.solid)
                     .disabled(!canSubmit)
+                    .opacity(canSubmit ? 1 : 0.4)
                 }
                 .padding(20)
             }
             .navigationTitle("Submit a Request")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(AppColor.Text.secondary)
+                            .foregroundColor(Material.Text.secondary)
                     }
                 }
             }
@@ -135,33 +106,32 @@ struct FeedbackView: View {
             }
         }
     }
-    
+
     private func submitFeedback() {
         let trimmed = feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        
+
         isSubmitting = true
-        
+
         let url = URL(string: "\(Secrets.supabaseURL)/rest/v1/feedback")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(Secrets.supabaseAnonKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(Secrets.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
-        
+
         let body: [String: String] = [
             "category": selectedCategory.rawValue,
             "message": trimmed,
             "app_version": appVersion,
             "language": appLanguage
         ]
-        
+
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        
+
         URLSession.shared.dataTask(with: request) { _, response, error in
             DispatchQueue.main.async {
                 isSubmitting = false
-                
                 if let httpResponse = response as? HTTPURLResponse,
                    (200...299).contains(httpResponse.statusCode) {
                     onSuccess?()

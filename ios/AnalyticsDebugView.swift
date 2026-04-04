@@ -11,54 +11,52 @@ struct AnalyticsDebugView: View {
                     // Stats Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Statistics")
-                            .font(.title2)
-                            .bold()
+                            .font(AppFont.headline)
                         
                         ForEach(Array(stats.keys.sorted()), id: \.self) { key in
                             HStack {
                                 Text(key.replacingOccurrences(of: "_", with: " ").capitalized)
-                                    .font(.body)
+                                    .font(AppFont.body)
                                 Spacer()
                                 Text("\(stats[key] as? Int ?? 0)")
-                                    .font(.body.monospacedDigit())
-                                    .foregroundColor(AppColor.Text.secondary)
+                                    .font(AppFont.bodyMono)
+                                    .foregroundColor(Material.Text.secondary)
                             }
                             .padding(.vertical, 4)
                         }
                     }
                     .padding()
-                    .background(Color(Palette.black10))
-                    .cornerRadius(12)
+                    .background(Material.Surface.secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: Material.Shape.x3))
                     
                     // Recent Events Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Events")
-                            .font(.title2)
-                            .bold()
+                            .font(AppFont.headline)
                         
                         ForEach(Array(recentEvents.enumerated()), id: \.offset) { index, event in
                             VStack(alignment: .leading, spacing: 4) {
                                 if let eventName = event["event"] as? String {
                                     Text(eventName)
-                                        .font(.headline)
+                                        .font(AppFont.body).bold()
                                 }
                                 
                                 if let timestamp = event["timestamp"] as? TimeInterval {
                                     Text(formatDate(timestamp))
-                                        .font(.caption)
-                                        .foregroundColor(AppColor.Text.secondary)
+                                        .font(AppFont.caption)
+                                        .foregroundColor(Material.Text.secondary)
                                 }
                                 
                                 ForEach(Array(event.keys.filter { $0 != "event" && $0 != "timestamp" }.sorted()), id: \.self) { key in
                                     Text("\(key): \(String(describing: event[key] ?? ""))")
-                                        .font(.caption)
-                                        .foregroundColor(Color(Palette.blue))
+                                        .font(AppFont.caption)
+                                        .foregroundColor(Material.Status.info)
                                 }
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(Palette.black10))
-                            .cornerRadius(8)
+                            .background(Material.Surface.secondary)
+                            .clipShape(RoundedRectangle(cornerRadius: Material.Shape.x2))
                         }
                     }
                 }
