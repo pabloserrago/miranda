@@ -20,8 +20,7 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        ZStack {
-            NavigationView {
+            NavigationStack {
                 List {
                     // 1. Widget
                     Section {
@@ -31,7 +30,7 @@ struct SettingsView: View {
                             ZStack {
                                 // Background gradient (like iOS wallpaper)
                                 LinearGradient(
-                                    colors: [AppColor.Status.info.opacity(0.1), AppColor.Status.accent.opacity(0.05)],
+                                    colors: [Material.Status.info.opacity(0.1), Material.Status.success.opacity(0.05)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -40,8 +39,8 @@ struct SettingsView: View {
                                     // Status bar area
                                     HStack {
                                         Text("9:41")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(.primary.opacity(0.8))
+                                            .font(AppFont.caption).fontWeight(.semibold)
+                                            .foregroundColor(Material.Text.primary.opacity(0.8))
                                         Spacer()
                                     }
                                     .padding(.horizontal, 24)
@@ -55,8 +54,8 @@ struct SettingsView: View {
                                         }
                                         
                                         Text(previewCard?.simplifiedText ?? "Your priority")
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(AppColor.Text.primary)
+                                            .font(AppFont.body).fontWeight(.semibold)
+                                            .foregroundColor(Material.Text.primary)
                                             .lineLimit(3)
                                             .multilineTextAlignment(.center)
                                             .padding(.horizontal, 12)
@@ -65,17 +64,17 @@ struct SettingsView: View {
                                     .padding(.horizontal, 16)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 140)
-                                    .background(AppColor.Surface.primary)
-                                    .cornerRadius(20)
-                                    .shadow(color: AppColor.shadowMedium, radius: 6, x: 0, y: 3)
+                                    .background(Material.Surface.primary)
+                                    .cornerRadius(Material.Shape.drawer)
+                                    .shadow(color: Material.Elevation.shadow, radius: 6, x: 0, y: 3)
                                     .padding(.horizontal, 24)
                                     
                                     // iOS app icons below
                                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: AppColor.Action.red)
-                                        AppIcon(name: "Messages", icon: "message.fill", color: AppColor.Action.complete)
-                                        AppIcon(name: "Mail", icon: "envelope.fill", color: AppColor.Action.blue)
-                                        AppIcon(name: "Phone", icon: "phone.fill", color: AppColor.Action.complete)
+                                        AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: Material.Status.error)
+                                        AppIcon(name: "Messages", icon: "message.fill", color: Material.Status.success)
+                                        AppIcon(name: "Mail", icon: "envelope.fill", color: Material.Status.info)
+                                        AppIcon(name: "Phone", icon: "phone.fill", color: Material.Status.success)
                                     }
                                     .padding(.horizontal, 24)
                                     .padding(.top, 8)
@@ -84,25 +83,27 @@ struct SettingsView: View {
                                 }
                             }
                             .frame(height: 320)
-                            .cornerRadius(20)
+                            .cornerRadius(Material.Shape.drawer)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: Material.Shape.drawer)
+                                    .stroke(Material.Decoration.tertiary.opacity(0.2), lineWidth: 1)
                             )
                         }
                         .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 0, trailing: 16))
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Material.Surface.primary)
                         
                         NavigationLink(destination: WidgetInstructionsView()) {
                             HStack(spacing: 12) {
                                 Image(systemName: "questionmark.circle")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("How to Add Widget")
                             }
                         }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Material.Surface.primary)
                     } header: {
                         Text("Keep Your Priority Visible")
                     } footer: {
@@ -120,22 +121,24 @@ struct SettingsView: View {
                         Toggle(isOn: $audioInputEnabled) {
                             HStack(spacing: 12) {
                                 Image(systemName: "mic.fill")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Audio Input")
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                         
                         Toggle(isOn: $actionTransformEnabled) {
                             HStack(spacing: 12) {
                                 Image(systemName: "wand.and.stars")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Transform to Actions")
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                     } header: {
                         Text("Capture")
                     } footer: {
@@ -158,16 +161,15 @@ struct SettingsView: View {
                                 Image(uiImage: appIcon)
                                     .resizable()
                                     .frame(width: 40, height: 40)
-                                    .cornerRadius(8)
+                                    .cornerRadius(Material.Shape.x2)
                             } else {
-                                // Fallback: use SF Symbol
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.accentColor)
+                                RoundedRectangle(cornerRadius: Material.Shape.x2)
+                                    .fill(Material.Text.accent)
                                     .frame(width: 40, height: 40)
                                     .overlay(
                                         Text("M")
-                                            .font(.system(size: 20, weight: .bold))
-                                            .foregroundColor(AppColor.Text.inverse)
+                                            .font(AppFont.icon)
+                                            .foregroundColor(Material.Text.inverse)
                                     )
                             }
                             
@@ -176,14 +178,15 @@ struct SettingsView: View {
                             Spacer()
                             
                             Text("Soon")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(AppColor.Text.secondary)
+                                .font(AppFont.label)
+                                .foregroundColor(Material.Text.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(Color.secondary.opacity(0.15))
-                                .cornerRadius(8)
+                                .background(Material.Text.secondary.opacity(0.15))
+                                .cornerRadius(Material.Shape.x2)
                         }
                         .opacity(0.6)
+                        .listRowBackground(Material.Surface.primary)
                     }
                     
                     // 4. Submit a Request
@@ -193,16 +196,17 @@ struct SettingsView: View {
                         }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "envelope.fill")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Submit a Request")
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(AppColor.Text.secondary)
+                                    .font(AppFont.caption)
+                                    .foregroundColor(Material.Text.secondary)
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                     }
                     
                     // 5. Delete All
@@ -212,7 +216,7 @@ struct SettingsView: View {
                         }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "trash.fill")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Delete All Notes")
@@ -220,6 +224,7 @@ struct SettingsView: View {
                         }
                         .disabled(!hasCaptures)
                         .opacity(hasCaptures ? 1.0 : 0.5)
+                        .listRowBackground(Material.Surface.primary)
                     }
                     
                     // 6. App Version
@@ -234,15 +239,16 @@ struct SettingsView: View {
                         }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "doc.on.doc")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Version")
                                 Spacer()
                                 Text("1.0.0")
-                                    .foregroundColor(AppColor.Text.secondary)
+                                    .foregroundColor(Material.Text.secondary)
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                     }
                     
                     // 7. Developer Settings
@@ -250,36 +256,43 @@ struct SettingsView: View {
                         NavigationLink(destination: DevComponentsView()) {
                             HStack(spacing: 12) {
                                 Image(systemName: "hammer.fill")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("View Components")
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                         
                         Button(action: onShowAnalytics) {
                             HStack(spacing: 12) {
                                 Image(systemName: "chart.bar.fill")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Analytics Debug")
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                         
                         Button(action: onResetOnboarding) {
                             HStack(spacing: 12) {
                                 Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 20, weight: .bold))
+                                    .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Reset Onboarding")
                             }
                         }
+                        .listRowBackground(Material.Surface.primary)
                     } header: {
                         Text("Developer")
                     }
                 }
+            .font(AppFont.body)
+            .tint(Material.Text.accent)
+            .scrollContentBackground(.hidden)
+            .background(Material.Surface.tertiary)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -306,44 +319,8 @@ struct SettingsView: View {
                     })
                 }
             }
-            
-            // Toast notification
-            if showCopiedToast {
-                VStack {
-                    Spacer()
-                    
-                    Text("Version copied")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(AppColor.Text.primary)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(AppColor.Surface.secondary)
-                        .cornerRadius(12)
-                        .shadow(color: AppColor.shadowMedium, radius: 8, x: 0, y: 4)
-                        .padding(.bottom, 50)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showCopiedToast)
-            }
-            
-            if showFeedbackSentToast {
-                VStack {
-                    Spacer()
-                    
-                    Text("Feedback sent")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(AppColor.Text.primary)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(AppColor.Surface.secondary)
-                        .cornerRadius(12)
-                        .shadow(color: AppColor.shadowMedium, radius: 8, x: 0, y: 4)
-                        .padding(.bottom, 50)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showFeedbackSentToast)
-            }
-        }
+            .toast(isPresented: $showCopiedToast, message: "Version copied")
+            .toast(isPresented: $showFeedbackSentToast, message: "Feedback sent")
     }
 }
 
@@ -363,6 +340,7 @@ struct WidgetInstructionsView: View {
         }
         .navigationTitle("How to Add Widget")
         .navigationBarTitleDisplayMode(.inline)
+        .background(Material.Surface.tertiary)
     }
 }
 
@@ -373,14 +351,14 @@ struct InstructionStep: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(AppColor.Text.inverse)
+                .font(AppFont.body).bold()
+                .foregroundColor(Material.Text.inverse)
                 .frame(width: 28, height: 28)
-                .background(Color.accentColor)
+                .background(Material.Text.accent)
                 .clipShape(Circle())
             
             Text(text)
-                .font(.body)
+                .font(AppFont.body)
         }
     }
 }
@@ -393,22 +371,22 @@ struct AppIcon: View {
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: Material.Shape.appIcon)
                     .fill(color)
                     .frame(width: 56, height: 56)
                 
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(AppColor.Border.subtle, lineWidth: 2)
+                RoundedRectangle(cornerRadius: Material.Shape.appIcon)
+                    .strokeBorder(Material.Decoration.tertiary, lineWidth: 2)
                     .frame(width: 56, height: 56)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 28))
-                    .foregroundColor(AppColor.Text.inverse)
+                    .font(AppFont.headline).fontWeight(.regular)
+                    .foregroundColor(Material.Text.inverse)
             }
             
             Text(name)
-                .font(.system(size: 11))
-                .foregroundColor(AppColor.Text.primary)
+                .font(AppFont.caption)
+                .foregroundColor(Material.Text.primary)
         }
     }
 }
@@ -422,8 +400,8 @@ struct DevComponentsView: View {
                 // Card Default
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-default")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.label)
+                        .foregroundColor(Material.Text.secondary)
                     
                     CardComponent(
                         text: "Test example of something to do.",
@@ -435,8 +413,8 @@ struct DevComponentsView: View {
                 // Card Drawer
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-drawer")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.label)
+                        .foregroundColor(Material.Text.secondary)
                     
                     CardComponent(
                         text: "Drawer card with plain background (adaptive for light/dark mode).",
@@ -448,8 +426,8 @@ struct DevComponentsView: View {
                 // Card Onboarding
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-onboarding")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.label)
+                        .foregroundColor(Material.Text.secondary)
                     
                     CardOnboarding(minHeight: 200)
                 }
@@ -457,8 +435,8 @@ struct DevComponentsView: View {
                 // Card Boost
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-boost")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.label)
+                        .foregroundColor(Material.Text.secondary)
                     
                     CardBoost(
                         text: "Test example of something to do.",
@@ -470,8 +448,8 @@ struct DevComponentsView: View {
                 // Card Default with long text
                 VStack(alignment: .leading, spacing: 8) {
                     Text("card-default (long text)")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(AppColor.Text.secondary)
+                        .font(AppFont.label)
+                        .foregroundColor(Material.Text.secondary)
                     
                     CardComponent(
                         text: "This is a much longer piece of text that should demonstrate how the card handles overflow and truncation when there's too much content to display.",
@@ -482,7 +460,7 @@ struct DevComponentsView: View {
             }
             .padding(20)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Material.Surface.tertiary)
         .navigationTitle("Components")
         .navigationBarTitleDisplayMode(.inline)
     }

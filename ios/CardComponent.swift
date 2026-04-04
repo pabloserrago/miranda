@@ -1,49 +1,82 @@
 import SwiftUI
 
+// MARK: - Card Surface Modifier
+
+struct CardSurface: ViewModifier {
+    let colors: [Color]
+    var radius: CGFloat
+    var shadow: Bool
+    var gradientStart: UnitPoint
+    var gradientEnd: UnitPoint
+    
+    func body(content: Content) -> some View {
+        content
+            .background(
+                Group {
+                    if colors.count == 1 {
+                        colors[0]
+                    } else {
+                        LinearGradient(colors: colors, startPoint: gradientStart, endPoint: gradientEnd)
+                    }
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: radius))
+            .shadow(
+                color: shadow ? Material.Elevation.shadow.opacity(0.09) : .clear,
+                radius: shadow ? 3 : 0,
+                x: 0,
+                y: shadow ? 3 : 0
+            )
+    }
+}
+
+extension View {
+    func cardSurface(
+        _ colors: [Color],
+        radius: CGFloat = Material.Shape.card,
+        shadow: Bool = true,
+        from: UnitPoint = .topLeading,
+        to: UnitPoint = .bottomTrailing
+    ) -> some View {
+        modifier(CardSurface(colors: colors, radius: radius, shadow: shadow, gradientStart: from, gradientEnd: to))
+    }
+}
+
 // MARK: - Card Variant
+
 enum CardVariant: Equatable {
     case cardDefault
     case cardOnboarding
     case cardBoost
-    case cardDrawer  // Plain style for drawer cards
+    case cardDrawer
     
-    var gradientColors: [Color] {
+    var colors: [Color] {
         switch self {
-        case .cardDefault:    return AppColor.Gradient.cardDefault
-        case .cardOnboarding: return AppColor.Gradient.cardOnboarding
-        case .cardBoost:      return AppColor.Gradient.cardBoost
-        case .cardDrawer:     return [AppColor.Background.card]
+        case .cardDefault:    return Material.Card.base
+        case .cardOnboarding: return Material.Card.onboarding
+        case .cardBoost:      return Material.Card.boost
+        case .cardDrawer:     return [Material.Control.fillTertiary]
         }
-    }
-    
-    var textColor: Color {
-        return AppColor.Text.primary
     }
     
     var hasShadow: Bool {
-        switch self {
-        case .cardDrawer:
-            return false  // No shadow for drawer cards
-        default:
-            return true
-        }
+        self != .cardDrawer
     }
 }
 
-// MARK: - Card Component (Default & Onboarding)
+// MARK: - Card Component
+
 struct CardComponent: View {
     let text: String
     var variant: CardVariant = .cardDefault
     var minHeight: CGFloat? = nil
-    var cornerRadius: CGFloat = 35
-    var fontSize: CGFloat = 18
     var horizontalPadding: CGFloat = 25
     var verticalPadding: CGFloat = 20
     
     var body: some View {
         Text(text)
-            .font(.system(size: fontSize, weight: .regular))
-            .foregroundColor(variant.textColor)
+            .font(AppFont.body)
+            .foregroundColor(Material.Text.primary)
             .multilineTextAlignment(.leading)
             .lineLimit(6)
             .truncationMode(.tail)
@@ -51,151 +84,81 @@ struct CardComponent: View {
             .padding(.horizontal, horizontalPadding)
             .padding(.vertical, verticalPadding)
             .frame(minHeight: minHeight)
-            .background(
-                Group {
-                    if variant == .cardDefault {
-                        // Add subtle randomization to gradient for visual variety
-                        let variation = Double.random(in: -0.05...0.05)
-                        let angleVariation = Double.random(in: -0.1...0.1)
-                        
-                        return AnyView(
-                            LinearGradient(
-                                gradient: Gradient(stops: [
-                                    .init(color: variant.gradientColors[0], location: max(0, 0.0 + variation)),
-                                    .init(color: variant.gradientColors[1], location: max(0.1, min(0.4, 0.33 + variation))),
-                                    .init(color: variant.gradientColors[2], location: max(0.5, min(0.75, 0.64 + variation))),
-                                    .init(color: variant.gradientColors[3], location: 1.0)
-                                ]),
-                                startPoint: UnitPoint(x: angleVariation, y: angleVariation),
-                                endPoint: UnitPoint(x: 1.0 + angleVariation, y: 1.0 + angleVariation)
-                            )
-                        )
-                    } else if variant == .cardDrawer {
-                        // Plain solid color for drawer cards
-                        return AnyView(
-                            variant.gradientColors[0]
-                        )
-                    } else {
-                        return AnyView(
-                            LinearGradient(
-                                colors: variant.gradientColors,
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                    }
-                }
-            )
-            .cornerRadius(cornerRadius)
-            .shadow(
-                color: variant.hasShadow ? AppColor.shadow : .clear,
-                radius: variant.hasShadow ? 3 : 0,
-                x: 0,
-                y: variant.hasShadow ? 3 : 0
-            )
+            .cardSurface(variant.colors, shadow: variant.hasShadow)
     }
 }
 
 // MARK: - Card Onboarding Component
+
 struct CardOnboarding: View {
     var minHeight: CGFloat? = nil
-    var cornerRadius: CGFloat = 35
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Clear your mind of to-dos. ")
-                .font(.system(size: 18, weight: .regular))
-                .foregroundColor(AppColor.Text.primary)
-            + Text("Pick one thing to start.")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(AppColor.Text.primary)
+            Text("Capture anything that's in your mind. Like a dream, idea or to-do. ")
+                .font(AppFont.body)
+                .foregroundColor(Material.Text.primary)
+            + Text("Simple.")
+                .font(AppFont.body).bold()
+                .foregroundColor(Material.Text.primary)
         }
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(.horizontal, 25)
         .padding(.vertical, 20)
         .frame(minHeight: minHeight)
-        .background(
-            LinearGradient(
-                colors: CardVariant.cardOnboarding.gradientColors,
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .cornerRadius(cornerRadius)
-        .shadow(color: AppColor.shadow, radius: 3, x: 0, y: 3)
+        .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
     }
 }
 
 // MARK: - Card Boost Component
+
 struct CardBoost: View {
     let text: String
     var label: String = "Limitless"
     var minHeight: CGFloat? = nil
-    var outerCornerRadius: CGFloat = 35
-    var innerCornerRadius: CGFloat = 28
-    
-    // Pink/purple wrapper gradient
-    private let wrapperGradient = AppColor.Gradient.boostWrapper
-    private let accentColor = AppColor.Gradient.boostAccent
     
     var body: some View {
         VStack(spacing: 0) {
-            // Top bar with label and icon
             HStack {
                 Text(label)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(accentColor)
+                    .font(AppFont.body).bold()
+                    .foregroundColor(Material.Card.accent)
                 
                 Spacer()
                 
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(accentColor)
+                    .font(AppFont.body).bold()
+                    .foregroundColor(Material.Card.accent)
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 12)
             
-            // Inner card with orange/yellow gradient
             Text(text)
-                .font(.system(size: 18, weight: .regular))
-                .foregroundColor(AppColor.Text.primary)
+                .font(AppFont.body)
+                .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.leading)
                 .lineLimit(6)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 20)
-                .background(
-                    LinearGradient(
-                        colors: CardVariant.cardBoost.gradientColors,
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .cornerRadius(innerCornerRadius)
+                .cardSurface(Material.Card.boost, radius: Material.Shape.card, shadow: false, from: .top, to: .bottom)
         }
         .frame(minHeight: minHeight)
-        .background(
-            LinearGradient(
-                colors: wrapperGradient,
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .cornerRadius(outerCornerRadius)
-        .shadow(color: AppColor.shadow, radius: 3, x: 0, y: 3)
+        .cardSurface(Material.Card.wrapper, from: .top, to: .bottom)
     }
 }
 
 // MARK: - Previews
+
 #Preview("Card Variants") {
     ScrollView {
         VStack(spacing: 20) {
             Text("card-default")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(AppFont.caption)
+                .foregroundColor(Material.Text.secondary)
             CardComponent(
                 text: "Test example of something to do.",
                 variant: .cardDefault,
@@ -203,8 +166,8 @@ struct CardBoost: View {
             )
             
             Text("card-drawer")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(AppFont.caption)
+                .foregroundColor(Material.Text.secondary)
             CardComponent(
                 text: "This is a drawer card with plain background.",
                 variant: .cardDrawer,
@@ -212,13 +175,13 @@ struct CardBoost: View {
             )
             
             Text("card-onboarding")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(AppFont.caption)
+                .foregroundColor(Material.Text.secondary)
             CardOnboarding(minHeight: 150)
             
             Text("card-boost")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(AppFont.caption)
+                .foregroundColor(Material.Text.secondary)
             CardBoost(
                 text: "Test example of something to do.",
                 minHeight: 250
