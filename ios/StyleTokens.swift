@@ -47,13 +47,13 @@ enum Palette {
     static let green900 = UIColor(hex: 0x021D0E) // #021D0E  ← step 10
     static let green950 = UIColor(hex: 0x010F07) // #010F07  ← step 5
     
-    // MARK: Blue — Slate
+    // MARK: Blue — Periwinkle
     static let blue0   = UIColor(hex: 0xF5F8FB) // #F5F8FB  ← step 100
     static let blue25  = UIColor(hex: 0xEFF3F6) // #EFF3F6  ← step 99
-    static let blue50  = UIColor(hex: 0xF5FAFF) // #F5FAFF  ← step 98
-    static let blue100 = UIColor(hex: 0xE3F4FE) // #E3F4FE  ← step 95
-    static let blue200 = UIColor(hex: 0xC9E7FA) // #C9E7FA  ← step 90
-    static let blue300 = UIColor(hex: 0xADCBDD) // #ADCBDD  ← step 80
+    static let blue50  = UIColor(hex: 0xEEF1FB) // #EEF1FB  ← step 98
+    static let blue100 = UIColor(hex: 0xDDE3F6) // #DDE3F6  ← step 95
+    static let blue200 = UIColor(hex: 0xB6C7EB) // #B6C7EB  ← step 90
+    static let blue300 = UIColor(hex: 0x96ACD8) // #96ACD8  ← step 80
     static let blue350 = UIColor(hex: 0x93B0C1) // #93B0C1  ← step 70
     static let blue400 = UIColor(hex: 0x7995A6) // #7995A6  ← step 60
     static let blue500 = UIColor(hex: 0x5F7B8C) // #5F7B8C  ← step 50
@@ -229,7 +229,17 @@ enum Material {
     // MARK: Card — gradient arrays
     
     enum Card {
-        static let base:       [Color] = [Control.fillPrimary]                                       // default card variant
+        static let gradients: [[Color]] = [
+            [Control.fillTertiary, Control.fillPrimary],                        // white-blue → cornflower
+            [Control.fillSecondary, Control.fillPrimary],                       // lavender → cornflower
+            [Control.fillTertiary, Control.fillSecondary, Control.fillPrimary], // smoother three-stop sweep
+        ]
+        
+        static func gradient(for index: Int) -> [Color] {
+            gradients[index % gradients.count]
+        }
+        
+        static let base:       [Color] = gradients[0]                                                  // fallback for generic/preview usage
         static let onboarding: [Color] = [Control.fillTertiary,  Control.fillSecondary]                // onboarding card variant
         static let boost:      [Color] = [Status.warning.opacity(0.25), Status.warning.opacity(0.45)]  // CardBoost inner gradient
         static let wrapper:    [Color] = [Control.fillPrimary,   Status.info]                          // CardBoost outer wrapper gradient

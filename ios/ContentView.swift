@@ -316,8 +316,8 @@ struct ContentView: View {
 
             if !autoPriorityCards.isEmpty {
                 Section {
-                    ForEach(autoPriorityCards) { card in
-                        priorityRow(card)
+                    ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, card in
+                        priorityRow(card, index: index)
                     }
                     .onMove(perform: movePriorityCards)
                 } header: {
@@ -391,7 +391,7 @@ struct ContentView: View {
     // MARK: - Priority Row (gradient card)
 
     @ViewBuilder
-    private func priorityRow(_ card: Card) -> some View {
+    private func priorityRow(_ card: Card, index: Int = 0) -> some View {
         Button { selectedCard = card } label: {
             Text(card.simplifiedText)
                 .font(AppFont.body)
@@ -402,7 +402,7 @@ struct ContentView: View {
                 .padding(.horizontal, 25)
                 .padding(.vertical, 50)
         }
-        .cardSurface(Material.Card.base)
+        .cardSurface(Material.Card.gradient(for: index))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
