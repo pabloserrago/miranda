@@ -1,7 +1,9 @@
 import SwiftUI
+import UIKit
 #if canImport(WidgetKit)
 import WidgetKit
 #endif
+
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
@@ -23,9 +25,29 @@ struct ContentView: View {
     @State private var captureOnboardingDismissed: Bool = false
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
+    /// Long-press–then–drag priority reorder (no list edit mode).
+    @State private var priorityReorderLiftedId: UUID?
+    @State private var priorityReorderTranslation: CGSize = .zero
+    /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
+    @State private var suppressNextPrioritySelectionId: UUID?
+
+    /// Minimum list content-offset delta (pt) before toggling Recent sheet visibility.
+    private let recentSheetScrollThreshold: CGFloat = 12
 
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
+    @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
+
+    init() {
+        #if DEBUG
+        if ContentView.isUITestLaunch {
+            _cards = State(initialValue: ContentView.uiTestSeedCards)
+            _widgetOnboardingDismissed = State(initialValue: true)
+            _captureOnboardingDismissed = State(initialValue: true)
+            _showRecentSheet = State(initialValue: false)
+        }
+        #endif
+    }
 
     // MARK: - Computed Properties
 
@@ -78,42 +100,54 @@ struct ContentView: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack {
-            NavigationStack {
-                ZStack {
-                    Material.Surface.backdrop.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Material.Surface.backdrop.ignoresSafeArea()
 
-                    if cards.isEmpty {
-                        emptyState
-                    } else {
-                        cardList
-                    }
+                if cards.isEmpty {
+                    emptyState
+                } else {
+                    cardList
                 }
-                .navigationTitle("Miranda")
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showSettings = true } label: {
-                            Image(systemName: "tortoise.fill")
-                                .font(AppFont.icon).fontWeight(.regular)
-                                .foregroundColor(Material.Icon.primary)
-                        }
-                    }
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        if autoPriorityCards.count > 1 {
-                            EditButton()
-                        }
+            }
+            .simultaneousGesture(recentSheetDragGesture)
+            .navigationTitle("Miranda")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showSettings = true } label: {
+                        Image(systemName: "tortoise.fill")
+                            .font(AppFont.icon).fontWeight(.regular)
+                            .foregroundColor(Material.Icon.primary)
                     }
                 }
             }
-            .tint(Material.Text.accent)
+        }
+        .tint(Material.Text.accent)
         .onAppear {
+            #if DEBUG
+            if ContentView.isUITestLaunch {
+                Analytics.shared.trackAppOpened()
+                return
+            }
+            #endif
             loadState()
             Analytics.shared.trackAppOpened()
             showRecentSheet = !cards.isEmpty
         }
         .onChange(of: cards) { _, _ in
             saveState()
-            showRecentSheet = !cards.isEmpty
+        }
+        .onChange(of: cards.isEmpty) { wasEmpty, isEmpty in
+            if isEmpty {
+                showRecentSheet = false
+            } else if wasEmpty {
+                showRecentSheet = true
+            }
+        }
+        .onChange(of: cards.count) { oldCount, newCount in
+            if newCount > oldCount, !cards.isEmpty {
+                showRecentSheet = true
+            }
         }
         .onChange(of: priorityCardIds) { _, _ in saveState() }
         .onChange(of: scenePhase) { _, newPhase in
@@ -135,7 +169,9 @@ struct ContentView: View {
         .sheet(item: $selectedCard) { card in
             noteDetail(for: card)
         }
-        .sheet(isPresented: $showCompleteTortoise) {
+        .sheet(isPresented: $showCompleteTortoise, onDismiss: {
+            showCompleteTortoise = false
+        }) {
             completionSheet
         }
         .sheet(isPresented: $showAnalytics) {
@@ -222,12 +258,8 @@ struct ContentView: View {
                 Text("\(card.emoji ?? "")  \(card.simplifiedText)")
             }
         }
-
-            Color.clear.ignoresSafeArea()
-                .allowsHitTesting(false)
-                .sheet(isPresented: $showRecentSheet) {
-                    recentSheet
-                }
+        .sheet(isPresented: $showRecentSheet) {
+            recentSheet
         }
     }
 
@@ -282,55 +314,72 @@ struct ContentView: View {
 
     // MARK: - Card List
 
+    private var recentSheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: recentSheetScrollThreshold)
+            .onEnded { value in
+                let dx = value.translation.width
+                let dy = value.translation.height
+                guard abs(dy) > abs(dx) else { return }
+                if dy < 0 {
+                    if !cards.isEmpty { showRecentSheet = true }
+                } else if dy > 0 {
+                    showRecentSheet = false
+                }
+            }
+    }
+
     @ViewBuilder
     private var cardList: some View {
         List {
             if !widgetOnboardingDismissed && !autoPriorityCards.isEmpty && autoPriorityCards.count < 3 {
                 Section {
-                    Button { showWidgetInstructions = true } label: {
-                        VStack(alignment: .leading) {
-                            Group {
-                                Text("Add the Widget to your home screen to keep your priorities visible. ")
-                                + Text("Easy-peasy.").bold()
-                            }
-                            .font(AppFont.body)
-                            .foregroundColor(Material.Text.primary)
-                        }
-                        .padding(20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            withAnimation { widgetOnboardingDismissed = true }
-                            saveState()
-                        } label: {
-                            Label("Dismiss", systemImage: "xmark")
-                        }
-                    }
+                    widgetOnboardingRow
                 }
             }
 
             if !autoPriorityCards.isEmpty {
                 Section {
                     ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, card in
-                        priorityRow(card, index: index)
+                        priorityRow(
+                            card,
+                            index: index,
+                            allowDragReorder: autoPriorityCards.count > 1
+                        )
                     }
-                    .onMove(perform: movePriorityCards)
-                } header: {
-                    Text("Priorities")
-                        .font(AppFont.label)
-                        .foregroundColor(Material.Text.secondary)
-                        .textCase(nil)
                 }
             }
-
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+    }
+
+    @ViewBuilder
+    private var widgetOnboardingRow: some View {
+        Button { showWidgetInstructions = true } label: {
+            VStack(alignment: .leading) {
+                Group {
+                    Text("Add the Widget to your home screen to keep your priorities visible. ")
+                    + Text("Easy-peasy.").bold()
+                }
+                .font(AppFont.body)
+                .foregroundColor(Material.Text.primary)
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                withAnimation { widgetOnboardingDismissed = true }
+                saveState()
+            } label: {
+                Label("Dismiss", systemImage: "xmark")
+            }
+        }
     }
 
     // MARK: - Recent Sheet
@@ -357,7 +406,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .background(Material.Surface.backdrop)
+            .background(Material.Surface.primary)
             .navigationTitle("Recent")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Find...")
@@ -384,6 +433,7 @@ struct ContentView: View {
         }
         .presentationDetents([.fraction(0.25), .medium, .large])
         .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+        .presentationBackground(Material.Surface.secondary)
         .interactiveDismissDisabled()
         .presentationDragIndicator(.visible)
     }
@@ -391,8 +441,18 @@ struct ContentView: View {
     // MARK: - Priority Row (gradient card)
 
     @ViewBuilder
-    private func priorityRow(_ card: Card, index: Int = 0) -> some View {
-        Button { selectedCard = card } label: {
+    private func priorityRow(_ card: Card, index: Int = 0, allowDragReorder: Bool = false) -> some View {
+        let liftedHere = priorityReorderLiftedId == card.id
+        let reorderActiveElsewhere = allowDragReorder && priorityReorderLiftedId != nil && priorityReorderLiftedId != card.id
+
+        Button {
+            guard priorityReorderLiftedId == nil else { return }
+            if suppressNextPrioritySelectionId == card.id {
+                suppressNextPrioritySelectionId = nil
+                return
+            }
+            selectedCard = card
+        } label: {
             Text(card.simplifiedText)
                 .font(AppFont.body)
                 .foregroundColor(Material.Text.primary)
@@ -401,11 +461,55 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 50)
+                .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(card.simplifiedText)
+        .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
+        .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
+        .background(
+            Group {
+                if allowDragReorder {
+                    LongPressDragGesture(
+                        cardId: card.id,
+                        cardIndex: index,
+                        liftedId: $priorityReorderLiftedId,
+                        translation: $priorityReorderTranslation,
+                        onStart: {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            suppressNextPrioritySelectionId = card.id
+                            priorityReorderLiftedId = card.id
+                        },
+                        onEnd: { dy in
+                            let id = card.id
+                            if priorityReorderLiftedId == id {
+                                commitPriorityReorderFromDrag(
+                                    sourceIndex: index,
+                                    translation: CGSize(width: 0, height: dy)
+                                )
+                            }
+                            priorityReorderLiftedId = nil
+                            priorityReorderTranslation = .zero
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                if suppressNextPrioritySelectionId == id {
+                                    suppressNextPrioritySelectionId = nil
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        )
         .cardSurface(Material.Card.gradient(for: index))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            Button { removePriorityCard(card) } label: {
+                Label("Remove", systemImage: "lightbulb.slash")
+            }
+            .tint(.orange)
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) { deleteCard(card) } label: {
                 Label("Delete", systemImage: "trash")
@@ -416,17 +520,18 @@ struct ContentView: View {
             }
             .tint(.green)
         }
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-            Button {
-                if !excludedFromPriorityIds.contains(card.id) {
-                    withAnimation { excludedFromPriorityIds.append(card.id) }
-                }
-                saveState()
-            } label: {
-                Label("Remove", systemImage: "lightbulb.slash")
-            }
-            .tint(.orange)
-        }
+        .offset(y: liftedHere ? priorityReorderTranslation.height : 0)
+        .scaleEffect(liftedHere ? 1.03 : 1)
+        .opacity(reorderActiveElsewhere ? 0.55 : 1)
+        .zIndex(liftedHere ? 1 : 0)
+        .animation(.interactiveSpring(response: 0.28, dampingFraction: 0.82), value: priorityReorderTranslation)
+        .animation(.spring(response: 0.34, dampingFraction: 0.78), value: liftedHere)
+        .shadow(
+            color: liftedHere ? Material.Elevation.shadow.opacity(0.32) : .clear,
+            radius: liftedHere ? 28 : 0,
+            x: 0,
+            y: liftedHere ? 18 : 0
+        )
     }
 
     // MARK: - Recent Row (subtle card)
@@ -434,20 +539,17 @@ struct ContentView: View {
     @ViewBuilder
     private func recentRow(_ card: Card) -> some View {
         Button { selectedCard = card } label: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(card.simplifiedText)
-                    .font(AppFont.body)
-                    .foregroundColor(Material.Text.primary)
-                    .lineLimit(2)
-                Text(card.timestamp, style: .relative)
-                    .font(AppFont.caption)
-                    .foregroundColor(Material.Text.secondary)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(card.simplifiedText)
+                .font(AppFont.body)
+                .foregroundColor(Material.Text.primary)
+                .lineLimit(2)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .cardSurface([Material.Control.fillTertiary], shadow: false)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("recent-note-\(card.id.uuidString)")
+        .cardSurface([Material.Control.fillSecondary], shadow: false)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -578,23 +680,45 @@ struct ContentView: View {
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 showCompleteTortoise = false
-                if priorityCardIds.count < 3 && !cards.isEmpty {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        showPriorityPicker = true
-                    }
-                }
+                schedulePriorityPickerIfNeededAfterCompletion()
+            }
+        }
+    }
+
+    /// After a priority is completed, offer the picker when there is room for more priorities.
+    private func schedulePriorityPickerIfNeededAfterCompletion() {
+        if priorityCardIds.count < 3 && !cards.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showPriorityPicker = true
             }
         }
     }
 
     // MARK: - Reorder
 
-    private func movePriorityCards(from source: IndexSet, to destination: Int) {
+    /// Approximate row stride (card + list insets) for mapping drag distance to index delta.
+    private let priorityReorderRowStride: CGFloat = 125
+
+    private func movePriorityFromIndex(from: Int, to: Int) {
+        guard from != to else { return }
+        let count = autoPriorityCards.count
+        guard from >= 0, to >= 0, from < count, to < count else { return }
         syncPriorityOrder()
-        var ids = autoPriorityCards.map { $0.id }
-        ids.move(fromOffsets: source, toOffset: destination)
+        var ids = autoPriorityCards.map(\.id)
+        let id = ids.remove(at: from)
+        ids.insert(id, at: to)
         priorityCardIds = ids
         saveState()
+    }
+
+    private func commitPriorityReorderFromDrag(sourceIndex: Int, translation: CGSize) {
+        let count = autoPriorityCards.count
+        guard count > 1 else { return }
+        let delta = Int(round(translation.height / priorityReorderRowStride))
+        var target = sourceIndex + delta
+        target = min(max(0, target), count - 1)
+        guard target != sourceIndex else { return }
+        movePriorityFromIndex(from: sourceIndex, to: target)
     }
 
     // MARK: - Card Actions
@@ -628,9 +752,25 @@ struct ContentView: View {
 
     private func deleteCard(_ card: Card) {
         withAnimation {
-            cards.removeAll { $0.id == card.id }
-            priorityCardIds.removeAll { $0 == card.id }
+            let updated = PriorityNoteActions.removeCard(
+                id: card.id,
+                from: cards,
+                priorityIds: priorityCardIds
+            )
+            cards = updated.cards
+            priorityCardIds = updated.priorityIds
         }
+        saveState()
+    }
+
+    private func removePriorityCard(_ card: Card) {
+        withAnimation {
+            excludedFromPriorityIds = PriorityNoteActions.excludeFromPriority(
+                cardId: card.id,
+                excludedIds: excludedFromPriorityIds
+            )
+        }
+        saveState()
     }
 
     private func completePriorityCard(_ card: Card) {
@@ -640,7 +780,17 @@ struct ContentView: View {
             cards.removeAll { $0.id == card.id }
             priorityCardIds.removeAll { $0 == card.id }
         }
-        showCompleteTortoise = true
+        if completionAnimationEnabled {
+            // Reset first so a stuck `true` (e.g. sheet dismissed while another sheet was open)
+            // still triggers a fresh presentation when the user turns the toggle back on.
+            showCompleteTortoise = false
+            DispatchQueue.main.async {
+                showCompleteTortoise = true
+            }
+        } else {
+            showCompleteTortoise = false
+            schedulePriorityPickerIfNeededAfterCompletion()
+        }
     }
 
     private func clearAllCards() {

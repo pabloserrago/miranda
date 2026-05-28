@@ -22,8 +22,11 @@ private extension UIColor {
 enum Palette {
     
     // MARK: Neutral — Cool Gray
+    static let neutral0   = UIColor(hex: 0xFDFDFC) // #FDFDFC  ← step 100
+    static let neutral25  = UIColor(hex: 0xFBFBFA) // #FBFBFA  ← step 99
     static let neutral50  = UIColor(hex: 0xF8F8F7) // #F8F8F7  ← step 98
     static let neutral100 = UIColor(hex: 0xEDEDEC) // #EDEDEC  ← step 95
+    static let neutral150 = UIColor(hex: 0xE4E5E3) // #E4E5E3  ← step 92
     static let neutral200 = UIColor(hex: 0xDBDCDA) // #DBDCDA  ← step 90
     static let neutral300 = UIColor(hex: 0xBABCB9) // #BABCB9  ← step 80
     static let neutral400 = UIColor(hex: 0x979A96) // #979A96  ← step 70
@@ -110,9 +113,9 @@ enum Material {
     // backdrop → primary → secondary → tertiary (canvas → content → elevated → inset)
     
     enum Surface {
-        static let backdrop  = adaptive(light: Palette.neutral200,  dark: Palette.neutral900)   // app canvas (root ZStack)
-        static let primary   = adaptive(light: Palette.neutral50, dark: Palette.neutral950)    // pages: note editor, settings, text editor (UIKit)
-        static let secondary = adaptive(light: Palette.neutral100,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill
+        static let backdrop  = adaptive(light: Palette.neutral200,  dark: Palette.neutral950)   // app canvas (root ZStack)
+        static let primary   = adaptive(light: Palette.neutral25, dark: Palette.neutral700)    // pages: note editor, settings, text editor (UIKit)
+        static let secondary = adaptive(light: Palette.neutral150,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill
         static let tertiary  = backdrop     // page background: NotePage, Settings, WidgetInstructions, DevComponents
         static let primaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral950 : Palette.neutral50 }
         static let secondaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral100 }

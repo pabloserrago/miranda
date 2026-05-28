@@ -10,6 +10,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
+    @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
@@ -136,6 +137,17 @@ struct SettingsView: View {
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
                                 Text("Transform to Actions")
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+                        
+                        Toggle(isOn: $completionAnimationEnabled) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(AppFont.icon)
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("Completion Animation")
                             }
                         }
                         .listRowBackground(Material.Surface.primary)
