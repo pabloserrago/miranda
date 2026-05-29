@@ -132,6 +132,10 @@ struct OneMustWidgetEntryView : View {
             MediumWidgetView(entry: entry)
         case .systemLarge:
             LargeWidgetView(cards: entry.priorityCards)
+        case .accessoryRectangular:
+            LockScreenRectangularView(cards: entry.priorityCards)
+        case .accessoryInline:
+            LockScreenInlineView(cards: entry.priorityCards)
         default:
             CompactWidgetView(cards: entry.priorityCards)
         }
@@ -144,30 +148,28 @@ struct CompactWidgetView: View {
     let cards: [Card]
     
     var body: some View {
-        Button(intent: CompleteCardIntent(cardId: cards.first?.id.uuidString ?? "")) {
-            VStack(alignment: .leading, spacing: 0) {
-                if let card = cards.first {
-                    Text(card.simplifiedText)
-                        .font(AppFont.icon).fontWeight(.heavy)
-                        .tracking(Material.Typography.Tracking.widgetCompact)
-                        .lineLimit(3)
-                        .truncationMode(.tail)
-                        .foregroundColor(Material.Text.primary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                        .fixedSize(horizontal: false, vertical: true)
-                } else {
-                    Text("Capture anything.")
-                        .font(AppFont.label)
-                        .tracking(Material.Typography.Tracking.widgetLabel)
-                        .foregroundColor(Material.Text.primary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            if let card = cards.first {
+                Text(card.simplifiedText)
+                    .font(AppFont.icon).fontWeight(.heavy)
+                    .tracking(Material.Typography.Tracking.widgetCompact)
+                    .lineLimit(3)
+                    .truncationMode(.tail)
+                    .foregroundColor(Material.Text.primary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("Capture anything.")
+                    .font(AppFont.label)
+                    .tracking(Material.Typography.Tracking.widgetLabel)
+                    .foregroundColor(Material.Text.primary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            .padding(14)
         }
-        .buttonStyle(.plain)
+        .padding(14)
         .containerBackground(for: .widget) { WidgetGradient() }
+        .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
     }
 }
 
@@ -209,13 +211,12 @@ struct MediumWidgetView: View {
         if entry.priorityCards.isEmpty {
             emptyReadyView
         } else {
-            let visibleCards = Array(entry.priorityCards.prefix(3))
+            let visibleCards = Array(entry.priorityCards.prefix(2))
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(Array(visibleCards.enumerated()), id: \.element.id) { index, card in
                     TaskRowView(
                         card: card,
-                        rank: index,
-                        isCompleting: entry.phase.isCompleting(card.id)
+                        rank: index
                     )
                     .padding(.horizontal, 14)
                     .transition(
@@ -250,7 +251,6 @@ struct MediumWidgetView: View {
 struct TaskRowView: View {
     let card: Card
     let rank: Int
-    let isCompleting: Bool
 
     private var font: Font { rank == 0 ? AppFont.widgetHero : AppFont.caption }
     private var tracking: CGFloat { rank == 0 ? Material.Typography.Tracking.widgetHero : Material.Typography.Tracking.widgetCaption }
@@ -261,13 +261,9 @@ struct TaskRowView: View {
         default: return Material.Text.secondary
         }
     }
-    
-    private var finalTextOpacity: Double {
-        return isCompleting ? 0.22 : 1.0
-    }
 
     var body: some View {
-        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+        Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
             HStack(alignment: .center, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(font)
@@ -275,15 +271,12 @@ struct TaskRowView: View {
                     .lineLimit(rank == 0 ? 2 : 1)
                     .truncationMode(.tail)
                     .foregroundColor(textColor)
-                    .opacity(finalTextOpacity)
-                    .strikethrough(isCompleting, color: Material.Text.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer(minLength: 0)
             }
             .padding(.vertical, rank == 0 ? 4 : 3)
         }
-        .buttonStyle(.plain)
     }
 }
 
@@ -354,7 +347,7 @@ struct LargeTaskRow: View {
     }
     
     var body: some View {
-        Button(intent: CompleteCardIntent(cardId: card.id.uuidString)) {
+        Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
             HStack(alignment: .center, spacing: 0) {
                 Text(card.simplifiedText)
                     .font(font)
@@ -369,7 +362,6 @@ struct LargeTaskRow: View {
             }
             .padding(.vertical, rank == 0 ? 8 : 5)
         }
-        .buttonStyle(.plain)
     }
 }
 
@@ -407,6 +399,51 @@ struct EmptyWidgetView: View {
     }
 }
 
+// MARK: — Lock Screen Rectangular Widget
+
+struct LockScreenRectangularView: View {
+    let cards: [Card]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if cards.isEmpty {
+                Text("No priorities yet")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(cards.prefix(2).enumerated()), id: \.element.id) { index, card in
+                    Label {
+                        Text(card.simplifiedText)
+                            .lineLimit(1)
+                            .font(index == 0 ? .caption.weight(.semibold) : .caption2)
+                    } icon: {
+                        Image(systemName: index == 0 ? "1.circle.fill" : "2.circle")
+                            .widgetAccentable()
+                    }
+                    .foregroundStyle(index == 0 ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                }
+            }
+        }
+        .containerBackground(for: .widget) { Color.clear }
+        .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
+    }
+}
+
+// MARK: — Lock Screen Inline Widget
+
+struct LockScreenInlineView: View {
+    let cards: [Card]
+
+    var body: some View {
+        if let card = cards.first {
+            Label(card.simplifiedText, systemImage: "checkmark.circle")
+                .widgetAccentable()
+        } else {
+            Label("No priorities", systemImage: "tray")
+        }
+    }
+}
+
 // MARK: — Widget Entry Point
 
 @main
@@ -419,8 +456,36 @@ struct OneMustWidget: Widget {
         }
         .configurationDisplayName("Miranda")
         .description("Your priority captures")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge,
+                            .accessoryRectangular, .accessoryInline])
     }
+}
+
+#Preview(as: .accessoryRectangular) {
+    OneMustWidget()
+} timeline: {
+    SimpleEntry(
+        date: .now,
+        priorityCards: [
+            Card(originalText: "Email", simplifiedText: "Reply to that email", emoji: "📧", timestamp: Date()),
+            Card(originalText: "Trash", simplifiedText: "Take out the trash", emoji: "🗑️", timestamp: Date()),
+        ],
+        phase: .normal
+    )
+    SimpleEntry(date: .now, priorityCards: [], phase: .normal)
+}
+
+#Preview(as: .accessoryInline) {
+    OneMustWidget()
+} timeline: {
+    SimpleEntry(
+        date: .now,
+        priorityCards: [
+            Card(originalText: "Email", simplifiedText: "Reply to that email", emoji: "📧", timestamp: Date()),
+        ],
+        phase: .normal
+    )
+    SimpleEntry(date: .now, priorityCards: [], phase: .normal)
 }
 
 #Preview(as: .systemMedium) {

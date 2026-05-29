@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
+    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
@@ -100,7 +101,19 @@ struct SettingsView: View {
                                     .font(AppFont.icon)
                                     .imageScale(.medium)
                                     .frame(width: 24, height: 24)
-                                Text("How to Add Widget")
+                                Text("How to Add Home Screen Widget")
+                            }
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Material.Surface.primary)
+
+                        NavigationLink(destination: LockScreenWidgetInstructionsView()) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "lock.circle")
+                                    .font(AppFont.icon)
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("How to Add Lock Screen Widget")
                             }
                         }
                         .listRowSeparator(.hidden)
@@ -112,12 +125,43 @@ struct SettingsView: View {
                     }
                     
                     // Spacer between sections
-                    Section {} 
+                    Section {}
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .frame(height: 20)
-                    
-                    // 2. Capture
+
+                    // 2. Notifications
+                    Section {
+                        Toggle(isOn: $notificationsEnabled) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "bell.fill")
+                                    .font(AppFont.icon)
+                                    .imageScale(.medium)
+                                    .frame(width: 24, height: 24)
+                                Text("Priority Reminders")
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+                        .onChange(of: notificationsEnabled) { _, enabled in
+                            if enabled {
+                                NotificationManager.shared.requestProvisionalAuthorization()
+                            } else {
+                                NotificationManager.shared.cancelAllNotifications()
+                            }
+                        }
+                    } header: {
+                        Text("Notifications")
+                    } footer: {
+                        Text("When on, Miranda quietly adds your priorities to Notification Center — when they change and every morning at 9 am. No banner or sound unless you tap Keep on a notification.")
+                    }
+
+                    // Spacer between sections
+                    Section {}
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .frame(height: 20)
+
+                    // 3. Capture
                     Section {
                         Toggle(isOn: $audioInputEnabled) {
                             HStack(spacing: 12) {
@@ -351,6 +395,25 @@ struct WidgetInstructionsView: View {
             .padding()
         }
         .navigationTitle("How to Add Widget")
+        .navigationBarTitleDisplayMode(.inline)
+        .background(Material.Surface.tertiary)
+    }
+}
+
+struct LockScreenWidgetInstructionsView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 12) {
+                    InstructionStep(number: 1, text: "Long press on your lock screen")
+                    InstructionStep(number: 2, text: "Tap Edit, then tap the clock area")
+                    InstructionStep(number: 3, text: "Scroll to Miranda")
+                    InstructionStep(number: 4, text: "Choose Rectangular (top 2 priorities) or Inline (top priority only)")
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Lock Screen Widget")
         .navigationBarTitleDisplayMode(.inline)
         .background(Material.Surface.tertiary)
     }

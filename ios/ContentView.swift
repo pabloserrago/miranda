@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var searchText: String = ""
     @State private var widgetOnboardingDismissed: Bool = false
     @State private var captureOnboardingDismissed: Bool = false
+    @State private var lockScreenOnboardingDismissed: Bool = false
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
     /// Long-press–then–drag priority reorder (no list edit mode).
@@ -44,6 +45,7 @@ struct ContentView: View {
             _cards = State(initialValue: ContentView.uiTestSeedCards)
             _widgetOnboardingDismissed = State(initialValue: true)
             _captureOnboardingDismissed = State(initialValue: true)
+            _lockScreenOnboardingDismissed = State(initialValue: true)
             _showRecentSheet = State(initialValue: false)
         }
         #endif
@@ -151,7 +153,10 @@ struct ContentView: View {
         }
         .onChange(of: priorityCardIds) { _, _ in saveState() }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active { syncWidgetCompletions() }
+            if newPhase == .active {
+                syncWidgetCompletions()
+                NotificationManager.shared.syncAuthorizationStatus()
+            }
         }
         .onOpenURL { url in
             guard url.scheme == "miranda" else { return }
@@ -337,6 +342,12 @@ struct ContentView: View {
                 }
             }
 
+            if widgetOnboardingDismissed && !lockScreenOnboardingDismissed && !autoPriorityCards.isEmpty {
+                Section {
+                    lockScreenOnboardingRow
+                }
+            }
+
             if !autoPriorityCards.isEmpty {
                 Section {
                     ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, card in
@@ -375,6 +386,35 @@ struct ContentView: View {
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 withAnimation { widgetOnboardingDismissed = true }
+                saveState()
+            } label: {
+                Label("Dismiss", systemImage: "xmark")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var lockScreenOnboardingRow: some View {
+        Button { showWidgetInstructions = true } label: {
+            VStack(alignment: .leading) {
+                Group {
+                    Text("Miranda can show your priorities on your Lock Screen. ")
+                    + Text("Add it once, see them always.").bold()
+                }
+                .font(AppFont.body)
+                .foregroundColor(Material.Text.primary)
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                withAnimation { lockScreenOnboardingDismissed = true }
                 saveState()
             } label: {
                 Label("Dismiss", systemImage: "xmark")
@@ -851,10 +891,12 @@ struct ContentView: View {
         withAnimation {
             widgetOnboardingDismissed = false
             captureOnboardingDismissed = false
+            lockScreenOnboardingDismissed = false
             priorityCardIds.removeAll()
             excludedFromPriorityIds.removeAll()
             UserDefaults.standard.removeObject(forKey: "widgetOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "captureOnboardingDismissed")
+            UserDefaults.standard.removeObject(forKey: "lockScreenOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "priorityCardIds")
             UserDefaults.standard.removeObject(forKey: "excludedFromPriorityIds")
         }
@@ -872,6 +914,7 @@ struct ContentView: View {
         UserDefaults.standard.set(priorityCardIds.map { $0.uuidString }, forKey: "priorityCardIds")
         UserDefaults.standard.set(widgetOnboardingDismissed, forKey: "widgetOnboardingDismissed")
         UserDefaults.standard.set(captureOnboardingDismissed, forKey: "captureOnboardingDismissed")
+        UserDefaults.standard.set(lockScreenOnboardingDismissed, forKey: "lockScreenOnboardingDismissed")
         UserDefaults.standard.set(excludedFromPriorityIds.map { $0.uuidString }, forKey: "excludedFromPriorityIds")
 
         let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
@@ -883,6 +926,9 @@ struct ContentView: View {
         #if canImport(WidgetKit)
         WidgetKit.WidgetCenter.shared.reloadAllTimelines()
         #endif
+
+        NotificationManager.shared.schedulePriorityUpdate(cards: widgetPriorityCards)
+        NotificationManager.shared.scheduleDailyDigest(cards: widgetPriorityCards)
     }
 
     private func loadState() {
@@ -896,6 +942,7 @@ struct ContentView: View {
         }
         widgetOnboardingDismissed = UserDefaults.standard.bool(forKey: "widgetOnboardingDismissed")
         captureOnboardingDismissed = UserDefaults.standard.bool(forKey: "captureOnboardingDismissed")
+        lockScreenOnboardingDismissed = UserDefaults.standard.bool(forKey: "lockScreenOnboardingDismissed")
         if let excludedStrings = UserDefaults.standard.array(forKey: "excludedFromPriorityIds") as? [String] {
             excludedFromPriorityIds = excludedStrings.compactMap { UUID(uuidString: $0) }
         }
