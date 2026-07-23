@@ -19,7 +19,8 @@ xcuserdata/
 # Swift Package Manager
 .build/
 .swiftpm/
-Package.resolved
+# Package.resolved is committed so Xcode Cloud can resolve packages
+# (the project has automatic package resolution disabled).
 
 # CocoaPods
 Pods/
