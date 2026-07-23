@@ -1,13 +1,14 @@
 import UIKit
 import SwiftUI
 
-/// Attaches a UILongPressGestureRecognizer to the enclosing UITableViewCell's contentView.
+/// UIViewRepresentable-based long-press-drag gesture.
 ///
-/// Why: SwiftUI's DragGesture adds a UIPanGestureRecognizer to each list cell. UITableView's
-/// built-in swipe-action recognizer is also a pan recognizer, and the two compete — swipe actions
-/// lose. A UILongPressGestureRecognizer is a different gesture type that doesn't conflict with the
-/// table's pan recognizer. After the hold fires, the recognizer's .changed state provides
-/// continuous position updates so we can track the drag without any separate DragGesture.
+/// NOTE: This implementation is kept for reference. ContentView uses the SwiftUI-native
+/// .onLongPressGesture + .simultaneousGesture(DragGesture()) approach instead, because
+/// iOS 26 no longer renders UIViewRepresentable views placed in a SwiftUI .background modifier.
+///
+/// If a future iOS version reintroduces the need for UIKit-level gesture control (e.g. to
+/// avoid conflicts with swipe actions), this can be re-wired.
 struct LongPressDragGesture: UIViewRepresentable {
     let cardId: UUID
     let cardIndex: Int
@@ -31,8 +32,7 @@ struct LongPressDragGesture: UIViewRepresentable {
 
     // MARK: - PassthroughView
 
-    /// Zero-size, non-interactive view used only as an anchor to traverse up the
-    /// view hierarchy and find the UITableViewCell.
+    /// Zero-size, non-interactive anchor for hierarchy traversal.
     final class PassthroughView: UIView {
         init() {
             super.init(frame: .zero)
@@ -53,28 +53,39 @@ struct LongPressDragGesture: UIViewRepresentable {
         lazy var recognizer: UILongPressGestureRecognizer = {
             let r = UILongPressGestureRecognizer(target: self, action: #selector(handle(_:)))
             r.minimumPressDuration = 0.45
-            // Allow unlimited movement so the recognizer stays alive through the drag phase.
             r.allowableMovement = 10_000
             return r
         }()
 
         init(_ config: LongPressDragGesture) { self.config = config }
 
-        /// Traverse up the view hierarchy to find the UITableViewCell's contentView and
-        /// attach the gesture recognizer there. Idempotent.
+        /// Traverse up the view hierarchy to find a list cell's contentView.
+        /// Checks UICollectionViewCell (iOS 16+) and UITableViewCell (iOS 15 and earlier).
+        /// Falls back to the nearest interactive non-scroll ancestor if no cell is found.
         func ensureAttached(near view: UIView) {
             var current: UIView? = view.superview
             while let v = current {
+                if let cell = v as? UICollectionViewCell {
+                    attach(to: cell.contentView); return
+                }
                 if let cell = v as? UITableViewCell {
-                    let contentView = cell.contentView
-                    guard attachedTarget !== contentView else { return }
-                    attachedTarget?.removeGestureRecognizer(recognizer)
-                    contentView.addGestureRecognizer(recognizer)
-                    attachedTarget = contentView
-                    return
+                    attach(to: cell.contentView); return
                 }
                 current = v.superview
             }
+            var fallback: UIView? = view.superview
+            while let v = fallback {
+                if v is UIScrollView || v is UIWindow { break }
+                if v.isUserInteractionEnabled { attach(to: v); return }
+                fallback = v.superview
+            }
+        }
+
+        private func attach(to target: UIView) {
+            guard attachedTarget !== target else { return }
+            attachedTarget?.removeGestureRecognizer(recognizer)
+            target.addGestureRecognizer(recognizer)
+            attachedTarget = target
         }
 
         @objc func handle(_ r: UILongPressGestureRecognizer) {

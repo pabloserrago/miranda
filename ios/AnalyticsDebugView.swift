@@ -5,7 +5,7 @@ struct AnalyticsDebugView: View {
     @State private var recentEvents: [[String: Any]] = []
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Stats Section

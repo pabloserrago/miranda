@@ -1,0 +1,161 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "App display name shown in Spotlight, Settings, and the home screen. This is a brand name — translate only if the product ships under a localized name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "shouldTranslate" : false,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "ios"
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Microphone permission prompt shown by iOS when the user first enables voice input.",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[de] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "eu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[fr] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[nl] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[pt] Miranda uses the microphone for voice input so you can capture notes by speaking."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription" : {
+      "comment" : "Speech recognition permission prompt shown by iOS when the user first starts voice capture.",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[de] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "eu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[fr] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "gl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[nl] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[pt] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

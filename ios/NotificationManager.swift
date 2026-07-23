@@ -11,7 +11,19 @@ final class NotificationManager {
     // Provisional authorization is granted silently — no system dialog shown.
     func requestProvisionalAuthorization() {
         Task {
-            try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
+            _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
+        }
+    }
+
+    // Called when the user turns the toggle ON: request authorization, then
+    // immediately schedule the current priorities so the daily digest registers
+    // without waiting for the next card edit. Awaiting authorization first avoids
+    // a race where scheduling checks settings before auth is granted.
+    func enableReminders(cards: [Card]) {
+        Task {
+            _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
+            schedulePriorityUpdate(cards: cards)
+            scheduleDailyDigest(cards: cards)
         }
     }
 
@@ -31,9 +43,14 @@ final class NotificationManager {
     // Skipped if the user disabled notifications or the lock screen widget is active.
     func schedulePriorityUpdate(cards: [Card]) {
         Task {
-            guard isUserEnabled(), await isAuthorized(), await !hasActiveLockScreenWidget() else { return }
+            let gate = NotificationManager.shouldSchedule(
+                userEnabled: isUserEnabled(),
+                authorized: await isAuthorized(),
+                hasLockScreenWidget: await hasActiveLockScreenWidget(),
+                cardsEmpty: cards.isEmpty
+            )
             cancelPendingPriorityUpdate()
-            guard !cards.isEmpty else { return }
+            guard gate else { return }
             let content = makeContent(title: "Your priorities", cards: cards)
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
             await schedule(content: content, identifier: "priority-update", trigger: trigger)
@@ -44,12 +61,14 @@ final class NotificationManager {
     // Skipped if the user disabled notifications or the lock screen widget is active.
     func scheduleDailyDigest(cards: [Card]) {
         Task {
-            guard isUserEnabled(), await isAuthorized(), await !hasActiveLockScreenWidget() else {
-                center.removePendingNotificationRequests(withIdentifiers: ["daily-digest"])
-                return
-            }
+            let gate = NotificationManager.shouldSchedule(
+                userEnabled: isUserEnabled(),
+                authorized: await isAuthorized(),
+                hasLockScreenWidget: await hasActiveLockScreenWidget(),
+                cardsEmpty: cards.isEmpty
+            )
             center.removePendingNotificationRequests(withIdentifiers: ["daily-digest"])
-            guard !cards.isEmpty else { return }
+            guard gate else { return }
             let content = makeContent(title: "Good morning — your priorities", cards: cards)
             var components = DateComponents()
             components.hour = 9
@@ -64,7 +83,29 @@ final class NotificationManager {
         center.removePendingNotificationRequests(withIdentifiers: ["priority-update", "daily-digest"])
     }
 
+    #if DEBUG
+    // Debug-only: fire a priority reminder ~3s from now, bypassing the enabled
+    // and lock-screen-widget gates so it can be verified on demand. Still requires
+    // (provisional) authorization to be delivered by the system.
+    func sendTestReminder(cards: [Card]) {
+        Task {
+            _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
+            let content = makeContent(title: "Your priorities", cards: cards)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
+            await schedule(content: content, identifier: "priority-update", trigger: trigger)
+        }
+    }
+    #endif
+
     // MARK: — Internal (exposed for unit testing)
+
+    // Pure gate for whether a priority notification should be scheduled.
+    static func shouldSchedule(userEnabled: Bool,
+                               authorized: Bool,
+                               hasLockScreenWidget: Bool,
+                               cardsEmpty: Bool) -> Bool {
+        userEnabled && authorized && !hasLockScreenWidget && !cardsEmpty
+    }
 
     static func formatBody(for cards: [Card]) -> String {
         cards.prefix(3).enumerated()

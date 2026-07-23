@@ -80,20 +80,6 @@ struct Provider: TimelineProvider {
 
 // MARK: — Shared Widget Components
 
-private struct WidgetGradient: View {
-    var body: some View {
-        LinearGradient(
-            gradient: Gradient(stops: [
-                .init(color: Material.Widget.bg[0], location: 0.0),
-                .init(color: Material.Widget.bg[1], location: 0.55),
-                .init(color: Material.Widget.bg[2], location: 1.0)
-            ]),
-            startPoint: .top,
-            endPoint: .bottomTrailing
-        )
-    }
-}
-
 private struct WidgetNoteButton: View {
     @Environment(\.colorScheme) var colorScheme
     
@@ -168,7 +154,7 @@ struct CompactWidgetView: View {
             }
         }
         .padding(14)
-        .containerBackground(for: .widget) { WidgetGradient() }
+        .containerBackground(Material.Surface.primary, for: .widget)
         .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
     }
 }
@@ -179,31 +165,28 @@ struct MediumWidgetView: View {
     let entry: SimpleEntry
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(alignment: .leading, spacing: 0) {
-                taskList
-                    .padding(.top, 14)
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            if entry.priorityCards.isEmpty {
-                WidgetNoteButton()
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 14)
-            } else {
+        VStack(alignment: .leading, spacing: 0) {
+            taskList
+                .padding(.top, 14)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.bottom, 44)
+        .overlay(alignment: .bottom) {
+            HStack {
+                Text("Miranda")
+                    .font(AppFont.caption).fontWeight(.semibold)
+                    .foregroundColor(Material.Text.secondary)
+                Spacer()
                 Link(destination: URL(string: "miranda://capture")!) {
                     Text("+ Note")
                         .font(AppFont.caption)
                         .foregroundColor(Material.Text.primary.opacity(0.55))
                 }
-                .padding(.trailing, 14)
-                .padding(.bottom, 14)
             }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 14)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(for: .widget) { WidgetGradient() }
+        .containerBackground(Material.Surface.primary, for: .widget)
     }
 
     @ViewBuilder
@@ -242,7 +225,6 @@ struct MediumWidgetView: View {
             .foregroundColor(Material.Text.primary)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .multilineTextAlignment(.center)
-            .padding(.bottom, 44)
     }
 }
 
@@ -264,19 +246,16 @@ struct TaskRowView: View {
 
     var body: some View {
         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-            HStack(alignment: .center, spacing: 0) {
-                Text(card.simplifiedText)
-                    .font(font)
-                    .tracking(tracking)
-                    .lineLimit(rank == 0 ? 2 : 1)
-                    .truncationMode(.tail)
-                    .foregroundColor(textColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, rank == 0 ? 4 : 3)
+            Text(card.simplifiedText)
+                .font(font)
+                .tracking(tracking)
+                .lineLimit(rank == 0 ? 2 : 1)
+                .fixedSize(horizontal: false, vertical: true)
+                .truncationMode(.tail)
+                .foregroundColor(textColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.vertical, rank == 0 ? 4 : 3)
     }
 }
 
@@ -295,12 +274,6 @@ struct LargeWidgetView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Spacer()
-                
-                WidgetNoteButton()
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(Array(cards.prefix(3).enumerated()), id: \.element.id) { index, card in
@@ -309,24 +282,27 @@ struct LargeWidgetView: View {
                     }
                 }
                 .padding(.top, 16)
-                
-                Spacer()
-                
-                HStack {
-                    Spacer()
-                    Link(destination: URL(string: "miranda://capture")!) {
-                        Text("+ Note")
-                            .font(AppFont.caption)
-                            .foregroundColor(Material.Text.primary.opacity(0.55))
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(for: .widget) { WidgetGradient() }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.bottom, 44)
+        .overlay(alignment: .bottom) {
+            HStack {
+                Text("Miranda")
+                    .font(AppFont.caption).fontWeight(.semibold)
+                    .foregroundColor(Material.Text.secondary)
+                Spacer()
+                Link(destination: URL(string: "miranda://capture")!) {
+                    Text("+ Note")
+                        .font(AppFont.caption)
+                        .foregroundColor(Material.Text.primary.opacity(0.55))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
+        }
+        .containerBackground(Material.Surface.primary, for: .widget)
     }
 }
 
@@ -348,20 +324,16 @@ struct LargeTaskRow: View {
     
     var body: some View {
         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-            HStack(alignment: .center, spacing: 0) {
-                Text(card.simplifiedText)
-                    .font(font)
-                    .tracking(tracking)
-                    .lineLimit(rank == 0 ? 2 : 1)
-                    .truncationMode(.tail)
-                    .foregroundColor(textColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, rank == 0 ? 8 : 5)
+            Text(card.simplifiedText)
+                .font(font)
+                .tracking(tracking)
+                .lineLimit(rank == 0 ? 2 : 1)
+                .truncationMode(.tail)
+                .foregroundColor(textColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .padding(.vertical, rank == 0 ? 8 : 5)
     }
 }
 
@@ -395,7 +367,7 @@ struct EmptyWidgetView: View {
             .padding(.bottom, 13)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(for: .widget) { WidgetGradient() }
+        .containerBackground(Material.Surface.primary, for: .widget)
     }
 }
 
@@ -404,28 +376,48 @@ struct EmptyWidgetView: View {
 struct LockScreenRectangularView: View {
     let cards: [Card]
 
+    private var topCard: Card? { cards.first }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            if cards.isEmpty {
-                Text("No priorities yet")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(Array(cards.prefix(2).enumerated()), id: \.element.id) { index, card in
-                    Label {
-                        Text(card.simplifiedText)
-                            .lineLimit(1)
-                            .font(index == 0 ? .caption.weight(.semibold) : .caption2)
-                    } icon: {
-                        Image(systemName: index == 0 ? "1.circle.fill" : "2.circle")
+        Group {
+            if let card = topCard {
+                HStack(alignment: .center, spacing: 6) {
+                    if let emoji = card.emoji, !emoji.isEmpty {
+                        Text(emoji)
+                            .font(.title3)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
                             .widgetAccentable()
                     }
-                    .foregroundStyle(index == 0 ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+
+                    Text(card.simplifiedText)
+                        .font(.title3.weight(.semibold))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.7)
+                        .allowsTightening(true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .widgetAccentable()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            } else {
+                HStack(alignment: .center, spacing: 6) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                    Text("Capture a priority")
+                        .font(.headline)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.7)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .foregroundStyle(.secondary)
+                .widgetAccentable()
             }
         }
         .containerBackground(for: .widget) { Color.clear }
-        .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
+        .widgetURL(topCard.map { URL(string: "miranda://card/\($0.id.uuidString)")! }
+            ?? URL(string: "miranda://capture")!)
     }
 }
 
@@ -435,12 +427,17 @@ struct LockScreenInlineView: View {
     let cards: [Card]
 
     var body: some View {
-        if let card = cards.first {
-            Label(card.simplifiedText, systemImage: "checkmark.circle")
-                .widgetAccentable()
-        } else {
-            Label("No priorities", systemImage: "tray")
+        Group {
+            if let card = cards.first {
+                Label(card.simplifiedText, systemImage: "checkmark.circle")
+                    .widgetAccentable()
+            } else {
+                Label("No priorities", systemImage: "tray")
+                    .widgetAccentable()
+            }
         }
+        .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! }
+            ?? URL(string: "miranda://capture")!)
     }
 }
 
@@ -467,8 +464,14 @@ struct OneMustWidget: Widget {
     SimpleEntry(
         date: .now,
         priorityCards: [
-            Card(originalText: "Email", simplifiedText: "Reply to that email", emoji: "📧", timestamp: Date()),
-            Card(originalText: "Trash", simplifiedText: "Take out the trash", emoji: "🗑️", timestamp: Date()),
+            Card(originalText: "Medicine", simplifiedText: "Take your medicine", emoji: "💊", timestamp: Date()),
+        ],
+        phase: .normal
+    )
+    SimpleEntry(
+        date: .now,
+        priorityCards: [
+            Card(originalText: "Email", simplifiedText: "Reply to the long email from the landlord about the lease", emoji: "📧", timestamp: Date()),
         ],
         phase: .normal
     )

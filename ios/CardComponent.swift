@@ -8,7 +8,9 @@ struct CardSurface: ViewModifier {
     var shadow: Bool
     var gradientStart: UnitPoint
     var gradientEnd: UnitPoint
-    
+    var borderColor: Color
+    var borderWidth: CGFloat
+
     func body(content: Content) -> some View {
         content
             .background(
@@ -21,6 +23,14 @@ struct CardSurface: ViewModifier {
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: radius))
+            .overlay(
+                Group {
+                    if borderWidth > 0 {
+                        RoundedRectangle(cornerRadius: radius)
+                            .stroke(borderColor, lineWidth: borderWidth)
+                    }
+                }
+            )
             .shadow(
                 color: shadow ? Material.Elevation.shadow.opacity(0.09) : .clear,
                 radius: shadow ? 3 : 0,
@@ -36,9 +46,19 @@ extension View {
         radius: CGFloat = Material.Shape.card,
         shadow: Bool = true,
         from: UnitPoint = .topLeading,
-        to: UnitPoint = .bottomTrailing
+        to: UnitPoint = .bottomTrailing,
+        borderColor: Color = .clear,
+        borderWidth: CGFloat = 0
     ) -> some View {
-        modifier(CardSurface(colors: colors, radius: radius, shadow: shadow, gradientStart: from, gradientEnd: to))
+        modifier(CardSurface(
+            colors: colors,
+            radius: radius,
+            shadow: shadow,
+            gradientStart: from,
+            gradientEnd: to,
+            borderColor: borderColor,
+            borderWidth: borderWidth
+        ))
     }
 }
 

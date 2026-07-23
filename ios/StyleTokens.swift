@@ -32,10 +32,10 @@ enum Palette {
     static let neutral400 = UIColor(hex: 0x979A96) // #979A96  ← step 70
     static let neutral500 = UIColor(hex: 0x5E6260) // #5E6260  ← step 50
     static let neutral600 = UIColor(hex: 0x3A3E3C) // #3A3E3C  ← step 35
-    static let neutral700 = UIColor(hex: 0x272B29) // #272B29  ← step 25
-    static let neutral800 = UIColor(hex: 0x161A18) // #161A18  ← step 15
-    static let neutral900 = UIColor(hex: 0x0F1210) // #0F1210  ← step 10
-    static let neutral950 = UIColor(hex: 0x080A09) // #080A09  ← step 5
+    static let neutral700 = UIColor(hex: 0x262626) // #262626  ← step 25
+    static let neutral800 = UIColor(hex: 0x1C1C1E) // #1C1C1E  ← step 15
+    static let neutral900 = UIColor(hex: 0x191919) // #191919  ← step 10
+    static let neutral950 = UIColor(hex: 0x000000) // #000000  ← step 5
     
     // MARK: Green
     static let green50  = UIColor(hex: 0xE4F5EA) // #E4F5EA  ← step 98
@@ -78,9 +78,9 @@ enum Palette {
     static let red400 = UIColor(hex: 0xCF3328) // #CF3328  ← step 60
     static let red500 = UIColor(hex: 0xB42820) // #B42820  ← step 50
     static let red600 = UIColor(hex: 0x961E18) // #961E18  ← step 40
-    static let red700 = UIColor(hex: 0x781512) // #781512  ← step 30
-    static let red800 = UIColor(hex: 0x5C0E0C) // #5C0E0C  ← step 20
-    static let red900 = UIColor(hex: 0x400808) // #400808  ← step 10
+    static let red700 = UIColor(hex: 0xF74C16) // #F74C16  ← step 30
+    static let red800 = UIColor(hex: 0xEB4613) // #EB4613  ← step 20
+    static let red900 = UIColor(hex: 0xAF2F06) // #AF2F06  ← step 10
     static let red950 = UIColor(hex: 0x240404) // #240404  ← step 5
     
     // MARK: Yellow / Amber
@@ -90,9 +90,99 @@ enum Palette {
     static let yellow400 = UIColor(hex: 0xFFCC00) // #FFCC00
     static let yellow600 = UIColor(hex: 0x4A2E12) // #4A2E12
     static let yellow700 = UIColor(hex: 0x35220E) // #35220E
-    
 
-    
+    // MARK: Rose — muted warm pink (Card theme: Bloom, Dusk)
+    static let rose25  = UIColor(hex: 0xFFF0EF) // #FFF0EF  ← step 99
+    static let rose50  = UIColor(hex: 0xFFE4E2) // #FFE4E2  ← step 98
+    static let rose100 = UIColor(hex: 0xFFCDCA) // #FFCDCA  ← step 95
+    static let rose200 = UIColor(hex: 0xF5B8B4) // #F5B8B4  ← step 90
+    static let rose700 = UIColor(hex: 0x5A2B29) // #5A2B29  ← step 30
+    static let rose900 = UIColor(hex: 0x2E1211) // #2E1211  ← step 10
+    static let rose950 = UIColor(hex: 0x1E0D0C) // #1E0D0C  ← step 5
+
+    // MARK: Lavender — muted soft purple (Card theme: Bloom, Meadow)
+    static let lavender25  = UIColor(hex: 0xF5F0FF) // #F5F0FF  ← step 99
+    static let lavender50  = UIColor(hex: 0xEDE8FB) // #EDE8FB  ← step 98
+    static let lavender100 = UIColor(hex: 0xDDD5F5) // #DDD5F5  ← step 95
+    static let lavender200 = UIColor(hex: 0xC4B5E8) // #C4B5E8  ← step 90
+    static let lavender700 = UIColor(hex: 0x3D2E6B) // #3D2E6B  ← step 30
+    static let lavender900 = UIColor(hex: 0x241B42) // #241B42  ← step 10
+    static let lavender950 = UIColor(hex: 0x130E22) // #130E22  ← step 5
+
+    // MARK: Sage — muted warm green (Card theme: Meadow, Dusk)
+    static let sage25  = UIColor(hex: 0xEEF5F0) // #EEF5F0  ← step 99
+    static let sage50  = UIColor(hex: 0xE4F0E8) // #E4F0E8  ← step 98
+    static let sage100 = UIColor(hex: 0xCCE5D4) // #CCE5D4  ← step 95
+    static let sage200 = UIColor(hex: 0xA8D4B4) // #A8D4B4  ← step 90
+    static let sage700 = UIColor(hex: 0x1E4A2C) // #1E4A2C  ← step 30
+    static let sage900 = UIColor(hex: 0x0F2518) // #0F2518  ← step 10
+    static let sage950 = UIColor(hex: 0x0A2014) // #0A2014  ← step 5
+
+}
+
+// ============================================================
+// MARK: - Card Color Theme
+// ============================================================
+
+/// User-selectable card color palette. Each theme supplies one gradient
+/// array per priority-card position (index 0, 1, 2). All stops stay in
+/// the 25–200 light / 700–950 dark range to keep colors muted and legible.
+enum CardColorTheme: String, CaseIterable {
+
+    /// All-blue periwinkle — the original default.
+    case standard
+    /// Lavender · Rose · Blue — distinct hue per card position.
+    case color
+
+    var label: String {
+        switch self {
+        case .standard: return String(localized: "theme.standard", defaultValue: "Standard")
+        case .color:    return String(localized: "theme.color",    defaultValue: "Color")
+        }
+    }
+
+    /// Three gradient-stop arrays, one per card position (0 = top, 1, 2).
+    var cardGradients: [[Color]] {
+        switch self {
+        case .standard:
+            return [
+                [adaptive(light: Palette.blue25,      dark: Palette.blue950),
+                 adaptive(light: Palette.blue200,     dark: Palette.blue700)],
+                [adaptive(light: Palette.blue50,      dark: Palette.blue900),
+                 adaptive(light: Palette.blue200,     dark: Palette.blue700)],
+                [adaptive(light: Palette.blue25,      dark: Palette.blue950),
+                 adaptive(light: Palette.blue50,      dark: Palette.blue900),
+                 adaptive(light: Palette.blue200,     dark: Palette.blue700)],
+            ]
+        case .color:
+            return [
+                [adaptive(light: Palette.lavender25,  dark: Palette.lavender950),
+                 adaptive(light: Palette.lavender200, dark: Palette.lavender700)],
+                [adaptive(light: Palette.rose25,      dark: Palette.rose950),
+                 adaptive(light: Palette.rose200,     dark: Palette.rose700)],
+                [adaptive(light: Palette.blue25,      dark: Palette.blue950),
+                 adaptive(light: Palette.blue200,     dark: Palette.blue700)],
+            ]
+        }
+    }
+
+    /// Three representative mid-range colors, one per card position.
+    var swatchColors: [Color] {
+        switch self {
+        case .standard:
+            return [
+                adaptive(light: Palette.blue200,     dark: Palette.blue700),
+                adaptive(light: Palette.blue100,     dark: Palette.blue750),
+                adaptive(light: Palette.blue50,      dark: Palette.blue900),
+            ]
+        case .color:
+            return [
+                adaptive(light: Palette.lavender200, dark: Palette.lavender700),
+                adaptive(light: Palette.rose200,     dark: Palette.rose700),
+                adaptive(light: Palette.blue200,     dark: Palette.blue700),
+            ]
+        }
+    }
 }
 
 // ============================================================
@@ -113,38 +203,38 @@ enum Material {
     // backdrop → primary → secondary → tertiary (canvas → content → elevated → inset)
     
     enum Surface {
-        static let backdrop  = adaptive(light: Palette.neutral200,  dark: Palette.neutral950)   // app canvas (root ZStack)
-        static let primary   = adaptive(light: Palette.neutral25, dark: Palette.neutral700)    // pages: note editor, settings, text editor (UIKit)
-        static let secondary = adaptive(light: Palette.neutral150,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill
+        static let backdrop  = adaptive(light: Palette.neutral25,  dark: Palette.neutral950)   // app canvas (root ZStack)
+        static let primary   = adaptive(light: Palette.neutral50, dark: Palette.neutral900)    // pages: note editor, settings, text editor (UIKit)
+        static let secondary = adaptive(light: Palette.neutral100,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill
         static let tertiary  = backdrop     // page background: NotePage, Settings, WidgetInstructions, DevComponents
-        static let primaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral950 : Palette.neutral50 }
-        static let secondaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral800 : Palette.neutral100 }
+        static let primaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral700 : Palette.neutral150 }
+        static let secondaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral150 : Palette.neutral700 }
     }
     
     // MARK: Control — interactive fill (Blue)
     // Buttons, chips, pickers, inputs, card gradients
     
     enum Control {
-        static let fillPrimary   = adaptive(light: Palette.blue200, dark: Palette.blue700)  // FilledButtonStyle, ChipPicker selected, Card.base/wrapper gradient
-        static let fillSecondary = adaptive(light: Palette.blue50,  dark: Palette.blue900)  // Card.base/onboarding/widget gradients
-        static let fillTertiary  = adaptive(light: Palette.blue25,  dark: Palette.blue950)  // mic/plus ActionChips, feedback input, drawer cards, ChipPicker unselected, ListSuggestion, Card.onboarding/widget gradients
+        static let fillPrimary   = adaptive(light: Palette.neutral150, dark: Palette.neutral700)  // FilledButtonStyle, ChipPicker selected, Card.base/wrapper gradient
+        static let fillSecondary = adaptive(light: Palette.neutral0,  dark: Palette.neutral950)  // Card.base/onboarding/widget gradients
+        static let fillTertiary  = adaptive(light: Palette.neutral50,  dark: Palette.neutral800)  // mic/plus ActionChips, feedback input, drawer cards, ChipPicker unselected, ListSuggestion, Card.onboarding/widget gradients
     }
     
     // MARK: Text — text foreground colors
     
     enum Text {
-        static let primary   = adaptive(light: Palette.neutral900, dark: Palette.neutral50)  // headings, body copy, card text, button labels, chip icon overrides, widget text/button
-        static let secondary = adaptive(light: Palette.neutral500, dark: Palette.neutral400) // supporting labels, captions, hints, settings descriptions, debug rows, GhostButtonStyle, widget muted text
+        static let primary   = adaptive(light: Palette.neutral950, dark: Palette.neutral50)  // headings, body copy, card text, button labels, chip icon overrides, widget text/button
+        static let secondary = adaptive(light: Palette.neutral700, dark: Palette.neutral200) // supporting labels, captions, hints, settings descriptions, debug rows, GhostButtonStyle, widget muted text
         static let tertiary  = adaptive(light: Palette.neutral400, dark: Palette.neutral500) // subtle: action chip icon on neutral fills, SolidButtonStyle disabled label, widget button text
         static let accent    = Accent.primary                                                // settings tint: app icon fill, picker, primary button bg
-        static let inverse   = adaptive(light: Palette.neutral50, dark: Palette.neutral900)                                     // text on dark/accent fills: SolidButtonStyle label, settings buttons, slider tint
+        static let inverse   = adaptive(light: Palette.neutral50, dark: Palette.neutral950)                                     // text on dark/accent fills: SolidButtonStyle label, settings buttons, slider tint
     }
     
     // MARK: Icon — icon foreground colors
     
     enum Icon {
-        static let primary   = adaptive(light: Palette.neutral900, dark: Palette.neutral50)  // settings tortoise icon, CloseButton xmark, success chip icon
-        static let tertiary  = adaptive(light: Palette.neutral400, dark: Palette.neutral500) // delete action chip icon (trash)
+        static let primary   = adaptive(light: Palette.neutral950, dark: Palette.neutral50)  // settings tortoise icon, CloseButton xmark, success chip icon
+        static let tertiary  = adaptive(light: Palette.neutral700, dark: Palette.neutral500) // delete action chip icon (trash)
         static let inverse   = Color(Palette.neutral50)                                      // default ActionChip icon on colored fills
         static let muted     = adaptive(light: Palette.neutral600, dark: Palette.neutral400) // empty-state icons, secondary toolbar icons
     }
@@ -153,7 +243,7 @@ enum Material {
     
     enum Typography {
         static let title:   CGFloat = 40   // AppFont.title
-        static let priority: CGFloat = 17   // AppFont.priority — priority card body text
+        static let priority: CGFloat = 20   // AppFont.priority — priority card body text
         static let headline: CGFloat = 22  // AppFont.headline
         static let icon:    CGFloat = 20   // AppFont.icon
         static let body:    CGFloat = 17   // AppFont.body, AppFont.bodyUIFont
@@ -179,15 +269,15 @@ enum Material {
     // MARK: Accent — brand color (light: red, dark: green)
     
     enum Accent {
-        static let primary     = adaptive(light: Palette.green500,  dark: Palette.green300)     // ActionChip.accent icon, Text.accent, Card.accent, settings tint
-        static let contentPrimary   = adaptive(light: Palette.neutral50,  dark: Palette.neutral950) // text/icon on accent fill (SolidButtonStyle)
+        static let primary     = adaptive(light: Palette.red800,  dark: Palette.red700)     // ActionChip.accent icon, Text.accent, Card.accent, settings tint
+        static let contentPrimary   = adaptive(light: Palette.neutral0,  dark: Palette.neutral950) // text/icon on accent fill (SolidButtonStyle)
     }
     
     // MARK: Decoration — neutral ornaments (borders, dividers, shapes)
     
     enum Decoration {
-        static let primary   = adaptive(light: Palette.neutral800, dark: Palette.neutral200) // swipe action chip fills: trash, dismiss (xmark)
-        static let tertiary  = adaptive(light: Palette.neutral200, dark: Palette.neutral700) // settings card border, sign-out stroke
+        static let primary   = adaptive(light: Palette.neutral600, dark: Palette.neutral200) // swipe action chip fills: trash, dismiss (xmark)
+        static let tertiary  = adaptive(light: Palette.neutral200, dark: Palette.neutral600) // settings card border, sign-out stroke
     }
     
     // MARK: Shape — radii & sizing (4pt grid)
@@ -199,7 +289,7 @@ enum Material {
         static let full: CGFloat = 9999
         
         // Semantic radii
-        static let card: CGFloat = 32
+        static let card: CGFloat = 30
         static let chip: CGFloat = full
         static let drawer: CGFloat = 32
         static let input: CGFloat = 12
@@ -216,8 +306,8 @@ enum Material {
     // MARK: Elevation — shadow & overlay
     
     enum Elevation {
-        static let shadow    = adaptive(light: Palette.neutral800, dark: Palette.neutral950) // CardSurface, CloseButton, toast, toolbar buttons, settings cards, widget capsule
-        static let scrim     = adaptive(light: Palette.neutral500, dark: Palette.neutral800) // drawer drag handle track fill
+        static let shadow    = adaptive(light: Palette.neutral200, dark: Palette.neutral950) // CardSurface, CloseButton, toast, toolbar buttons, settings cards, widget capsule
+        static let scrim     = adaptive(light: Palette.neutral800, dark: Palette.neutral800) // drawer drag handle track fill
     }
     
     // MARK: Status — semantic colored signals
@@ -237,22 +327,27 @@ enum Material {
             [Control.fillSecondary, Control.fillPrimary],                       // lavender → cornflower
             [Control.fillTertiary, Control.fillSecondary, Control.fillPrimary], // smoother three-stop sweep
         ]
-        
-        static func gradient(for index: Int) -> [Color] {
-            gradients[index % gradients.count]
+
+        // MARK: Priority card fills — flat neutral surface for all positions
+        private static let priorityFills: [[Color]] = [
+            [adaptive(light: Palette.neutral0, dark: Palette.neutral950)],
+            [adaptive(light: Palette.neutral50, dark: Palette.neutral900)],
+            [adaptive(light: Palette.neutral100, dark: Palette.neutral800)],
+        ]
+
+        static func colors(for index: Int) -> [Color] {
+            priorityFills[index % priorityFills.count]
         }
-        
+
+        // MARK: Priority card border
+        static let border: Color      = adaptive(light: Palette.neutral150, dark: Palette.neutral700)
+        static let borderWidth: CGFloat = 2
+
         static let base:       [Color] = gradients[0]                                                  // fallback for generic/preview usage
-        static let onboarding: [Color] = [Control.fillTertiary,  Control.fillSecondary]                // onboarding card variant
+        static let onboarding: [Color] = [Control.fillTertiary,  Control.fillPrimary]                // onboarding card variant
         static let boost:      [Color] = [Status.warning.opacity(0.25), Status.warning.opacity(0.45)]  // CardBoost inner gradient
         static let wrapper:    [Color] = [Control.fillPrimary,   Status.info]                          // CardBoost outer wrapper gradient
         static let accent              =  Accent.primary                                               // boost "Limitless" label & bolt icon
-    }
-    
-    // MARK: Widget — iOS widget surface & text
-    
-    enum Widget {
-        static let bg: [Color] = [Surface.secondary, Control.fillSecondary, Control.fillTertiary] // three-stop widget gradient background
     }
     
 }
@@ -406,7 +501,7 @@ extension ButtonStyle where Self == GlassButtonStyle {
 
 struct ToastModifier: ViewModifier {
     @Binding var isPresented: Bool
-    let message: String
+    let message: LocalizedStringKey
     
     func body(content: Content) -> some View {
         ZStack(alignment: .bottom) {
@@ -430,8 +525,152 @@ struct ToastModifier: ViewModifier {
 }
 
 extension View {
-    func toast(isPresented: Binding<Bool>, message: String) -> some View {
+    func toast(isPresented: Binding<Bool>, message: LocalizedStringKey) -> some View {
         modifier(ToastModifier(isPresented: isPresented, message: message))
+    }
+}
+
+// ============================================================
+// MARK: - Noise Background
+// ============================================================
+
+struct NoiseConfig {
+    enum NoiseType { case random, grain, staticNoise }
+    enum GradientShape { case linear, easeIn, easeOut, sCurve }
+
+    var noiseType: NoiseType         = .grain
+    var topOpacity: Double           = 0.0
+    var bottomOpacity: Double        = 0.15
+    var gradientShape: GradientShape = .sCurve
+    var tintColor: Color             = .white   // white = no tint (multiply identity)
+    var noiseSize: CGFloat           = 50
+
+    // Light mode: coarse dark grain
+    static let `default` = NoiseConfig(
+        noiseType: .grain,
+        topOpacity: 0.0,
+        bottomOpacity: 0.30,
+        gradientShape: .sCurve,
+        tintColor: Color(uiColor: Palette.neutral950),
+        noiseSize: 50
+    )
+
+    // Dark mode: finer light grain
+    static let defaultDark = NoiseConfig(
+        noiseType: .grain,
+        topOpacity: 0.0,
+        bottomOpacity: 0.20,
+        gradientShape: .sCurve,
+        tintColor: Color(uiColor: Palette.neutral0),
+        noiseSize: 100
+    )
+}
+
+struct NoisyBackgroundView: View {
+    let config: NoiseConfig
+    let scrollOffset: CGFloat
+
+    private static let noiseImages: [NoiseConfig.NoiseType: UIImage] = makeAllNoise()
+
+    var body: some View {
+        ZStack {
+            Material.Surface.backdrop.ignoresSafeArea()
+            if let img = Self.noiseImages[config.noiseType] {
+                Canvas { ctx, size in
+                    let tile = CGSize(width: config.noiseSize, height: config.noiseSize)
+                    let resolved = ctx.resolve(Image(uiImage: img))
+                    var y: CGFloat = 0
+                    while y < size.height {
+                        var x: CGFloat = 0
+                        while x < size.width {
+                            ctx.draw(resolved, in: CGRect(origin: CGPoint(x: x, y: y), size: tile))
+                            x += tile.width
+                        }
+                        y += tile.height
+                    }
+                }
+                .colorMultiply(config.tintColor)
+                .blendMode(.overlay)
+                .mask(noiseMask)
+                .ignoresSafeArea()
+            }
+        }
+    }
+
+    private var noiseMask: some View {
+        let scrollShift = Double(scrollOffset) / 600.0
+        let stops = gradientStops(
+            top: config.topOpacity,
+            bottom: config.bottomOpacity,
+            shape: config.gradientShape,
+            scrollShift: scrollShift
+        )
+        return LinearGradient(stops: stops, startPoint: .top, endPoint: .bottom)
+    }
+
+    private func gradientStops(top: Double, bottom: Double,
+                                shape: NoiseConfig.GradientShape,
+                                scrollShift: Double) -> [Gradient.Stop] {
+        let anchor = max(0.0, 0.35 - scrollShift)
+        switch shape {
+        case .linear:
+            return [
+                .init(color: .black.opacity(top), location: 0),
+                .init(color: .black.opacity(bottom), location: 1)
+            ]
+        case .easeIn:
+            return [
+                .init(color: .black.opacity(top), location: 0),
+                .init(color: .black.opacity(top), location: anchor),
+                .init(color: .black.opacity(bottom), location: 1)
+            ]
+        case .easeOut:
+            return [
+                .init(color: .black.opacity(top), location: 0),
+                .init(color: .black.opacity(bottom * 0.6), location: anchor),
+                .init(color: .black.opacity(bottom), location: 1)
+            ]
+        case .sCurve:
+            let mid = (anchor + 1) / 2
+            return [
+                .init(color: .black.opacity(top), location: 0),
+                .init(color: .black.opacity(top), location: anchor),
+                .init(color: .black.opacity(bottom * 0.5), location: mid),
+                .init(color: .black.opacity(bottom), location: 1)
+            ]
+        }
+    }
+
+    private static func makeAllNoise() -> [NoiseConfig.NoiseType: UIImage] {
+        var result: [NoiseConfig.NoiseType: UIImage] = [:]
+        let size = CGSize(width: 250, height: 250)
+        let ctx = CIContext()
+        guard let filter = CIFilter(name: "CIRandomGenerator"),
+              let output = filter.outputImage else { return result }
+        let cropped = output.cropped(to: CGRect(origin: .zero, size: size))
+
+        if let cg = ctx.createCGImage(cropped, from: cropped.extent) {
+            result[.random] = UIImage(cgImage: cg)
+        }
+        if let desaturated = CIFilter(name: "CIColorControls", parameters: [
+               kCIInputImageKey: cropped,
+               kCIInputSaturationKey: 0.0 as NSNumber
+           ]),
+           let blurred = CIFilter(name: "CIGaussianBlur", parameters: [
+               kCIInputImageKey: desaturated.outputImage!,
+               kCIInputRadiusKey: 0.5 as NSNumber
+           ]),
+           let cg = ctx.createCGImage(blurred.outputImage!, from: cropped.extent) {
+            result[.grain] = UIImage(cgImage: cg)
+        }
+        if let posterized = CIFilter(name: "CIColorPosterize", parameters: [
+               kCIInputImageKey: cropped,
+               "inputLevels": 2 as NSNumber
+           ]),
+           let cg = ctx.createCGImage(posterized.outputImage!, from: cropped.extent) {
+            result[.staticNoise] = UIImage(cgImage: cg)
+        }
+        return result
     }
 }
 

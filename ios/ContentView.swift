@@ -4,9 +4,14 @@ import UIKit
 import WidgetKit
 #endif
 
+private struct ScrollAnchorKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     @State private var cards: [Card] = []
     @State private var priorityCardIds: [UUID] = []
     @State private var selectedCard: Card? = nil
@@ -26,11 +31,21 @@ struct ContentView: View {
     @State private var lockScreenOnboardingDismissed: Bool = false
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
+    @State private var showReviewPrompt: Bool = false
     /// Long-press–then–drag priority reorder (no list edit mode).
     @State private var priorityReorderLiftedId: UUID?
+    @State private var priorityReorderLiftedIndex: Int?
     @State private var priorityReorderTranslation: CGSize = .zero
+    /// Finger drift accumulated during the 0.45 s hold before the long press fires.
+    /// Subtracted from all subsequent translations so the card starts at offset 0.
+    @State private var priorityReorderDragBaseline: CGFloat = 0
+    /// Set while a card is being held before the long-press threshold fires (drives the charging scale).
+    @State private var priorityReorderPressingId: UUID?
     /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
     @State private var suppressNextPrioritySelectionId: UUID?
+
+    @State private var scrollOffset: CGFloat = 0
+    @State private var scrollAnchorY: CGFloat?
 
     /// Minimum list content-offset delta (pt) before toggling Recent sheet visibility.
     private let recentSheetScrollThreshold: CGFloat = 12
@@ -38,7 +53,6 @@ struct ContentView: View {
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
-
     init() {
         #if DEBUG
         if ContentView.isUITestLaunch {
@@ -76,6 +90,10 @@ struct ContentView: View {
         sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
     }
 
+    private var widgetPriorityCards: [Card] {
+        Array(autoPriorityCards.prefix(3))
+    }
+
     private var filteredNonPriorityCards: [Card] {
         let nonPriority = sortedCards.filter { !autoPriorityCardIds.contains($0.id) }
         if searchText.isEmpty { return nonPriority }
@@ -104,7 +122,10 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Material.Surface.backdrop.ignoresSafeArea()
+                NoisyBackgroundView(
+                    config: colorScheme == .dark ? .defaultDark : .default,
+                    scrollOffset: scrollOffset
+                ).ignoresSafeArea()
 
                 if cards.isEmpty {
                     emptyState
@@ -113,13 +134,12 @@ struct ContentView: View {
                 }
             }
             .simultaneousGesture(recentSheetDragGesture)
-            .navigationTitle("Miranda")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showSettings = true } label: {
-                        Image(systemName: "tortoise.fill")
-                            .font(AppFont.icon).fontWeight(.regular)
-                            .foregroundColor(Material.Icon.primary)
+                        Text("🐢")
+                            .font(.system(size: 24.2))
                     }
                 }
             }
@@ -172,7 +192,17 @@ struct ContentView: View {
             }
         }
         .sheet(item: $selectedCard) { card in
-            noteDetail(for: card)
+            NoteDetailView(
+                card: card,
+                selectedCard: $selectedCard,
+                cards: $cards,
+                excludedFromPriorityIds: $excludedFromPriorityIds,
+                autoPriorityCardIds: autoPriorityCardIds,
+                onSave: saveState,
+                onComplete: completeCard,
+                onCompletePriority: completePriorityCard
+            )
+            .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showCompleteTortoise, onDismiss: {
             showCompleteTortoise = false
@@ -181,6 +211,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showAnalytics) {
             AnalyticsDebugView()
+                .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(
@@ -190,20 +221,30 @@ struct ContentView: View {
                 },
                 onDeleteAll: { clearAllCards() },
                 onResetOnboarding: { resetOnboarding() },
+                onEnableReminders: {
+                    NotificationManager.shared.enableReminders(cards: widgetPriorityCards)
+                },
                 currentPriorityCard: priorityCards.first,
                 lastCapture: cards.max(by: { $0.timestamp < $1.timestamp }),
-                hasCaptures: !cards.isEmpty
+                hasCaptures: !cards.isEmpty,
+                onSendTestReminder: {
+                    #if DEBUG
+                    NotificationManager.shared.sendTestReminder(cards: widgetPriorityCards)
+                    #endif
+                }
             )
+            .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showWidgetInstructions) {
             NavigationStack {
-                WidgetInstructionsView()
+                HowToAddWidgetView()
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Done") { showWidgetInstructions = false }
                         }
                     }
             }
+            .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showCreateModal) {
             CreateCardModal(
@@ -216,6 +257,7 @@ struct ContentView: View {
                     startWithDictation = false
                 }
             )
+            .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showPriorityPicker) {
             PriorityPickerView(
@@ -239,6 +281,7 @@ struct ContentView: View {
                     showCreateModal = true
                 }
             )
+            .presentationBackground(Material.Surface.secondary)
         }
         .alert("Do you want to focus on achieving this?", isPresented: $showDoNowDialog) {
             Button("Yes, let's go!", role: .none) {
@@ -265,6 +308,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showRecentSheet) {
             recentSheet
+        }
+        .sheet(isPresented: $showReviewPrompt) {
+            ReviewPromptView()
         }
     }
 
@@ -326,9 +372,9 @@ struct ContentView: View {
                 let dy = value.translation.height
                 guard abs(dy) > abs(dx) else { return }
                 if dy < 0 {
-                    if !cards.isEmpty { showRecentSheet = true }
-                } else if dy > 0 {
                     showRecentSheet = false
+                } else if dy > 0 {
+                    if !cards.isEmpty { showRecentSheet = true }
                 }
             }
     }
@@ -336,6 +382,18 @@ struct ContentView: View {
     @ViewBuilder
     private var cardList: some View {
         List {
+            Color.clear
+                .frame(height: 0)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .background(GeometryReader { geo in
+                    Color.clear.preference(
+                        key: ScrollAnchorKey.self,
+                        value: geo.frame(in: .global).minY
+                    )
+                })
+
             if !widgetOnboardingDismissed && !autoPriorityCards.isEmpty && autoPriorityCards.count < 3 {
                 Section {
                     widgetOnboardingRow
@@ -362,6 +420,53 @@ struct ContentView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .onPreferenceChange(ScrollAnchorKey.self) { y in
+            if scrollAnchorY == nil { scrollAnchorY = y }
+            scrollOffset = max(0, (scrollAnchorY ?? y) - y)
+        }
+        // Disable list scrolling while a card is lifted so the DragGesture
+        // can track vertical movement without competing with the scroll view.
+        .scrollDisabled(priorityReorderPressingId != nil || priorityReorderLiftedId != nil)
+        // DragGesture lives at the List level (above individual cells) so it:
+        //   1. Always receives ongoing touches that started on any row, and
+        //   2. Never competes with cell-level swipe action pan recognizers.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    guard priorityReorderLiftedId != nil else { return }
+                    if priorityReorderTranslation == .zero && priorityReorderDragBaseline == 0 {
+                        // First update after lift: zero-out any drift accumulated during the hold.
+                        priorityReorderDragBaseline = value.translation.height
+                    }
+                    let calibrated = value.translation.height - priorityReorderDragBaseline
+                    priorityReorderTranslation = CGSize(width: 0, height: calibrated)
+                }
+                .onEnded { value in
+                    guard let idx = priorityReorderLiftedIndex else { return }
+                    let capturedId = priorityReorderLiftedId
+                    let calibrated = value.translation.height - priorityReorderDragBaseline
+                    let capturedTranslation = CGSize(width: 0, height: calibrated)
+
+                    // Phase 1: animate card back to neutral.
+                    priorityReorderPressingId = nil
+                    priorityReorderLiftedId = nil
+                    priorityReorderLiftedIndex = nil
+                    priorityReorderTranslation = .zero
+                    priorityReorderDragBaseline = 0
+
+                    // Phase 2: commit list reorder after the return spring settles.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                        commitPriorityReorderFromDrag(sourceIndex: idx, translation: capturedTranslation)
+                    }
+                    if let id = capturedId {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            if suppressNextPrioritySelectionId == id {
+                                suppressNextPrioritySelectionId = nil
+                            }
+                        }
+                    }
+                }
+        )
     }
 
     @ViewBuilder
@@ -382,7 +487,7 @@ struct ContentView: View {
         .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 withAnimation { widgetOnboardingDismissed = true }
@@ -411,7 +516,7 @@ struct ContentView: View {
         .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 withAnimation { lockScreenOnboardingDismissed = true }
@@ -483,6 +588,7 @@ struct ContentView: View {
     @ViewBuilder
     private func priorityRow(_ card: Card, index: Int = 0, allowDragReorder: Bool = false) -> some View {
         let liftedHere = priorityReorderLiftedId == card.id
+        let pressingHere = priorityReorderPressingId == card.id
         let reorderActiveElsewhere = allowDragReorder && priorityReorderLiftedId != nil && priorityReorderLiftedId != card.id
 
         Button {
@@ -494,56 +600,42 @@ struct ContentView: View {
             selectedCard = card
         } label: {
             Text(card.simplifiedText)
-                .font(AppFont.body)
+                .font(AppFont.priority)
                 .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.leading)
                 .lineLimit(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
                 .padding(.horizontal, 25)
-                .padding(.vertical, 50)
+                .padding(.vertical, 20)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(card.simplifiedText)
         .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
         .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
-        .background(
-            Group {
-                if allowDragReorder {
-                    LongPressDragGesture(
-                        cardId: card.id,
-                        cardIndex: index,
-                        liftedId: $priorityReorderLiftedId,
-                        translation: $priorityReorderTranslation,
-                        onStart: {
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                            suppressNextPrioritySelectionId = card.id
-                            priorityReorderLiftedId = card.id
-                        },
-                        onEnd: { dy in
-                            let id = card.id
-                            if priorityReorderLiftedId == id {
-                                commitPriorityReorderFromDrag(
-                                    sourceIndex: index,
-                                    translation: CGSize(width: 0, height: dy)
-                                )
-                            }
-                            priorityReorderLiftedId = nil
-                            priorityReorderTranslation = .zero
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                if suppressNextPrioritySelectionId == id {
-                                    suppressNextPrioritySelectionId = nil
-                                }
-                            }
-                        }
-                    )
-                }
+        .onLongPressGesture(
+            minimumDuration: 0.45,
+            maximumDistance: 50,
+            perform: {
+                guard allowDragReorder else { return }
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                suppressNextPrioritySelectionId = card.id
+                priorityReorderLiftedId = card.id
+                priorityReorderLiftedIndex = index
+            },
+            onPressingChanged: { isPressing in
+                guard allowDragReorder else { return }
+                priorityReorderPressingId = isPressing ? card.id : nil
             }
         )
-        .cardSurface(Material.Card.gradient(for: index))
+        .cardSurface(
+            Material.Card.colors(for: index),
+            borderColor: Material.Card.border,
+            borderWidth: Material.Card.borderWidth
+        )
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button { removePriorityCard(card) } label: {
                 Label("Remove", systemImage: "lightbulb.slash")
@@ -561,11 +653,19 @@ struct ContentView: View {
             .tint(.green)
         }
         .offset(y: liftedHere ? priorityReorderTranslation.height : 0)
-        .scaleEffect(liftedHere ? 1.03 : 1)
+        .scaleEffect(liftedHere ? 1.06 : (pressingHere ? 1.03 : 1.0))
         .opacity(reorderActiveElsewhere ? 0.55 : 1)
         .zIndex(liftedHere ? 1 : 0)
-        .animation(.interactiveSpring(response: 0.28, dampingFraction: 0.82), value: priorityReorderTranslation)
-        .animation(.spring(response: 0.34, dampingFraction: 0.78), value: liftedHere)
+        // During drag: interactive spring tracks the finger.
+        // On drop: slower, heavily-damped spring eases the card back without bounce.
+        .animation(
+            liftedHere
+                ? .interactiveSpring(response: 0.28, dampingFraction: 0.82)
+                : .spring(response: 0.45, dampingFraction: 0.95),
+            value: priorityReorderTranslation
+        )
+        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: pressingHere)
+        .animation(.spring(response: 0.25, dampingFraction: 0.92), value: liftedHere)
         .shadow(
             color: liftedHere ? Material.Elevation.shadow.opacity(0.32) : .clear,
             radius: liftedHere ? 28 : 0,
@@ -609,6 +709,7 @@ struct ContentView: View {
                 generator.notificationOccurred(.success)
                 withAnimation { excludedFromPriorityIds.removeAll { $0 == card.id } }
                 saveState()
+                maybePromptReview()
             } label: {
                 Label("Priority", systemImage: "lightbulb.fill")
             }
@@ -619,88 +720,6 @@ struct ContentView: View {
     // MARK: - Note Detail
 
     @ViewBuilder
-    private func noteDetail(for card: Card) -> some View {
-        let isPriority = autoPriorityCardIds.contains(card.id)
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 50) {
-                    Spacer(minLength: 80)
-                    if let emoji = card.emoji {
-                        Text(emoji).font(.system(size: 120))
-                    }
-                    Text(card.simplifiedText)
-                        .font(AppFont.title)
-                        .foregroundColor(Material.Text.primary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                    Spacer(minLength: 120)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .background(Material.Surface.tertiary)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { selectedCard = nil }
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 12) {
-                    Divider()
-
-                    Button {
-                        selectedCard = nil
-                        if isPriority { completePriorityCard(card) }
-                        else { completeCard(card) }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark").fontWeight(.heavy)
-                            Text("Complete")
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.solid)
-                    .padding(.horizontal, 20)
-
-                    if !isPriority {
-                        Button {
-                            excludedFromPriorityIds.removeAll { $0 == card.id }
-                            saveState()
-                            selectedCard = nil
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "lightbulb.fill").fontWeight(.heavy)
-                                Text("Turn this on")
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.filled)
-                        .padding(.horizontal, 20)
-                    } else {
-                        Button {
-                            if !excludedFromPriorityIds.contains(card.id) {
-                                excludedFromPriorityIds.append(card.id)
-                            }
-                            saveState()
-                            selectedCard = nil
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "lightbulb.slash.fill").fontWeight(.heavy)
-                                Text("Turn this off")
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.filled)
-                        .padding(.horizontal, 20)
-                    }
-                }
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-                .background(Material.Surface.tertiary)
-            }
-        }
-        .onAppear { Analytics.shared.trackCardViewed() }
-    }
 
     // MARK: - Completion Celebration
 
@@ -717,6 +736,7 @@ struct ContentView: View {
         .padding(.vertical, 24)
         .presentationDetents([.height(200)])
         .presentationDragIndicator(.visible)
+        .presentationBackground(Material.Surface.secondary)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 showCompleteTortoise = false
@@ -788,6 +808,7 @@ struct ContentView: View {
             cards.removeAll { $0.id == card.id }
             priorityCardIds.removeAll { $0 == card.id }
         }
+        maybePromptReview()
     }
 
     private func deleteCard(_ card: Card) {
@@ -820,6 +841,7 @@ struct ContentView: View {
             cards.removeAll { $0.id == card.id }
             priorityCardIds.removeAll { $0 == card.id }
         }
+        maybePromptReview()
         if completionAnimationEnabled {
             // Reset first so a stuck `true` (e.g. sheet dismissed while another sheet was open)
             // still triggers a fresh presentation when the user turns the toggle back on.
@@ -830,6 +852,18 @@ struct ContentView: View {
         } else {
             showCompleteTortoise = false
             schedulePriorityPickerIfNeededAfterCompletion()
+        }
+    }
+
+    private func maybePromptReview() {
+        Task {
+            guard await ReviewManager.shared.shouldShowPrompt() else { return }
+            let attempt = ReviewManager.shared.currentAttemptNumber
+            ReviewManager.shared.recordPromptShown()
+            Analytics.shared.trackReviewPromptShown(attempt: attempt)
+            // Small delay so any swipe/completion animation finishes first.
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            await MainActor.run { showReviewPrompt = true }
         }
     }
 
@@ -917,8 +951,6 @@ struct ContentView: View {
         UserDefaults.standard.set(lockScreenOnboardingDismissed, forKey: "lockScreenOnboardingDismissed")
         UserDefaults.standard.set(excludedFromPriorityIds.map { $0.uuidString }, forKey: "excludedFromPriorityIds")
 
-        let eligibleForPriority = sortedCards.filter { !excludedFromPriorityIds.contains($0.id) }
-        let widgetPriorityCards = Array(eligibleForPriority.prefix(3))
         SharedCardManager.shared.saveCurrentCard(widgetPriorityCards.first)
         SharedCardManager.shared.savePriorityCards(widgetPriorityCards)
         SharedCardManager.shared.saveAllCards(cards)
@@ -927,6 +959,10 @@ struct ContentView: View {
         WidgetKit.WidgetCenter.shared.reloadAllTimelines()
         #endif
 
+        rescheduleReminders()
+    }
+
+    private func rescheduleReminders() {
         NotificationManager.shared.schedulePriorityUpdate(cards: widgetPriorityCards)
         NotificationManager.shared.scheduleDailyDigest(cards: widgetPriorityCards)
     }
@@ -962,6 +998,177 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Note Detail View
+
+struct NoteDetailView: View {
+    let card: Card
+    @Binding var selectedCard: Card?
+    @Binding var cards: [Card]
+    @Binding var excludedFromPriorityIds: [UUID]
+    let autoPriorityCardIds: Set<UUID>
+    let onSave: () -> Void
+    let onComplete: (Card) -> Void
+    let onCompletePriority: (Card) -> Void
+
+    @State private var isEditing = false
+    @State private var editText = ""
+    @FocusState private var isTextFocused: Bool
+
+    private var isPriority: Bool {
+        autoPriorityCardIds.contains(card.id)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 50) {
+                    if isEditing {
+                        ZStack(alignment: .topLeading) {
+                            TextEditor(text: $editText)
+                                .focused($isTextFocused)
+                                .scrollContentBackground(.hidden)
+                                .font(AppFont.body)
+                                .padding(8)
+                            if editText.isEmpty {
+                                Text("What do you want to capture?")
+                                    .font(AppFont.body)
+                                    .foregroundColor(Material.Text.secondary)
+                                    .padding(.top, 16)
+                                    .padding(.leading, 13)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                        .frame(minHeight: 120)
+                        .background(Material.Surface.secondary)
+                        .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                    } else {
+                        Spacer(minLength: 80)
+                        if let emoji = card.emoji {
+                            Text(emoji).font(.system(size: 120))
+                        }
+                        Text(card.simplifiedText)
+                            .font(AppFont.title)
+                            .foregroundColor(Material.Text.primary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                        Spacer(minLength: 120)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .background(Material.Surface.tertiary)
+            .navigationTitle(isEditing ? "Edit Note" : "")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isEditing {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button {
+                            isEditing = false
+                            editText = ""
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(action: saveEdit) {
+                            Image(systemName: "checkmark")
+                        }
+                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                } else {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { selectedCard = nil }
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Edit") {
+                            editText = card.simplifiedText
+                            isEditing = true
+                        }
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !isEditing {
+                    VStack(spacing: 12) {
+                        Divider()
+
+                        Button {
+                            selectedCard = nil
+                            if isPriority { onCompletePriority(card) }
+                            else { onComplete(card) }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark").fontWeight(.heavy)
+                                Text("Complete")
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.solid)
+                        .padding(.horizontal, 20)
+
+                        if !isPriority {
+                            Button {
+                                excludedFromPriorityIds.removeAll { $0 == card.id }
+                                onSave()
+                                selectedCard = nil
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "lightbulb.fill").fontWeight(.heavy)
+                                    Text("Turn this on")
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.filled)
+                            .padding(.horizontal, 20)
+                        } else {
+                            Button {
+                                if !excludedFromPriorityIds.contains(card.id) {
+                                    excludedFromPriorityIds.append(card.id)
+                                }
+                                onSave()
+                                selectedCard = nil
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "lightbulb.slash.fill").fontWeight(.heavy)
+                                    Text("Turn this off")
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.filled)
+                            .padding(.horizontal, 20)
+                        }
+                    }
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                    .background(Material.Surface.tertiary)
+                }
+            }
+        }
+        .onChange(of: isEditing) { _, newValue in
+            if newValue { isTextFocused = true }
+        }
+        .onAppear { Analytics.shared.trackCardViewed() }
+    }
+
+    private func saveEdit() {
+        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if let idx = cards.firstIndex(where: { $0.id == card.id }) {
+            cards[idx] = Card(
+                id: card.id,
+                originalText: trimmed,
+                simplifiedText: trimmed,
+                emoji: card.emoji,
+                timestamp: card.timestamp
+            )
+        }
+        onSave()
+        isEditing = false
+    }
+}
+
 // MARK: - Create Card Modal
 
 struct CreateCardModal: View {
@@ -970,37 +1177,72 @@ struct CreateCardModal: View {
     let onSave: () -> Void
     let onCancel: () -> Void
     @FocusState private var isTextFocused: Bool
+    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
+    @StateObject private var dictation = SpeechDictationManager()
+    /// Text present when dictation began, so live transcript extends it.
+    @State private var baseText: String = ""
 
     let allCommonHints = [
-        "Flush the toilet 🚽", "Dance for 10 seconds 💃", "Don't forget your keys 🔑",
-        "Prepare slides for presentation 📊", "Buy an umbrella ☂️", "Charge your phone 🔋",
-        "Take your medicine 💊", "Water the plants 🪴", "Call mom 📞", "Pay the bills 💳",
-        "Check the mail 📬", "Lock the door 🔐", "Turn off the lights 💡",
-        "Take out the trash 🗑️", "Feed the pet 🐕", "Bring reusable bags 🛍️",
-        "Set an alarm ⏰", "Backup your files 💾", "Reply to that email 📧",
-        "Schedule dentist appointment 🦷"
+        String(localized: "Flush the toilet 🚽",                   comment: "Common hint shown in create note screen"),
+        String(localized: "Dance for 10 seconds 💃",               comment: "Common hint shown in create note screen"),
+        String(localized: "Don't forget your keys 🔑",             comment: "Common hint shown in create note screen"),
+        String(localized: "Prepare slides for presentation 📊",    comment: "Common hint shown in create note screen"),
+        String(localized: "Buy an umbrella ☂️",                    comment: "Common hint shown in create note screen"),
+        String(localized: "Charge your phone 🔋",                  comment: "Common hint shown in create note screen"),
+        String(localized: "Take your medicine 💊",                 comment: "Common hint shown in create note screen"),
+        String(localized: "Water the plants 🪴",                   comment: "Common hint shown in create note screen"),
+        String(localized: "Call mom 📞",                           comment: "Common hint shown in create note screen"),
+        String(localized: "Pay the bills 💳",                      comment: "Common hint shown in create note screen"),
+        String(localized: "Check the mail 📬",                     comment: "Common hint shown in create note screen"),
+        String(localized: "Lock the door 🔐",                      comment: "Common hint shown in create note screen"),
+        String(localized: "Turn off the lights 💡",                comment: "Common hint shown in create note screen"),
+        String(localized: "Take out the trash 🗑️",                 comment: "Common hint shown in create note screen"),
+        String(localized: "Feed the pet 🐕",                       comment: "Common hint shown in create note screen"),
+        String(localized: "Bring reusable bags 🛍️",                comment: "Common hint shown in create note screen"),
+        String(localized: "Set an alarm ⏰",                        comment: "Common hint shown in create note screen"),
+        String(localized: "Backup your files 💾",                  comment: "Common hint shown in create note screen"),
+        String(localized: "Reply to that email 📧",                comment: "Common hint shown in create note screen"),
+        String(localized: "Schedule dentist appointment 🦷",       comment: "Common hint shown in create note screen"),
     ]
 
     @State private var commonHints: [String] = []
 
     let randomSuggestions = [
-        "Compliment your coffee mug ☕️", "Name all the colors you can see 🌈",
-        "Count backwards from 10 in Spanish 🇪🇸", "Do a silly walk to the kitchen 🚶",
-        "Smell a lemon 🍋", "High-five yourself 🙌", "Whisper 'good job' to your plant 🪴",
-        "Touch something blue 💙", "Make a weird face in the mirror 😜",
-        "Pet an imaginary dog 🐕", "Sing one word of your favorite song 🎵",
-        "Stretch like a cat 🐱", "Blink 20 times really fast 👁️",
-        "Say 'potato' in 3 different accents 🥔", "Spin around three times slowly 🌀",
-        "Name your shoes out loud 👟", "Wave at something random 👋",
-        "Hum the Jeopardy theme 🎶", "Balance on one foot for 10 seconds 🦩",
-        "Make up a word and use it in a sentence 💭", "Count how many pens you have ✍️",
-        "Tap your nose 7 times 👃", "Say the alphabet backwards from G 🔤",
-        "Wiggle your toes 🦶", "Name three things you're grateful for 🙏",
-        "Do 5 jumping jacks 🤸", "Drink a glass of water 💧", "Take 3 deep breaths 🫁",
-        "Look out the window for 30 seconds 🪟",
-        "Write your name with your non-dominant hand ✏️", "Snap your fingers 10 times 🫰",
-        "Touch your elbows together 💪", "Make a bird sound 🐦",
-        "Pretend you're a robot for 15 seconds 🤖", "Organize one thing on your desk 📎"
+        String(localized: "Compliment your coffee mug ☕️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Name all the colors you can see 🌈",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Count backwards from 10 in Spanish 🇪🇸",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Do a silly walk to the kitchen 🚶",                  comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Smell a lemon 🍋",                                   comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "High-five yourself 🙌",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Whisper 'good job' to your plant 🪴",                comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Touch something blue 💙",                            comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Make a weird face in the mirror 😜",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Pet an imaginary dog 🐕",                            comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Sing one word of your favorite song 🎵",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Stretch like a cat 🐱",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Blink 20 times really fast 👁️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Say 'potato' in 3 different accents 🥔",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Spin around three times slowly 🌀",                  comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Name your shoes out loud 👟",                        comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Wave at something random 👋",                        comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Hum the Jeopardy theme 🎶",                          comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Balance on one foot for 10 seconds 🦩",              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Make up a word and use it in a sentence 💭",         comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Count how many pens you have ✍️",                    comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Tap your nose 7 times 👃",                           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Say the alphabet backwards from G 🔤",               comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Wiggle your toes 🦶",                                comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Name three things you're grateful for 🙏",           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Do 5 jumping jacks 🤸",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Drink a glass of water 💧",                          comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Take 3 deep breaths 🫁",                             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Look out the window for 30 seconds 🪟",              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Write your name with your non-dominant hand ✏️",     comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Snap your fingers 10 times 🫰",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Touch your elbows together 💪",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Make a bird sound 🐦",                               comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Pretend you're a robot for 15 seconds 🤖",           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
+        String(localized: "Organize one thing on your desk 📎",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
     ]
 
     var body: some View {
@@ -1026,6 +1268,34 @@ struct CreateCardModal: View {
                 .background(Material.Surface.secondary)
                 .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
 
+                if audioInputEnabled {
+                    HStack(spacing: 12) {
+                        Button {
+                            dictation.toggle()
+                        } label: {
+                            Label(
+                                dictation.isRecording ? "Stop" : "Dictate",
+                                systemImage: dictation.isRecording ? "stop.fill" : "mic.fill"
+                            )
+                        }
+                        .buttonStyle(.filled)
+
+                        if dictation.isRecording {
+                            HStack(spacing: 6) {
+                                Image(systemName: "waveform")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.accent)
+                                    .symbolEffect(.variableColor.iterative, options: .repeating)
+                                Text("Listening…")
+                                    .font(AppFont.caption)
+                                    .foregroundColor(Material.Text.secondary)
+                            }
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(commonHints, id: \.self) { hint in
                         ListSuggestion(text: hint) { text = hint }
@@ -1040,11 +1310,17 @@ struct CreateCardModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("Cancel") {
+                        dictation.stop()
+                        onCancel()
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: onSave)
-                        .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("Save") {
+                        dictation.stop()
+                        onSave()
+                    }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 ToolbarItem(placement: .keyboard) {
                     Button {
@@ -1056,8 +1332,32 @@ struct CreateCardModal: View {
                 }
             }
             .onAppear {
-                isTextFocused = true
                 commonHints = Array(allCommonHints.shuffled().prefix(3))
+                baseText = text
+                if startWithDictation && audioInputEnabled {
+                    dictation.requestAuthorizationAndStart()
+                } else {
+                    isTextFocused = true
+                }
+            }
+            .onChange(of: dictation.transcript) { _, newValue in
+                text = SpeechDictationManager.compose(base: baseText, transcript: newValue)
+            }
+            .onChange(of: dictation.permissionDenied) { _, denied in
+                if denied { isTextFocused = true }
+            }
+            .onDisappear {
+                dictation.stop()
+            }
+            .alert("Microphone access needed", isPresented: $dictation.permissionDenied) {
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("To capture notes with your voice, allow microphone and speech recognition access in Settings. You can still type your note.")
             }
         }
     }

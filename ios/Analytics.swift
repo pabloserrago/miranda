@@ -46,6 +46,18 @@ class Analytics {
     func trackRandomCardGenerated() {
         logEvent("random_card_generated")
     }
+
+    func trackReviewPromptShown(attempt: Int) {
+        logEvent("review_prompt_shown", properties: ["attempt": attempt])
+    }
+
+    func trackReviewSentimentPositive() {
+        logEvent("review_sentiment_positive")
+    }
+
+    func trackReviewSentimentNegative() {
+        logEvent("review_sentiment_negative")
+    }
     
     // MARK: - Statistics
     
@@ -126,7 +138,7 @@ class Analytics {
         UserDefaults.standard.set(current + 1, forKey: "analytics_counter_\(key)")
     }
     
-    private func getCounter(_ key: String) -> Int {
+    func getCounter(_ key: String) -> Int {
         return UserDefaults.standard.integer(forKey: "analytics_counter_\(key)")
     }
     
