@@ -16,36 +16,11 @@
 		</dict>
 	</array>
 
-	<!-- Data types collected and sent off-device (anonymous analytics + feedback) -->
+	<!-- No data is collected or sent off-device: the Supabase backend
+	     (analytics upload + feedback) is disabled via Secrets.supabaseEnabled.
+	     If it is re-enabled, restore OtherUsageData + OtherUserContent here. -->
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array>
-		<!-- Anonymous usage events: app opens, notes created/completed, feature interactions -->
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAnalyticsAndProductImprovement</string>
-			</array>
-		</dict>
-		<!-- Optional user-written feedback messages (category + free text) -->
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-	</array>
+	<array/>
 
 	<!-- App does not track users across other apps or websites -->
 	<key>NSPrivacyTracking</key>

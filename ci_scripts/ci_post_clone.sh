@@ -8,8 +8,8 @@
 #   SUPABASE_URL        e.g. https://xxxx.supabase.co
 #   SUPABASE_ANON_KEY   the Supabase anon (public client) key
 #
-# Without this file the app fails to compile (Analytics.swift / FeedbackView.swift
-# reference Secrets.supabaseURL and Secrets.supabaseAnonKey).
+# Without this file the app fails to compile (Analytics.swift / FeedbackView.swift /
+# SettingsView.swift reference Secrets.supabaseEnabled, .supabaseURL and .supabaseAnonKey).
 set -e
 
 SECRETS_PATH="$CI_PRIMARY_REPOSITORY_PATH/ios/Secrets.swift"
@@ -22,6 +22,11 @@ cat > "$SECRETS_PATH" <<EOF
 import Foundation
 
 enum Secrets {
+    /// Master switch for the Supabase backend (analytics upload + feedback).
+    /// Currently off: nothing leaves the device. When re-enabling, also update
+    /// PRIVACY.md, PrivacyInfo.xcprivacy, and the App Store privacy questionnaire.
+    static let supabaseEnabled = false
+
     static let supabaseURL = "${SUPABASE_URL}"
     static let supabaseAnonKey = "${SUPABASE_ANON_KEY}"
 }

@@ -1271,7 +1271,12 @@ struct CreateCardModal: View {
                 if audioInputEnabled {
                     HStack(spacing: 12) {
                         Button {
-                            dictation.toggle()
+                            if dictation.isRecording {
+                                dictation.stop()
+                            } else {
+                                baseText = text
+                                dictation.requestAuthorizationAndStart()
+                            }
                         } label: {
                             Label(
                                 dictation.isRecording ? "Stop" : "Dictate",
@@ -1346,6 +1351,9 @@ struct CreateCardModal: View {
             .onChange(of: dictation.permissionDenied) { _, denied in
                 if denied { isTextFocused = true }
             }
+            .onChange(of: dictation.onDeviceUnavailable) { _, unavailable in
+                if unavailable { isTextFocused = true }
+            }
             .onDisappear {
                 dictation.stop()
             }
@@ -1358,6 +1366,11 @@ struct CreateCardModal: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("To capture notes with your voice, allow microphone and speech recognition access in Settings. You can still type your note.")
+            }
+            .alert("Dictation unavailable", isPresented: $dictation.onDeviceUnavailable) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("On-device dictation isn't available for your language on this device. You can still type your note.")
             }
         }
     }

@@ -304,19 +304,40 @@ struct SettingsView: View {
                         }
                     }
                     
-                    // 4. Submit a Request
+                    // 4. Submit a Request (requires the Supabase backend)
+                    if Secrets.supabaseEnabled {
+                        Section {
+                            Button(action: {
+                                showFeedback = true
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "checkmark.bubble.fill")
+                                        .font(AppFont.icon)
+                                        .foregroundColor(Material.Text.primary)
+                                        .frame(width: 24, height: 24)
+                                    Text("Submit a Request")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(AppFont.caption)
+                                        .foregroundColor(Material.Text.secondary)
+                                }
+                            }
+                            .tint(Material.Text.primary)
+                            .listRowBackground(Material.Surface.primary)
+                        }
+                    }
+                    
+                    // 5. Privacy Policy
                     Section {
-                        Button(action: {
-                            showFeedback = true
-                        }) {
+                        Link(destination: URL(string: "https://miranda.app/privacy")!) {
                             HStack(spacing: 12) {
-                                Image(systemName: "checkmark.bubble.fill")
+                                Image(systemName: "hand.raised.fill")
                                     .font(AppFont.icon)
                                     .foregroundColor(Material.Text.primary)
                                     .frame(width: 24, height: 24)
-                                Text("Submit a Request")
+                                Text("Privacy Policy")
                                 Spacer()
-                                Image(systemName: "chevron.right")
+                                Image(systemName: "arrow.up.right")
                                     .font(AppFont.caption)
                                     .foregroundColor(Material.Text.secondary)
                             }

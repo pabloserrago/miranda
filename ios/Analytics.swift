@@ -91,8 +91,11 @@ class Analytics {
         
         saveEvents(events)
         
-        // Send to Supabase (fire-and-forget)
-        sendToSupabase(event: name, properties: properties)
+        // Upload only when the Supabase backend is enabled; otherwise
+        // analytics stay strictly on-device (see PRIVACY.md).
+        if Secrets.supabaseEnabled {
+            sendToSupabase(event: name, properties: properties)
+        }
         
         // Print to console for debugging
         print("📊 Analytics: \(name) - \(properties)")
