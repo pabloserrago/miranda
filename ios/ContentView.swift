@@ -46,7 +46,7 @@ struct ContentView: View {
     @State private var priorityReorderLiftedId: UUID?
     @State private var priorityReorderLiftedIndex: Int?
     @State private var priorityReorderTranslation: CGSize = .zero
-    /// Finger drift accumulated during the 0.45 s hold before the long press fires.
+    /// Finger drift accumulated during the hold before the long press fires.
     /// Subtracted from all subsequent translations so the card starts at offset 0.
     @State private var priorityReorderDragBaseline: CGFloat = 0
     /// Slot the lifted card would land on if dropped now; ticks haptically when it changes.
@@ -56,8 +56,10 @@ struct ContentView: View {
     @State private var priorityReorderSettlingId: UUID?
     /// Rendered height (including list insets) of each priority row, by index.
     @State private var priorityRowHeights: [Int: CGFloat] = [:]
-    /// Set while a card is being held before the long-press threshold fires (drives the charging scale).
-    @State private var priorityReorderPressingId: UUID?
+    /// Set while a card is being held before the long-press threshold fires (drives
+    /// the charging scale). GestureState so it auto-resets when the press ends,
+    /// cancels, or succeeds — it can never get stuck.
+    @GestureState private var priorityReorderPressingId: UUID?
     /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
     @State private var suppressNextPrioritySelectionId: UUID?
 
@@ -465,6 +467,8 @@ struct ContentView: View {
         // DragGesture lives at the List level (above individual cells) so it:
         //   1. Always receives ongoing touches that started on any row, and
         //   2. Never competes with cell-level swipe action pan recognizers.
+        // minimumDistance must stay ≥ 10: at 0 the gesture swallows taps on
+        // the UIKit swipe-action buttons (Remove/Delete stop responding).
         .simultaneousGesture(
             DragGesture(minimumDistance: 10)
                 .onChanged { value in
@@ -485,45 +489,55 @@ struct ContentView: View {
                     }
                 }
                 .onEnded { value in
-                    guard let idx = priorityReorderLiftedIndex, priorityReorderSettlingId == nil else { return }
-                    let capturedId = priorityReorderLiftedId
+                    guard let source = priorityReorderLiftedIndex, priorityReorderSettlingId == nil else { return }
+                    // Fold in any movement the last onChanged missed before settling.
                     let calibrated = value.translation.height - priorityReorderDragBaseline
-                    let target = projectedPriorityIndex(sourceIndex: idx, translationHeight: calibrated)
-
-                    // Phase 1: spring the lifted card into the gap the live
-                    // shuffle opened; settlingId relaxes its scale and shadow.
-                    priorityReorderSettlingId = capturedId
-                    priorityReorderPressingId = nil
-                    priorityReorderTranslation = CGSize(
-                        width: 0,
-                        height: settleTranslationForDrop(sourceIndex: idx, targetIndex: target)
-                    )
-
-                    // Phase 2: once the spring lands, swap the array without
-                    // animation — the reordered layout is pixel-identical to
-                    // the settled visuals, so nothing on screen moves.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        var transaction = Transaction()
-                        transaction.disablesAnimations = true
-                        withTransaction(transaction) {
-                            movePriorityFromIndex(from: idx, to: target)
-                            priorityReorderLiftedId = nil
-                            priorityReorderLiftedIndex = nil
-                            priorityReorderTranslation = .zero
-                            priorityReorderDragBaseline = 0
-                            priorityReorderProjectedIndex = nil
-                            priorityReorderSettlingId = nil
-                        }
-                    }
-                    if let id = capturedId {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                            if suppressNextPrioritySelectionId == id {
-                                suppressNextPrioritySelectionId = nil
-                            }
-                        }
-                    }
+                    priorityReorderProjectedIndex = projectedPriorityIndex(sourceIndex: source, translationHeight: calibrated)
+                    settleLiftedPriorityCard()
                 }
         )
+    }
+
+    /// Drops the lifted card: springs it into the projected slot, then swaps
+    /// the array once the spring lands. Called from the drag's onEnded and —
+    /// for a lift released without any drag — from the row Button's tap
+    /// (touch-up fires the Button even after a long stationary hold).
+    private func settleLiftedPriorityCard() {
+        guard let idx = priorityReorderLiftedIndex, priorityReorderSettlingId == nil else { return }
+        let capturedId = priorityReorderLiftedId
+        let target = priorityReorderProjectedIndex ?? idx
+
+        // Phase 1: spring the lifted card into the gap the live shuffle
+        // opened; settlingId relaxes its scale and shadow.
+        priorityReorderSettlingId = capturedId
+        priorityReorderTranslation = CGSize(
+            width: 0,
+            height: settleTranslationForDrop(sourceIndex: idx, targetIndex: target)
+        )
+
+        // Phase 2: once the spring lands, swap the array without animation —
+        // the reordered layout is pixel-identical to the settled visuals, so
+        // nothing on screen moves.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                movePriorityFromIndex(from: idx, to: target)
+                priorityReorderLiftedId = nil
+                priorityReorderLiftedIndex = nil
+                priorityReorderTranslation = .zero
+                priorityReorderDragBaseline = 0
+                priorityReorderProjectedIndex = nil
+                priorityReorderSettlingId = nil
+            }
+        }
+        if let id = capturedId {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                if suppressNextPrioritySelectionId == id {
+                    suppressNextPrioritySelectionId = nil
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -664,6 +678,13 @@ struct ContentView: View {
         }()
 
         Button {
+            // A lift released without any drag never activates the reorder
+            // DragGesture (10pt minimum), but touch-up still fires this
+            // action — use it as the drop signal so the state can't get stuck.
+            if priorityReorderLiftedId == card.id {
+                settleLiftedPriorityCard()
+                return
+            }
             guard priorityReorderLiftedId == nil else { return }
             if suppressNextPrioritySelectionId == card.id {
                 suppressNextPrioritySelectionId = nil
@@ -685,24 +706,24 @@ struct ContentView: View {
         .accessibilityLabel(card.simplifiedText)
         .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
         .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
-        .onLongPressGesture(
-            // Short enough that the lift (and its haptic) fires while the
-            // finger is still stationary in a natural grab-and-pull gesture.
-            minimumDuration: 0.35,
-            maximumDistance: 50,
-            perform: {
-                guard allowDragReorder, priorityReorderSettlingId == nil else { return }
-                Haptics.reorderLift()
-                suppressNextPrioritySelectionId = card.id
-                priorityReorderLiftedId = card.id
-                priorityReorderLiftedIndex = index
-                priorityReorderProjectedIndex = index
-            },
-            onPressingChanged: { isPressing in
-                guard allowDragReorder else { return }
-                priorityReorderPressingId = isPressing ? card.id : nil
-                if isPressing { Haptics.prepareReorderLift() }
-            }
+        // simultaneousGesture, NOT .onLongPressGesture: on a Button the plain
+        // long press loses gesture arbitration to the button's own press and
+        // only fires once movement cancels it — a stationary hold never lifted.
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.35, maximumDistance: 50)
+                .updating($priorityReorderPressingId) { _, state, _ in
+                    guard allowDragReorder else { return }
+                    if state == nil { Haptics.prepareReorderLift() }
+                    state = card.id
+                }
+                .onEnded { _ in
+                    guard allowDragReorder, priorityReorderSettlingId == nil else { return }
+                    Haptics.reorderLift()
+                    suppressNextPrioritySelectionId = card.id
+                    priorityReorderLiftedId = card.id
+                    priorityReorderLiftedIndex = index
+                    priorityReorderProjectedIndex = index
+                }
         )
         .cardSurface(
             Material.Card.colors(for: index),
