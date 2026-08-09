@@ -399,15 +399,11 @@ enum Material {
             [Control.fillTertiary, Control.fillSecondary, Control.fillPrimary], // smoother three-stop sweep
         ]
 
-        // MARK: Priority card fills — flat neutral surface for all positions
-        private static let priorityFills: [[Color]] = [
-            [adaptive(light: Palette.neutral0, dark: Palette.neutral950)],
-            [adaptive(light: Palette.neutral50, dark: Palette.neutral900)],
-            [adaptive(light: Palette.neutral100, dark: Palette.neutral800)],
-        ]
+        // MARK: Priority card fill — single flat neutral surface for all positions
+        private static let priorityFill: [Color] = [adaptive(light: Palette.neutral0, dark: Palette.neutral950)]
 
         static func colors(for index: Int) -> [Color] {
-            priorityFills[index % priorityFills.count]
+            priorityFill
         }
 
         // MARK: Priority card border
