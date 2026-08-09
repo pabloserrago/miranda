@@ -83,7 +83,7 @@ struct FeedbackView: View {
                         }
                         .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.solid)
+                    .primaryButtonStyle()
                     .disabled(!canSubmit)
                     .opacity(canSubmit ? 1 : 0.4)
                 }

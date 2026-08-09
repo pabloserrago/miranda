@@ -360,7 +360,7 @@ struct ContentView: View {
                     Text("Note")
                 }
             }
-            .buttonStyle(.solid)
+            .primaryButtonStyle()
 
             Spacer()
         }
@@ -692,7 +692,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("recent-note-\(card.id.uuidString)")
-        .cardSurface([Material.Control.fillSecondary], shadow: false)
+        .cardSurface([Material.Control.fillSecondary], shadow: false, glass: false)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -1110,7 +1110,7 @@ struct NoteDetailView: View {
                             }
                             .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.solid)
+                        .primaryButtonStyle()
                         .padding(.horizontal, 20)
 
                         if !isPriority {
@@ -1395,7 +1395,7 @@ struct PriorityPickerView: View {
                                     Text("Note")
                                 }
                             }
-                            .buttonStyle(.solid)
+                            .primaryButtonStyle()
                         }
 
                         Spacer()

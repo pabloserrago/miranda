@@ -377,8 +377,8 @@ enum Material {
     // MARK: Elevation — shadow & overlay
     
     enum Elevation {
-        static let shadow    = adaptive(light: Palette.neutral200, dark: Palette.neutral950) // CardSurface, CloseButton, toast, toolbar buttons, settings cards, widget capsule
-        static let scrim     = adaptive(light: Palette.neutral800, dark: Palette.neutral800) // drawer drag handle track fill
+        static let shadow    = adaptive(light: Palette.neutral400, dark: Palette.neutral950) // CardSurface, CloseButton, toast, toolbar buttons, settings cards, widget capsule
+        static let scrim     = adaptive(light: Palette.neutral950, dark: Palette.neutral950) // drawer drag handle track fill
     }
     
     // MARK: Status — semantic colored signals
@@ -407,8 +407,8 @@ enum Material {
         }
 
         // MARK: Priority card border
-        static let border: Color      = adaptive(light: Palette.neutral150, dark: Palette.neutral700)
-        static let borderWidth: CGFloat = 2
+        static let border: Color      = adaptive(light: Palette.neutral0, dark: Palette.neutral700)
+        static let borderWidth: CGFloat = 3
 
         static let base:       [Color] = gradients[0]                                                  // fallback for generic/preview usage
         static let onboarding: [Color] = [Control.fillTertiary,  Control.fillPrimary]                // onboarding card variant
@@ -471,15 +471,25 @@ struct SolidButtonStyle: ButtonStyle {
 }
 
 struct FilledButtonStyle: ButtonStyle {
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(AppFont.body).fontWeight(.medium)
-            .foregroundColor(Material.Text.primary)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 24)
-            .background(Material.Control.fillSecondary)
-            .clipShape(Capsule())
-            .modifier(PressEffect(isPressed: configuration.isPressed))
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .font(AppFont.body).fontWeight(.medium)
+                .foregroundColor(Material.Text.primary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .glassEffect(.regular.interactive(), in: Capsule())
+        } else {
+            configuration.label
+                .font(AppFont.body).fontWeight(.medium)
+                .foregroundColor(Material.Text.primary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .background(Material.Control.fillSecondary)
+                .clipShape(Capsule())
+                .modifier(PressEffect(isPressed: configuration.isPressed))
+        }
     }
 }
 
@@ -505,6 +515,22 @@ extension ButtonStyle where Self == FilledButtonStyle {
 
 extension ButtonStyle where Self == GhostButtonStyle {
     static var ghost: GhostButtonStyle { .init() }
+}
+
+extension View {
+    // Primary call-to-action. Native prominent Liquid Glass on iOS 26,
+    // solid accent capsule on earlier versions.
+    @ViewBuilder
+    func primaryButtonStyle() -> some View {
+        if #available(iOS 26.0, *) {
+            self
+                .font(AppFont.body.weight(.semibold))
+                .buttonStyle(.glassProminent)
+                .tint(Material.Accent.primary)
+        } else {
+            self.buttonStyle(.solid)
+        }
+    }
 }
 
 struct GlassButtonStyle: ButtonStyle {
@@ -544,7 +570,7 @@ extension ButtonStyle where Self == GlassButtonStyle {
                 Text("Note")
             }
         }
-        .buttonStyle(.solid)
+        .primaryButtonStyle()
         
         Button {
         } label: {

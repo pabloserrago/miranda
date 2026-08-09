@@ -66,7 +66,7 @@ struct ReviewPromptView: View {
                     Text("Yes, love it")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.solid)
+                .primaryButtonStyle()
 
                 Button {
                     Analytics.shared.trackReviewSentimentNegative()
@@ -107,7 +107,7 @@ struct ReviewPromptView: View {
                     Text("Rate the App")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.solid)
+                .primaryButtonStyle()
 
                 Button { dismiss() } label: {
                     Text("Maybe later")

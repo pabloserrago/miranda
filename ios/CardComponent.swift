@@ -10,33 +10,48 @@ struct CardSurface: ViewModifier {
     var gradientEnd: UnitPoint
     var borderColor: Color
     var borderWidth: CGFloat
+    var glass: Bool
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
-            .background(
-                Group {
-                    if colors.count == 1 {
-                        colors[0]
-                    } else {
-                        LinearGradient(colors: colors, startPoint: gradientStart, endPoint: gradientEnd)
+        if glass, #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: radius))
+                .overlay(
+                    Group {
+                        if borderWidth > 0 {
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(borderColor.opacity(0.4), lineWidth: 1)
+                        }
                     }
-                }
-            )
-            .clipShape(RoundedRectangle(cornerRadius: radius))
-            .overlay(
-                Group {
-                    if borderWidth > 0 {
-                        RoundedRectangle(cornerRadius: radius)
-                            .stroke(borderColor, lineWidth: borderWidth)
+                )
+        } else {
+            content
+                .background(
+                    Group {
+                        if colors.count == 1 {
+                            colors[0]
+                        } else {
+                            LinearGradient(colors: colors, startPoint: gradientStart, endPoint: gradientEnd)
+                        }
                     }
-                }
-            )
-            .shadow(
-                color: shadow ? Material.Elevation.shadow.opacity(0.09) : .clear,
-                radius: shadow ? 3 : 0,
-                x: 0,
-                y: shadow ? 3 : 0
-            )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: radius))
+                .overlay(
+                    Group {
+                        if borderWidth > 0 {
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(borderColor, lineWidth: borderWidth)
+                        }
+                    }
+                )
+                .shadow(
+                    color: shadow ? Material.Elevation.shadow.opacity(0.09) : .clear,
+                    radius: shadow ? 3 : 0,
+                    x: 0,
+                    y: shadow ? 3 : 0
+                )
+        }
     }
 }
 
@@ -48,7 +63,8 @@ extension View {
         from: UnitPoint = .topLeading,
         to: UnitPoint = .bottomTrailing,
         borderColor: Color = .clear,
-        borderWidth: CGFloat = 0
+        borderWidth: CGFloat = 0,
+        glass: Bool = true
     ) -> some View {
         modifier(CardSurface(
             colors: colors,
@@ -57,7 +73,8 @@ extension View {
             gradientStart: from,
             gradientEnd: to,
             borderColor: borderColor,
-            borderWidth: borderWidth
+            borderWidth: borderWidth,
+            glass: glass
         ))
     }
 }
