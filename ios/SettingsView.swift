@@ -16,6 +16,7 @@ struct SettingsView: View {
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
     @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
+    @AppStorage(AppIconManager.storageKey) private var selectedAppIconRaw: String = AppIconOption.default.rawValue
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
@@ -303,36 +304,16 @@ struct SettingsView: View {
                         .opacity(0.6)
                         .listRowBackground(Material.Surface.primary)
 
-                        HStack(spacing: 12) {
-                            if let appIcon = UIImage(named: "AppIcon") {
-                                Image(uiImage: appIcon)
+                        NavigationLink(destination: AppIconPickerView()) {
+                            HStack(spacing: 12) {
+                                Image((AppIconOption(rawValue: selectedAppIconRaw) ?? .default).previewAssetName)
                                     .resizable()
                                     .frame(width: 40, height: 40)
-                                    .cornerRadius(Material.Shape.x2)
-                            } else {
-                                RoundedRectangle(cornerRadius: Material.Shape.x2)
-                                    .fill(Material.Text.accent)
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Text("M")
-                                            .font(AppFont.icon)
-                                            .foregroundColor(Material.Text.inverse)
-                                    )
+                                    .clipShape(RoundedRectangle(cornerRadius: Material.Shape.x2, style: .continuous))
+
+                                Text("App Icon")
                             }
-                            
-                            Text("App Icon")
-                            
-                            Spacer()
-                            
-                            Text("Soon")
-                                .font(AppFont.label)
-                                .foregroundColor(Material.Text.secondary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Material.Text.secondary.opacity(0.15))
-                                .cornerRadius(Material.Shape.x2)
                         }
-                        .opacity(0.6)
                         .listRowBackground(Material.Surface.primary)
                     } header: {
                         Text("Personalize")

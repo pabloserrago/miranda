@@ -12,6 +12,7 @@ private struct ScrollAnchorKey: PreferenceKey {
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage(AppIconManager.storageKey) private var selectedAppIconRaw = AppIconOption.default.rawValue
     @State private var cards: [Card] = []
     @State private var priorityCardIds: [UUID] = []
     @State private var selectedCard: Card? = nil
@@ -69,6 +70,11 @@ struct ContentView: View {
             UserDefaults.standard.register(defaults: ["hyphenSplitEnabled": true])
             // The create button lives in the recent sheet's toolbar.
             _showRecentSheet = State(initialValue: true)
+        }
+        if ProcessInfo.processInfo.arguments.contains("-UITestHyphenSplitEdit") {
+            // Same setting as above, but leave the recent sheet closed so a
+            // seeded priority note is directly tappable to reach Edit mode.
+            UserDefaults.standard.register(defaults: ["hyphenSplitEnabled": true])
         }
         #endif
     }
@@ -185,6 +191,7 @@ struct ContentView: View {
             if newPhase == .active {
                 syncWidgetCompletions()
                 NotificationManager.shared.syncAuthorizationStatus()
+                AppIconManager.apply(AppIconOption(rawValue: selectedAppIconRaw) ?? .default, for: colorScheme)
             }
         }
         .onOpenURL { url in
@@ -1025,6 +1032,9 @@ struct NoteDetailView: View {
     @State private var isEditing = false
     @State private var editText = ""
     @FocusState private var isTextFocused: Bool
+    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
+    /// Hyphen lines already committed as separate notes (Split by Hyphens on).
+    @State private var committedSegments: [String] = []
 
     private var isPriority: Bool {
         autoPriorityCardIds.contains(card.id)
@@ -1035,19 +1045,38 @@ struct NoteDetailView: View {
             ScrollView {
                 VStack(spacing: 50) {
                     if isEditing {
-                        ZStack(alignment: .topLeading) {
-                            TextEditor(text: $editText)
-                                .focused($isTextFocused)
-                                .scrollContentBackground(.hidden)
-                                .font(AppFont.body)
-                                .padding(8)
-                            if editText.isEmpty {
-                                Text("What do you want to capture?")
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(segment)
+                                        .font(AppFont.body)
+                                        .foregroundColor(Material.Text.primary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 13)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture { restoreSegments(from: index) }
+                                        .accessibilityIdentifier("note-segment-\(index)")
+
+                                    DashedDivider()
+                                        .padding(.horizontal, 13)
+                                }
+                            }
+
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $editText)
+                                    .focused($isTextFocused)
+                                    .scrollContentBackground(.hidden)
                                     .font(AppFont.body)
-                                    .foregroundColor(Material.Text.secondary)
-                                    .padding(.top, 16)
-                                    .padding(.leading, 13)
-                                    .allowsHitTesting(false)
+                                    .padding(8)
+                                if editText.isEmpty && committedSegments.isEmpty {
+                                    Text("What do you want to capture?")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Material.Text.secondary)
+                                        .padding(.top, 16)
+                                        .padding(.leading, 13)
+                                        .allowsHitTesting(false)
+                                }
                             }
                         }
                         .frame(minHeight: 120)
@@ -1079,6 +1108,7 @@ struct NoteDetailView: View {
                         Button {
                             isEditing = false
                             editText = ""
+                            committedSegments = []
                         } label: {
                             Image(systemName: "xmark")
                         }
@@ -1087,7 +1117,8 @@ struct NoteDetailView: View {
                         Button(action: saveEdit) {
                             Image(systemName: "checkmark")
                         }
-                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityIdentifier("save-edit-button")
+                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && committedSegments.isEmpty)
                     }
                 } else {
                     ToolbarItem(placement: .cancellationAction) {
@@ -1096,8 +1127,10 @@ struct NoteDetailView: View {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Edit") {
                             editText = card.simplifiedText
+                            committedSegments = []
                             isEditing = true
                         }
+                        .accessibilityIdentifier("edit-note-button")
                     }
                 }
             }
@@ -1161,22 +1194,49 @@ struct NoteDetailView: View {
         .onChange(of: isEditing) { _, newValue in
             if newValue { isTextFocused = true }
         }
+        .onChange(of: editText) { _, newValue in
+            guard isEditing, hyphenSplitEnabled else { return }
+            let result = NoteSplitter.commitAfterNewline(newValue)
+            guard !result.committed.isEmpty else { return }
+            withAnimation(.easeOut(duration: 0.2)) {
+                committedSegments.append(contentsOf: result.committed)
+            }
+            editText = result.remaining
+        }
         .onAppear { Analytics.shared.trackCardViewed() }
     }
 
+    /// Returns the tapped segment (and any after it, in order) to the editor as
+    /// raw hyphen lines so the user can keep editing them.
+    private func restoreSegments(from index: Int) {
+        let restored = committedSegments[index...].map { "- " + $0 }.joined(separator: "\n")
+        withAnimation(.easeOut(duration: 0.2)) {
+            committedSegments.removeSubrange(index...)
+        }
+        editText = restored + (editText.isEmpty ? "" : "\n" + editText)
+        isTextFocused = true
+    }
+
     private func saveEdit() {
-        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        let finalText = committedSegments.isEmpty
+            ? editText
+            : NoteSplitter.canonicalText(segments: committedSegments, activeText: editText)
+        let texts = hyphenSplitEnabled
+            ? NoteSplitter.split(finalText)
+            : [finalText.trimmingCharacters(in: .whitespacesAndNewlines)].filter { !$0.isEmpty }
+        guard let result = NoteSplitter.applyEdit(to: card, splitTexts: texts) else { return }
+
         if let idx = cards.firstIndex(where: { $0.id == card.id }) {
-            cards[idx] = Card(
-                id: card.id,
-                originalText: trimmed,
-                simplifiedText: trimmed,
-                emoji: card.emoji,
-                timestamp: card.timestamp
-            )
+            cards[idx] = result.updatedOriginal
+        }
+        for newCard in result.newCards {
+            cards.append(newCard)
+            let currentPriorityCount = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
+            if currentPriorityCount > 3 { excludedFromPriorityIds.append(newCard.id) }
+            Analytics.shared.trackCardCreated(hasEmoji: false)
         }
         onSave()
+        committedSegments = []
         isEditing = false
     }
 }

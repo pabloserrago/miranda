@@ -49,4 +49,31 @@ enum NoteSplitter {
             .map { "- " + $0 }
             .joined(separator: "\n")
     }
+
+    /// Outcome of saving an edited note that may split into several notes.
+    struct EditResult {
+        /// The edited note, keeping its original identity (id, emoji, timestamp).
+        let updatedOriginal: Card
+        /// Additional notes produced by the split, in order, as brand-new notes.
+        let newCards: [Card]
+    }
+
+    /// Applies an edit that splits into `splitTexts`. The first text updates the
+    /// original in place so it keeps its priority slot and metadata; the rest
+    /// become new notes (no emoji, fresh timestamps). Returns nil when there is
+    /// nothing to save.
+    static func applyEdit(to original: Card, splitTexts: [String], now: Date = Date()) -> EditResult? {
+        guard let first = splitTexts.first else { return nil }
+        let updated = Card(
+            id: original.id,
+            originalText: first,
+            simplifiedText: first,
+            emoji: original.emoji,
+            timestamp: original.timestamp
+        )
+        let rest = splitTexts.dropFirst().map {
+            Card(originalText: $0, simplifiedText: $0, emoji: nil, timestamp: now)
+        }
+        return EditResult(updatedOriginal: updated, newCards: Array(rest))
+    }
 }

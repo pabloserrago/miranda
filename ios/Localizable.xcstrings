@@ -60,6 +60,50 @@
     "App Icon" : {
 
     },
+    "appicon.dark" : {
+      "comment" : "Display name for the Dark app icon option.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        }
+      }
+    },
+    "appicon.default" : {
+      "comment" : "Display name for the Default app icon option.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "appicon.silhouette" : {
+      "comment" : "Display name for the Silhouette app icon option.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silhouette"
+          }
+        }
+      }
+    },
+    "appicon.title" : {
+      "comment" : "Navigation title for the App Icon picker screen.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Icon"
+          }
+        }
+      }
+    },
     "Are you enjoying the app?" : {
 
     },
@@ -340,9 +384,6 @@
     },
     "Look out the window for 30 seconds 🪟" : {
       "comment" : "Playful random suggestion in create note screen — translate if culturally appropriate"
-    },
-    "M" : {
-
     },
     "Make a bird sound 🐦" : {
       "comment" : "Playful random suggestion in create note screen — translate if culturally appropriate"
