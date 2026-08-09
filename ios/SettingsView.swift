@@ -199,7 +199,7 @@ struct SettingsView: View {
 
                         Toggle(isOn: $hyphenSplitEnabled) {
                             HStack(spacing: 12) {
-                                Image(systemName: "list.bullet")
+                                Image(systemName: "divide.circle")
                                     .font(AppFont.icon)
                                     .foregroundColor(Material.Text.primary)
                                     .frame(width: 24, height: 24)
