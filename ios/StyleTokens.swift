@@ -240,7 +240,7 @@ enum BackgroundTheme: String, CaseIterable {
     /// Noise-domain offset — tuned in the Cloud Lab; all presets share the
     /// same arrangement so switching themes only changes the palette.
     var cloudSeed: Float {
-        self == .standard ? 0 : 10
+        self == .standard ? 0 : 3
     }
 
     /// Three representative colors for the Settings swatch.
@@ -663,8 +663,8 @@ struct NoiseConfig {
 /// the DEBUG-only Cloud Lab overrides them live to find new values.
 struct CloudParams {
     var scale: Double = 1.0     // noise frequency: higher = smaller, busier clouds
-    var edgeLow: Double = 0.25  // smoothstep contrast edges: narrower range = punchier
-    var edgeHigh: Double = 0.75
+    var edgeLow: Double = 0.15  // smoothstep contrast edges: narrower range = punchier
+    var edgeHigh: Double = 0.85
     var seed: Float? = nil      // nil → theme.cloudSeed
 }
 
