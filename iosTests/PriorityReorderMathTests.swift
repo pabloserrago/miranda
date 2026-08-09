@@ -76,3 +76,38 @@ struct PriorityReorderMeasuredHeightsTests {
         #expect(PriorityReorderMath.targetIndex(sourceIndex: 0, translationHeight: 500, rowHeights: []) == 0)
     }
 }
+
+/// Live shuffle: how non-lifted rows part around the drag, and where the
+/// lifted card settles on drop.
+struct PriorityReorderShuffleTests {
+    private let heights: [CGFloat] = [190, 320, 190]
+
+    @Test func shuffleOffsetMovesOnlyRowsBetweenSourceAndTarget() {
+        // Dragging row 0 down to slot 2: rows 1 and 2 slide up by the lifted height.
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 1, sourceIndex: 0, targetIndex: 2, liftedHeight: 190) == -190)
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 2, sourceIndex: 0, targetIndex: 2, liftedHeight: 190) == -190)
+        // Dragging row 0 down to slot 1: row 2 stays put.
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 1, sourceIndex: 0, targetIndex: 1, liftedHeight: 190) == -190)
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 2, sourceIndex: 0, targetIndex: 1, liftedHeight: 190) == 0)
+        // Dragging row 2 up to slot 0: rows 0 and 1 slide down.
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 0, sourceIndex: 2, targetIndex: 0, liftedHeight: 190) == 190)
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 1, sourceIndex: 2, targetIndex: 0, liftedHeight: 190) == 190)
+        // No projected move: everything stays.
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 1, sourceIndex: 0, targetIndex: 0, liftedHeight: 190) == 0)
+        // The lifted row itself is never offset by the shuffle.
+        #expect(PriorityReorderMath.shuffleOffset(rowIndex: 0, sourceIndex: 0, targetIndex: 2, liftedHeight: 190) == 0)
+    }
+
+    @Test func settleTranslationSumsCrossedHeights() {
+        // Down: the crossed rows are everything after the source up to the target.
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 0, targetIndex: 1, rowHeights: heights) == 320)
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 0, targetIndex: 2, rowHeights: heights) == 510)
+        // Up: negative sum of the rows passed over.
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 1, targetIndex: 0, rowHeights: heights) == -190)
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 2, targetIndex: 0, rowHeights: heights) == -510)
+        // No move settles back to the origin.
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 1, targetIndex: 1, rowHeights: heights) == 0)
+        // Out-of-range indices are a no-op rather than a crash.
+        #expect(PriorityReorderMath.settleTranslation(sourceIndex: 0, targetIndex: 5, rowHeights: heights) == 0)
+    }
+}

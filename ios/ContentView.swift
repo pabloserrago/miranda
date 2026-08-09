@@ -51,6 +51,9 @@ struct ContentView: View {
     @State private var priorityReorderDragBaseline: CGFloat = 0
     /// Slot the lifted card would land on if dropped now; ticks haptically when it changes.
     @State private var priorityReorderProjectedIndex: Int?
+    /// Set between finger-up and the array commit: the card is springing into
+    /// its target slot and scale/shadow are relaxing.
+    @State private var priorityReorderSettlingId: UUID?
     /// Rendered height (including list insets) of each priority row, by index.
     @State private var priorityRowHeights: [Int: CGFloat] = [:]
     /// Set while a card is being held before the long-press threshold fires (drives the charging scale).
@@ -465,7 +468,7 @@ struct ContentView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 10)
                 .onChanged { value in
-                    guard priorityReorderLiftedId != nil else { return }
+                    guard priorityReorderLiftedId != nil, priorityReorderSettlingId == nil else { return }
                     if priorityReorderTranslation == .zero && priorityReorderDragBaseline == 0 {
                         // First update after lift: zero-out any drift accumulated during the hold.
                         priorityReorderDragBaseline = value.translation.height
@@ -482,22 +485,35 @@ struct ContentView: View {
                     }
                 }
                 .onEnded { value in
-                    guard let idx = priorityReorderLiftedIndex else { return }
+                    guard let idx = priorityReorderLiftedIndex, priorityReorderSettlingId == nil else { return }
                     let capturedId = priorityReorderLiftedId
                     let calibrated = value.translation.height - priorityReorderDragBaseline
-                    let capturedTranslation = CGSize(width: 0, height: calibrated)
+                    let target = projectedPriorityIndex(sourceIndex: idx, translationHeight: calibrated)
 
-                    // Phase 1: animate card back to neutral.
+                    // Phase 1: spring the lifted card into the gap the live
+                    // shuffle opened; settlingId relaxes its scale and shadow.
+                    priorityReorderSettlingId = capturedId
                     priorityReorderPressingId = nil
-                    priorityReorderLiftedId = nil
-                    priorityReorderLiftedIndex = nil
-                    priorityReorderTranslation = .zero
-                    priorityReorderDragBaseline = 0
-                    priorityReorderProjectedIndex = nil
+                    priorityReorderTranslation = CGSize(
+                        width: 0,
+                        height: settleTranslationForDrop(sourceIndex: idx, targetIndex: target)
+                    )
 
-                    // Phase 2: commit list reorder after the return spring settles.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
-                        commitPriorityReorderFromDrag(sourceIndex: idx, translation: capturedTranslation)
+                    // Phase 2: once the spring lands, swap the array without
+                    // animation — the reordered layout is pixel-identical to
+                    // the settled visuals, so nothing on screen moves.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        var transaction = Transaction()
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) {
+                            movePriorityFromIndex(from: idx, to: target)
+                            priorityReorderLiftedId = nil
+                            priorityReorderLiftedIndex = nil
+                            priorityReorderTranslation = .zero
+                            priorityReorderDragBaseline = 0
+                            priorityReorderProjectedIndex = nil
+                            priorityReorderSettlingId = nil
+                        }
                     }
                     if let id = capturedId {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -631,7 +647,21 @@ struct ContentView: View {
     private func priorityRow(_ card: Card, index: Int = 0, allowDragReorder: Bool = false) -> some View {
         let liftedHere = priorityReorderLiftedId == card.id
         let pressingHere = priorityReorderPressingId == card.id
+        let settlingHere = priorityReorderSettlingId == card.id
         let reorderActiveElsewhere = allowDragReorder && priorityReorderLiftedId != nil && priorityReorderLiftedId != card.id
+        // Live shuffle: non-lifted rows part around the drag so the drop gap is visible.
+        let shuffleY: CGFloat = {
+            guard !liftedHere,
+                  let source = priorityReorderLiftedIndex,
+                  let target = priorityReorderProjectedIndex else { return 0 }
+            let liftedHeight = priorityRowHeights[source] ?? priorityReorderRowStride
+            return PriorityReorderMath.shuffleOffset(
+                rowIndex: index,
+                sourceIndex: source,
+                targetIndex: target,
+                liftedHeight: liftedHeight
+            )
+        }()
 
         Button {
             guard priorityReorderLiftedId == nil else { return }
@@ -659,7 +689,7 @@ struct ContentView: View {
             minimumDuration: 0.45,
             maximumDistance: 50,
             perform: {
-                guard allowDragReorder else { return }
+                guard allowDragReorder, priorityReorderSettlingId == nil else { return }
                 Haptics.reorderLift()
                 suppressNextPrioritySelectionId = card.id
                 priorityReorderLiftedId = card.id
@@ -700,25 +730,31 @@ struct ContentView: View {
             }
             .tint(.green)
         }
-        .offset(y: liftedHere ? priorityReorderTranslation.height : 0)
-        .scaleEffect(liftedHere ? 1.06 : (pressingHere ? 1.03 : 1.0))
+        .offset(y: liftedHere ? priorityReorderTranslation.height : shuffleY)
+        // Shuffle spring only while a lift is active; at the array commit the
+        // offsets reset to zero and must NOT animate (the layout swap already
+        // places every row where its offset had it — animating would double-move).
+        .animation(
+            priorityReorderLiftedId != nil ? .spring(response: 0.32, dampingFraction: 0.8) : nil,
+            value: shuffleY
+        )
+        .scaleEffect(liftedHere && !settlingHere ? 1.06 : (pressingHere ? 1.03 : 1.0))
         .opacity(reorderActiveElsewhere ? 0.55 : 1)
         .zIndex(liftedHere ? 1 : 0)
-        // During drag: interactive spring tracks the finger.
-        // On drop: slower, heavily-damped spring eases the card back without bounce.
+        // Interactive spring tracks the finger and springs the drop into its
+        // slot; nil after commit so the offset reset never animates.
         .animation(
-            liftedHere
-                ? .interactiveSpring(response: 0.28, dampingFraction: 0.82)
-                : .spring(response: 0.45, dampingFraction: 0.95),
+            liftedHere ? .interactiveSpring(response: 0.28, dampingFraction: 0.82) : nil,
             value: priorityReorderTranslation
         )
         .animation(.spring(response: 0.38, dampingFraction: 0.82), value: pressingHere)
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: settlingHere)
         .animation(.spring(response: 0.25, dampingFraction: 0.92), value: liftedHere)
         .shadow(
-            color: liftedHere ? Material.Elevation.shadow.opacity(0.32) : .clear,
-            radius: liftedHere ? 28 : 0,
+            color: liftedHere && !settlingHere ? Material.Elevation.shadow.opacity(0.32) : .clear,
+            radius: liftedHere && !settlingHere ? 28 : 0,
             x: 0,
-            y: liftedHere ? 18 : 0
+            y: liftedHere && !settlingHere ? 18 : 0
         )
     }
 
@@ -839,10 +875,19 @@ struct ContentView: View {
         )
     }
 
-    private func commitPriorityReorderFromDrag(sourceIndex: Int, translation: CGSize) {
-        let target = projectedPriorityIndex(sourceIndex: sourceIndex, translationHeight: translation.height)
-        guard target != sourceIndex else { return }
-        movePriorityFromIndex(from: sourceIndex, to: target)
+    /// Translation at which the lifted card sits exactly in its target slot,
+    /// preferring measured heights (same fallback as projectedPriorityIndex).
+    private func settleTranslationForDrop(sourceIndex: Int, targetIndex: Int) -> CGFloat {
+        let count = autoPriorityCards.count
+        let measured = (0..<count).compactMap { priorityRowHeights[$0] }
+        if measured.count == count {
+            return PriorityReorderMath.settleTranslation(
+                sourceIndex: sourceIndex,
+                targetIndex: targetIndex,
+                rowHeights: measured
+            )
+        }
+        return CGFloat(targetIndex - sourceIndex) * priorityReorderRowStride
     }
 
     // MARK: - Card Actions

@@ -38,4 +38,32 @@ enum PriorityReorderMath {
         }
         return target
     }
+
+    /// Vertical offset a non-lifted row adopts during the live shuffle: rows
+    /// between the source slot and the projected target part by the lifted
+    /// card's height so the drop gap is always visible.
+    static func shuffleOffset(rowIndex: Int, sourceIndex: Int, targetIndex: Int, liftedHeight: CGFloat) -> CGFloat {
+        guard rowIndex != sourceIndex, targetIndex != sourceIndex else { return 0 }
+        if targetIndex > sourceIndex, rowIndex > sourceIndex, rowIndex <= targetIndex {
+            return -liftedHeight
+        }
+        if targetIndex < sourceIndex, rowIndex >= targetIndex, rowIndex < sourceIndex {
+            return liftedHeight
+        }
+        return 0
+    }
+
+    /// Translation at which the lifted card visually occupies its target slot:
+    /// the signed sum of the row heights it passed over. Committing the array
+    /// reorder at this translation produces a pixel-identical layout.
+    static func settleTranslation(sourceIndex: Int, targetIndex: Int, rowHeights: [CGFloat]) -> CGFloat {
+        let count = rowHeights.count
+        guard sourceIndex != targetIndex,
+              sourceIndex >= 0, sourceIndex < count,
+              targetIndex >= 0, targetIndex < count else { return 0 }
+        if targetIndex > sourceIndex {
+            return rowHeights[(sourceIndex + 1)...targetIndex].reduce(0, +)
+        }
+        return -rowHeights[targetIndex...(sourceIndex - 1)].reduce(0, +)
+    }
 }
