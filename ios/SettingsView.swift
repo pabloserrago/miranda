@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
+    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
@@ -217,6 +218,48 @@ struct SettingsView: View {
                         .toggleHaptic(completionAnimationEnabled)
 
                         HStack(spacing: 12) {
+                            Image(systemName: "cloud.fill")
+                                .font(AppFont.icon)
+                                .foregroundColor(Material.Text.primary)
+                                .frame(width: 24, height: 24)
+
+                            Text("Background")
+
+                            Spacer()
+
+                            HStack(spacing: 10) {
+                                ForEach(BackgroundTheme.allCases, id: \.rawValue) { theme in
+                                    Button {
+                                        guard backgroundThemeRaw != theme.rawValue else { return }
+                                        backgroundThemeRaw = theme.rawValue
+                                        Haptics.toggleOn()
+                                    } label: {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: theme.swatchColors,
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 28, height: 28)
+                                            .overlay(
+                                                Circle().stroke(
+                                                    backgroundThemeRaw == theme.rawValue
+                                                        ? Material.Text.accent
+                                                        : Material.Decoration.tertiary,
+                                                    lineWidth: backgroundThemeRaw == theme.rawValue ? 2 : 1
+                                                )
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(theme.label)
+                                }
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+
+                        HStack(spacing: 12) {
                             Image(systemName: "textformat.size.larger")
                                 .font(AppFont.icon)
                                 .foregroundColor(Material.Text.primary)
@@ -329,7 +372,7 @@ struct SettingsView: View {
                     
                     // 5. Privacy Policy
                     Section {
-                        Link(destination: URL(string: "https://miranda.app/privacy")!) {
+                        Link(destination: URL(string: "https://github.com/pabloserrago/miranda/blob/main/PRIVACY.md")!) {
                             HStack(spacing: 12) {
                                 Image(systemName: "hand.raised.fill")
                                     .font(AppFont.icon)
