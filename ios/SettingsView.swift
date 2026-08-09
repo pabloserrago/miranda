@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
+    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
     @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
@@ -23,6 +24,20 @@ struct SettingsView: View {
     
     private var previewCard: Card? {
         currentPriorityCard ?? lastCapture
+    }
+
+    private var captureFooterText: String {
+        var sentences: [String] = []
+        if audioInputEnabled {
+            sentences.append("Audio button enabled.")
+        }
+        if actionTransformEnabled {
+            sentences.append("Miranda will convert captures into actionable tasks.")
+        }
+        if hyphenSplitEnabled {
+            sentences.append("Each line starting with \"-\" becomes its own note.")
+        }
+        return sentences.joined(separator: " ")
     }
     
     var body: some View {
@@ -181,6 +196,18 @@ struct SettingsView: View {
                         }
                         .listRowBackground(Material.Surface.primary)
                         .toggleHaptic(actionTransformEnabled)
+
+                        Toggle(isOn: $hyphenSplitEnabled) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "list.bullet")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Split by Hyphens")
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+                        .toggleHaptic(hyphenSplitEnabled)
                     } header: {
                         Text("Capture")
                             .font(AppFont.body)
@@ -188,12 +215,8 @@ struct SettingsView: View {
                             .foregroundColor(Material.Text.primary)
                             .textCase(nil)
                     } footer: {
-                        if audioInputEnabled && actionTransformEnabled {
-                            Text("Audio button enabled. Miranda will convert captures into actionable tasks.")
-                        } else if audioInputEnabled {
-                            Text("Audio button enabled.")
-                        } else if actionTransformEnabled {
-                            Text("Miranda will convert captures into actionable tasks.")
+                        if !captureFooterText.isEmpty {
+                            Text(captureFooterText)
                         }
                     }
 

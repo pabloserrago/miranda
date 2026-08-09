@@ -52,6 +52,7 @@ struct ContentView: View {
 
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
+    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     init() {
@@ -787,18 +788,20 @@ struct ContentView: View {
 
     private func createCard() {
         guard !newCardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        let originalText = newCardText
-        let actionText = actionTransformEnabled ? transformToAction(originalText) : originalText
-        let newCard = Card(
-            originalText: originalText,
-            simplifiedText: actionText,
-            emoji: nil,
-            timestamp: Date()
-        )
-        cards.append(newCard)
-        let currentPriorityCount = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
-        if currentPriorityCount > 3 { excludedFromPriorityIds.append(newCard.id) }
-        Analytics.shared.trackCardCreated(hasEmoji: false)
+        let noteTexts = hyphenSplitEnabled ? NoteSplitter.split(newCardText) : [newCardText]
+        for originalText in noteTexts {
+            let actionText = actionTransformEnabled ? transformToAction(originalText) : originalText
+            let newCard = Card(
+                originalText: originalText,
+                simplifiedText: actionText,
+                emoji: nil,
+                timestamp: Date()
+            )
+            cards.append(newCard)
+            let currentPriorityCount = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
+            if currentPriorityCount > 3 { excludedFromPriorityIds.append(newCard.id) }
+            Analytics.shared.trackCardCreated(hasEmoji: false)
+        }
         newCardText = ""
         showCreateModal = false
     }
