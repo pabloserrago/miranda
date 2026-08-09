@@ -9,6 +9,11 @@ enum Haptics {
     static func toggleOff() {
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
     }
+
+    /// Light tick fired when a dragged priority card crosses into a new slot.
+    static func reorderTick() {
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
 }
 
 extension View {

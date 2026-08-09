@@ -40,6 +40,8 @@ struct ContentView: View {
     /// Finger drift accumulated during the 0.45 s hold before the long press fires.
     /// Subtracted from all subsequent translations so the card starts at offset 0.
     @State private var priorityReorderDragBaseline: CGFloat = 0
+    /// Slot the lifted card would land on if dropped now; ticks haptically when it changes.
+    @State private var priorityReorderProjectedIndex: Int?
     /// Set while a card is being held before the long-press threshold fires (drives the charging scale).
     @State private var priorityReorderPressingId: UUID?
     /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
@@ -456,6 +458,19 @@ struct ContentView: View {
                     }
                     let calibrated = value.translation.height - priorityReorderDragBaseline
                     priorityReorderTranslation = CGSize(width: 0, height: calibrated)
+
+                    if let source = priorityReorderLiftedIndex {
+                        let projected = PriorityReorderMath.targetIndex(
+                            sourceIndex: source,
+                            translationHeight: calibrated,
+                            rowStride: priorityReorderRowStride,
+                            count: autoPriorityCards.count
+                        )
+                        if projected != priorityReorderProjectedIndex {
+                            priorityReorderProjectedIndex = projected
+                            Haptics.reorderTick()
+                        }
+                    }
                 }
                 .onEnded { value in
                     guard let idx = priorityReorderLiftedIndex else { return }
@@ -469,6 +484,7 @@ struct ContentView: View {
                     priorityReorderLiftedIndex = nil
                     priorityReorderTranslation = .zero
                     priorityReorderDragBaseline = 0
+                    priorityReorderProjectedIndex = nil
 
                     // Phase 2: commit list reorder after the return spring settles.
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
@@ -639,6 +655,7 @@ struct ContentView: View {
                 suppressNextPrioritySelectionId = card.id
                 priorityReorderLiftedId = card.id
                 priorityReorderLiftedIndex = index
+                priorityReorderProjectedIndex = index
             },
             onPressingChanged: { isPressing in
                 guard allowDragReorder else { return }
@@ -789,11 +806,12 @@ struct ContentView: View {
     }
 
     private func commitPriorityReorderFromDrag(sourceIndex: Int, translation: CGSize) {
-        let count = autoPriorityCards.count
-        guard count > 1 else { return }
-        let delta = Int(round(translation.height / priorityReorderRowStride))
-        var target = sourceIndex + delta
-        target = min(max(0, target), count - 1)
+        let target = PriorityReorderMath.targetIndex(
+            sourceIndex: sourceIndex,
+            translationHeight: translation.height,
+            rowStride: priorityReorderRowStride,
+            count: autoPriorityCards.count
+        )
         guard target != sourceIndex else { return }
         movePriorityFromIndex(from: sourceIndex, to: target)
     }
