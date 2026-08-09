@@ -64,6 +64,12 @@ struct ContentView: View {
             _lockScreenOnboardingDismissed = State(initialValue: true)
             _showRecentSheet = State(initialValue: false)
         }
+        if ProcessInfo.processInfo.arguments.contains("-UITestHyphenSplit") {
+            // register(defaults:) is not persisted, so it cannot pollute later launches.
+            UserDefaults.standard.register(defaults: ["hyphenSplitEnabled": true])
+            // The create button lives in the recent sheet's toolbar.
+            _showRecentSheet = State(initialValue: true)
+        }
         #endif
     }
 
@@ -576,6 +582,7 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("create-note-button")
                 }
             }
         }
@@ -1183,9 +1190,12 @@ struct CreateCardModal: View {
     let onCancel: () -> Void
     @FocusState private var isTextFocused: Bool
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
+    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @StateObject private var dictation = SpeechDictationManager()
     /// Text present when dictation began, so live transcript extends it.
     @State private var baseText: String = ""
+    /// Hyphen lines already committed as future notes (Split by Hyphens on).
+    @State private var committedSegments: [String] = []
 
     let randomSuggestions = [
         String(localized: "Compliment your coffee mug ☕️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
@@ -1228,20 +1238,39 @@ struct CreateCardModal: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                ZStack(alignment: .topLeading) {
-                    TextEditor(text: $text)
-                        .focused($isTextFocused)
-                        .scrollContentBackground(.hidden)
-                        .font(AppFont.body)
-                        .padding(8)
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(segment)
+                                .font(AppFont.body)
+                                .foregroundColor(Material.Text.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 13)
+                                .contentShape(Rectangle())
+                                .onTapGesture { restoreSegments(from: index) }
+                                .accessibilityIdentifier("note-segment-\(index)")
 
-                    if text.isEmpty {
-                        Text("What do you want to capture?")
+                            DashedDivider()
+                                .padding(.horizontal, 13)
+                        }
+                    }
+
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $text)
+                            .focused($isTextFocused)
+                            .scrollContentBackground(.hidden)
                             .font(AppFont.body)
-                            .foregroundColor(Material.Text.secondary)
-                            .padding(.top, 16)
-                            .padding(.leading, 13)
-                            .allowsHitTesting(false)
+                            .padding(8)
+
+                        if text.isEmpty && committedSegments.isEmpty {
+                            Text("What do you want to capture?")
+                                .font(AppFont.body)
+                                .foregroundColor(Material.Text.secondary)
+                                .padding(.top, 16)
+                                .padding(.leading, 13)
+                                .allowsHitTesting(false)
+                        }
                     }
                 }
 
@@ -1286,15 +1315,20 @@ struct CreateCardModal: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dictation.stop()
+                        committedSegments = []
                         onCancel()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         dictation.stop()
+                        if !committedSegments.isEmpty {
+                            text = NoteSplitter.canonicalText(segments: committedSegments, activeText: text)
+                            committedSegments = []
+                        }
                         onSave()
                     }
-                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && committedSegments.isEmpty)
                 }
                 ToolbarItem(placement: .keyboard) {
                     Button {
@@ -1312,6 +1346,16 @@ struct CreateCardModal: View {
                 } else {
                     isTextFocused = true
                 }
+            }
+            .onChange(of: text) { _, newValue in
+                guard hyphenSplitEnabled else { return }
+                let result = NoteSplitter.commitAfterNewline(newValue)
+                guard !result.committed.isEmpty else { return }
+                withAnimation(.easeOut(duration: 0.2)) {
+                    committedSegments.append(contentsOf: result.committed)
+                }
+                text = result.remaining
+                baseText = result.remaining
             }
             .onChange(of: dictation.transcript) { _, newValue in
                 text = SpeechDictationManager.compose(base: baseText, transcript: newValue)
@@ -1341,6 +1385,33 @@ struct CreateCardModal: View {
                 Text("On-device dictation isn't available for your language on this device. You can still type your note.")
             }
         }
+    }
+
+    /// Returns tapped segment (and any after it, preserving order) to the
+    /// editor as raw hyphen lines so the user can keep editing them.
+    private func restoreSegments(from index: Int) {
+        let restored = committedSegments[index...].map { "- " + $0 }.joined(separator: "\n")
+        withAnimation(.easeOut(duration: 0.2)) {
+            committedSegments.removeSubrange(index...)
+        }
+        text = restored + (text.isEmpty ? "" : "\n" + text)
+        baseText = text
+        isTextFocused = true
+    }
+}
+
+/// Thin dashed separator between committed note segments in the create modal.
+private struct DashedDivider: View {
+    var body: some View {
+        GeometryReader { geo in
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: 0.5))
+                path.addLine(to: CGPoint(x: geo.size.width, y: 0.5))
+            }
+            .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            .foregroundColor(Material.Decoration.tertiary)
+        }
+        .frame(height: 1)
     }
 }
 

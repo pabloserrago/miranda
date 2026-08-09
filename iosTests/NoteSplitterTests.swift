@@ -24,3 +24,45 @@ struct NoteSplitterTests {
         #expect(NoteSplitter.split("   \n") == [])
     }
 }
+
+struct HyphenSegmentEditorTests {
+    @Test func commitAfterNewlineCommitsHyphenLine() {
+        let result = NoteSplitter.commitAfterNewline("- milk\n")
+        #expect(result.committed == ["milk"])
+        #expect(result.remaining == "")
+    }
+
+    @Test func commitAfterNewlineIgnoresPlainLine() {
+        let result = NoteSplitter.commitAfterNewline("plain text\n")
+        #expect(result.committed == [])
+        #expect(result.remaining == "plain text\n")
+    }
+
+    @Test func commitAfterNewlineRequiresTrailingNewline() {
+        let result = NoteSplitter.commitAfterNewline("- milk")
+        #expect(result.committed == [])
+        #expect(result.remaining == "- milk")
+    }
+
+    @Test func commitAfterNewlineCommitsLeadingText() {
+        let result = NoteSplitter.commitAfterNewline("Groceries:\n- milk\n")
+        #expect(result.committed == ["Groceries:", "milk"])
+        #expect(result.remaining == "")
+    }
+
+    @Test func canonicalTextRoundTrips() {
+        let segments = ["milk", "whole eggs\nfree range"]
+        let active = "- bread"
+        let canonical = NoteSplitter.canonicalText(segments: segments, activeText: active)
+        #expect(NoteSplitter.split(canonical) == segments + NoteSplitter.split(active))
+    }
+
+    @Test func canonicalTextPassthroughWithoutSegments() {
+        #expect(NoteSplitter.canonicalText(segments: [], activeText: "just a note") == "just a note")
+    }
+
+    @Test func canonicalTextWithEmptyActiveText() {
+        let canonical = NoteSplitter.canonicalText(segments: ["milk", "eggs"], activeText: "")
+        #expect(NoteSplitter.split(canonical) == ["milk", "eggs"])
+    }
+}

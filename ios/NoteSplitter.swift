@@ -27,4 +27,26 @@ enum NoteSplitter {
         flush()
         return items
     }
+
+    /// Live-editor rule: when the text ends with a newline and the line just
+    /// completed starts with "-", everything typed so far is committed as
+    /// note segments and the editor is cleared. Otherwise nothing happens.
+    static func commitAfterNewline(_ activeText: String) -> (committed: [String], remaining: String) {
+        guard activeText.hasSuffix("\n") else { return ([], activeText) }
+        let completedLines = activeText.dropLast().components(separatedBy: .newlines)
+        guard let lastLine = completedLines.last,
+              lastLine.trimmingCharacters(in: .whitespaces).hasPrefix("-") else {
+            return ([], activeText)
+        }
+        return (split(activeText), "")
+    }
+
+    /// Rebuilds raw text from committed segments plus the in-progress text so
+    /// that `split(canonicalText(...)) == segments + split(activeText)`.
+    static func canonicalText(segments: [String], activeText: String) -> String {
+        guard !segments.isEmpty else { return activeText }
+        return (segments + split(activeText))
+            .map { "- " + $0 }
+            .joined(separator: "\n")
+    }
 }

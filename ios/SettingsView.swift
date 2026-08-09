@@ -169,7 +169,7 @@ struct SettingsView: View {
                     Section {}
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .frame(height: 30)
+                        .frame(height: 44)
 
                     // 2. Capture
                     Section {
@@ -224,7 +224,7 @@ struct SettingsView: View {
                     Section {}
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .frame(height: 30)
+                        .frame(height: 44)
 
                     // 3. Personalize
                     Section {
@@ -346,7 +346,7 @@ struct SettingsView: View {
                     Section {}
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .frame(height: 30)
+                        .frame(height: 44)
 
                     // 4. Notifications
                     Section {
