@@ -9,6 +9,15 @@ private struct ScrollAnchorKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
+/// Collects the rendered height of each priority row (keyed by index) so the
+/// reorder drag can convert translation into slots using real row heights.
+private struct PriorityRowHeightKey: PreferenceKey {
+    static var defaultValue: [Int: CGFloat] = [:]
+    static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+        value.merge(nextValue()) { _, new in new }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
@@ -42,6 +51,8 @@ struct ContentView: View {
     @State private var priorityReorderDragBaseline: CGFloat = 0
     /// Slot the lifted card would land on if dropped now; ticks haptically when it changes.
     @State private var priorityReorderProjectedIndex: Int?
+    /// Rendered height (including list insets) of each priority row, by index.
+    @State private var priorityRowHeights: [Int: CGFloat] = [:]
     /// Set while a card is being held before the long-press threshold fires (drives the charging scale).
     @State private var priorityReorderPressingId: UUID?
     /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
@@ -442,6 +453,9 @@ struct ContentView: View {
             if scrollAnchorY == nil { scrollAnchorY = y }
             scrollOffset = max(0, (scrollAnchorY ?? y) - y)
         }
+        .onPreferenceChange(PriorityRowHeightKey.self) { heights in
+            priorityRowHeights = heights
+        }
         // Disable list scrolling while a card is lifted so the DragGesture
         // can track vertical movement without competing with the scroll view.
         .scrollDisabled(priorityReorderPressingId != nil || priorityReorderLiftedId != nil)
@@ -460,12 +474,7 @@ struct ContentView: View {
                     priorityReorderTranslation = CGSize(width: 0, height: calibrated)
 
                     if let source = priorityReorderLiftedIndex {
-                        let projected = PriorityReorderMath.targetIndex(
-                            sourceIndex: source,
-                            translationHeight: calibrated,
-                            rowStride: priorityReorderRowStride,
-                            count: autoPriorityCards.count
-                        )
+                        let projected = projectedPriorityIndex(sourceIndex: source, translationHeight: calibrated)
                         if projected != priorityReorderProjectedIndex {
                             priorityReorderProjectedIndex = projected
                             Haptics.reorderTick()
@@ -668,6 +677,10 @@ struct ContentView: View {
             borderColor: Material.Card.border,
             borderWidth: Material.Card.borderWidth
         )
+        .background(GeometryReader { geo in
+            // +20 accounts for the 10pt top/bottom list row insets below.
+            Color.clear.preference(key: PriorityRowHeightKey.self, value: [index: geo.size.height + 20])
+        })
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
@@ -806,13 +819,28 @@ struct ContentView: View {
         saveState()
     }
 
-    private func commitPriorityReorderFromDrag(sourceIndex: Int, translation: CGSize) {
-        let target = PriorityReorderMath.targetIndex(
+    /// Converts a drag translation into the slot the lifted card would land on,
+    /// preferring measured row heights so the result matches what the user sees.
+    private func projectedPriorityIndex(sourceIndex: Int, translationHeight: CGFloat) -> Int {
+        let count = autoPriorityCards.count
+        let measured = (0..<count).compactMap { priorityRowHeights[$0] }
+        if measured.count == count {
+            return PriorityReorderMath.targetIndex(
+                sourceIndex: sourceIndex,
+                translationHeight: translationHeight,
+                rowHeights: measured
+            )
+        }
+        return PriorityReorderMath.targetIndex(
             sourceIndex: sourceIndex,
-            translationHeight: translation.height,
+            translationHeight: translationHeight,
             rowStride: priorityReorderRowStride,
-            count: autoPriorityCards.count
+            count: count
         )
+    }
+
+    private func commitPriorityReorderFromDrag(sourceIndex: Int, translation: CGSize) {
+        let target = projectedPriorityIndex(sourceIndex: sourceIndex, translationHeight: translation.height)
         guard target != sourceIndex else { return }
         movePriorityFromIndex(from: sourceIndex, to: target)
     }
