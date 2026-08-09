@@ -686,7 +686,9 @@ struct ContentView: View {
         .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
         .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
         .onLongPressGesture(
-            minimumDuration: 0.45,
+            // Short enough that the lift (and its haptic) fires while the
+            // finger is still stationary in a natural grab-and-pull gesture.
+            minimumDuration: 0.35,
             maximumDistance: 50,
             perform: {
                 guard allowDragReorder, priorityReorderSettlingId == nil else { return }

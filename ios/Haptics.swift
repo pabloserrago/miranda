@@ -14,7 +14,9 @@ enum Haptics {
     // Shared generators kept alive so the Taptic Engine stays warm; a generator
     // created inline and fired immediately can drop or delay its first haptic.
 
-    private static let reorderLiftGenerator = UIImpactFeedbackGenerator(style: .medium)
+    // Heavy at full intensity: a pressing finger damps vibration, so the
+    // pickup thud must be strong to be felt before any movement starts.
+    private static let reorderLiftGenerator = UIImpactFeedbackGenerator(style: .heavy)
     private static let reorderTickGenerator = UISelectionFeedbackGenerator()
 
     /// Warm up the engine while the user is still holding the card, so the
@@ -25,7 +27,7 @@ enum Haptics {
 
     /// Impact confirming the card has lifted and can be dragged.
     static func reorderLift() {
-        reorderLiftGenerator.impactOccurred()
+        reorderLiftGenerator.impactOccurred(intensity: 1.0)
         reorderTickGenerator.prepare()
     }
 
