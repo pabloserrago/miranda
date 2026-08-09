@@ -583,7 +583,6 @@ struct ContentView: View {
                     }
                 }
             }
-            .background(Material.Surface.primary)
             .navigationTitle("Recent")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Find...")
@@ -609,6 +608,7 @@ struct ContentView: View {
                 }
             }
         }
+        .tint(Material.Accent.primary)
         .presentationDetents([.fraction(0.25), .medium, .large])
         .presentationBackgroundInteraction(.enabled(upThrough: .medium))
         .presentationBackground(Material.Surface.secondary)
@@ -651,7 +651,7 @@ struct ContentView: View {
             maximumDistance: 50,
             perform: {
                 guard allowDragReorder else { return }
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                Haptics.reorderLift()
                 suppressNextPrioritySelectionId = card.id
                 priorityReorderLiftedId = card.id
                 priorityReorderLiftedIndex = index
@@ -660,6 +660,7 @@ struct ContentView: View {
             onPressingChanged: { isPressing in
                 guard allowDragReorder else { return }
                 priorityReorderPressingId = isPressing ? card.id : nil
+                if isPressing { Haptics.prepareReorderLift() }
             }
         )
         .cardSurface(
