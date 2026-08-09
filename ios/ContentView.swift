@@ -1187,31 +1187,6 @@ struct CreateCardModal: View {
     /// Text present when dictation began, so live transcript extends it.
     @State private var baseText: String = ""
 
-    let allCommonHints = [
-        String(localized: "Flush the toilet 🚽",                   comment: "Common hint shown in create note screen"),
-        String(localized: "Dance for 10 seconds 💃",               comment: "Common hint shown in create note screen"),
-        String(localized: "Don't forget your keys 🔑",             comment: "Common hint shown in create note screen"),
-        String(localized: "Prepare slides for presentation 📊",    comment: "Common hint shown in create note screen"),
-        String(localized: "Buy an umbrella ☂️",                    comment: "Common hint shown in create note screen"),
-        String(localized: "Charge your phone 🔋",                  comment: "Common hint shown in create note screen"),
-        String(localized: "Take your medicine 💊",                 comment: "Common hint shown in create note screen"),
-        String(localized: "Water the plants 🪴",                   comment: "Common hint shown in create note screen"),
-        String(localized: "Call mom 📞",                           comment: "Common hint shown in create note screen"),
-        String(localized: "Pay the bills 💳",                      comment: "Common hint shown in create note screen"),
-        String(localized: "Check the mail 📬",                     comment: "Common hint shown in create note screen"),
-        String(localized: "Lock the door 🔐",                      comment: "Common hint shown in create note screen"),
-        String(localized: "Turn off the lights 💡",                comment: "Common hint shown in create note screen"),
-        String(localized: "Take out the trash 🗑️",                 comment: "Common hint shown in create note screen"),
-        String(localized: "Feed the pet 🐕",                       comment: "Common hint shown in create note screen"),
-        String(localized: "Bring reusable bags 🛍️",                comment: "Common hint shown in create note screen"),
-        String(localized: "Set an alarm ⏰",                        comment: "Common hint shown in create note screen"),
-        String(localized: "Backup your files 💾",                  comment: "Common hint shown in create note screen"),
-        String(localized: "Reply to that email 📧",                comment: "Common hint shown in create note screen"),
-        String(localized: "Schedule dentist appointment 🦷",       comment: "Common hint shown in create note screen"),
-    ]
-
-    @State private var commonHints: [String] = []
-
     let randomSuggestions = [
         String(localized: "Compliment your coffee mug ☕️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
         String(localized: "Name all the colors you can see 🌈",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
@@ -1269,9 +1244,6 @@ struct CreateCardModal: View {
                             .allowsHitTesting(false)
                     }
                 }
-                .frame(minHeight: 120)
-                .background(Material.Surface.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
 
                 if audioInputEnabled {
                     HStack(spacing: 12) {
@@ -1305,14 +1277,6 @@ struct CreateCardModal: View {
                         Spacer(minLength: 0)
                     }
                 }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(commonHints, id: \.self) { hint in
-                        ListSuggestion(text: hint) { text = hint }
-                    }
-                }
-
-                Spacer()
             }
             .padding()
             .background(Material.Surface.tertiary)
@@ -1342,7 +1306,6 @@ struct CreateCardModal: View {
                 }
             }
             .onAppear {
-                commonHints = Array(allCommonHints.shuffled().prefix(3))
                 baseText = text
                 if startWithDictation && audioInputEnabled {
                     dictation.requestAuthorizationAndStart()
