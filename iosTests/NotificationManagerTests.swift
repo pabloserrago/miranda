@@ -56,26 +56,21 @@ struct NotificationManagerShouldScheduleTests {
 
     @Test func allConditionsMetSchedules() {
         #expect(NotificationManager.shouldSchedule(
-            userEnabled: true, authorized: true, hasLockScreenWidget: false, cardsEmpty: false) == true)
+            userEnabled: true, authorized: true, cardsEmpty: false) == true)
     }
 
     @Test func disabledByUserDoesNotSchedule() {
         #expect(NotificationManager.shouldSchedule(
-            userEnabled: false, authorized: true, hasLockScreenWidget: false, cardsEmpty: false) == false)
+            userEnabled: false, authorized: true, cardsEmpty: false) == false)
     }
 
     @Test func unauthorizedDoesNotSchedule() {
         #expect(NotificationManager.shouldSchedule(
-            userEnabled: true, authorized: false, hasLockScreenWidget: false, cardsEmpty: false) == false)
-    }
-
-    @Test func lockScreenWidgetSuppressesSchedule() {
-        #expect(NotificationManager.shouldSchedule(
-            userEnabled: true, authorized: true, hasLockScreenWidget: true, cardsEmpty: false) == false)
+            userEnabled: true, authorized: false, cardsEmpty: false) == false)
     }
 
     @Test func noCardsDoesNotSchedule() {
         #expect(NotificationManager.shouldSchedule(
-            userEnabled: true, authorized: true, hasLockScreenWidget: false, cardsEmpty: true) == false)
+            userEnabled: true, authorized: true, cardsEmpty: true) == false)
     }
 }
