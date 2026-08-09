@@ -53,6 +53,7 @@ struct ContentView: View {
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
+    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     init() {
         #if DEBUG
         if ContentView.isUITestLaunch {
@@ -124,7 +125,8 @@ struct ContentView: View {
             ZStack {
                 NoisyBackgroundView(
                     config: colorScheme == .dark ? .defaultDark : .default,
-                    scrollOffset: scrollOffset
+                    scrollOffset: scrollOffset,
+                    theme: BackgroundTheme(rawValue: backgroundThemeRaw) ?? .standard
                 ).ignoresSafeArea()
 
                 if cards.isEmpty {

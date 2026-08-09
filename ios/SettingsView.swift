@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
+    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
@@ -217,6 +218,48 @@ struct SettingsView: View {
                         .toggleHaptic(completionAnimationEnabled)
 
                         HStack(spacing: 12) {
+                            Image(systemName: "paintpalette.fill")
+                                .font(AppFont.icon)
+                                .foregroundColor(Material.Text.primary)
+                                .frame(width: 24, height: 24)
+
+                            Text("Background")
+
+                            Spacer()
+
+                            HStack(spacing: 10) {
+                                ForEach(BackgroundTheme.allCases, id: \.rawValue) { theme in
+                                    Button {
+                                        guard backgroundThemeRaw != theme.rawValue else { return }
+                                        backgroundThemeRaw = theme.rawValue
+                                        Haptics.toggleOn()
+                                    } label: {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: theme.swatchColors,
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 28, height: 28)
+                                            .overlay(
+                                                Circle().stroke(
+                                                    backgroundThemeRaw == theme.rawValue
+                                                        ? Material.Text.accent
+                                                        : Material.Decoration.tertiary,
+                                                    lineWidth: backgroundThemeRaw == theme.rawValue ? 2 : 1
+                                                )
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(theme.label)
+                                }
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+
+                        HStack(spacing: 12) {
                             Image(systemName: "textformat.size.larger")
                                 .font(AppFont.icon)
                                 .foregroundColor(Material.Text.primary)
@@ -399,6 +442,17 @@ struct SettingsView: View {
                                     .foregroundColor(Material.Text.primary)
                                     .frame(width: 24, height: 24)
                                 Text("View Components")
+                            }
+                        }
+                        .listRowBackground(Material.Surface.primary)
+
+                        NavigationLink(destination: CloudLabView()) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "cloud.sun.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Cloud Lab")
                             }
                         }
                         .listRowBackground(Material.Surface.primary)
@@ -638,6 +692,113 @@ struct DevComponentsView: View {
         .toolbarBackground(.visible, for: .navigationBar)
     }
 }
+
+// MARK: - Cloud Lab (debug only)
+
+#if DEBUG
+/// Live playground for the cloud background shader. Tweak the sliders,
+/// then bake values you like into `CloudParams` defaults / `BackgroundTheme`.
+struct CloudLabView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    @State private var theme: BackgroundTheme = .bloom
+    @State private var scale: Double = CloudParams().scale
+    @State private var edgeLow: Double = CloudParams().edgeLow
+    @State private var edgeHigh: Double = CloudParams().edgeHigh
+    @State private var seed: Double = Double(BackgroundTheme.bloom.cloudSeed)
+    @State private var grain: Double = 0.30
+
+    private var noiseConfig: NoiseConfig {
+        var config: NoiseConfig = colorScheme == .dark ? .defaultDark : .default
+        config.bottomOpacity = grain
+        return config
+    }
+
+    var body: some View {
+        ZStack {
+            NoisyBackgroundView(
+                config: noiseConfig,
+                scrollOffset: 0,
+                theme: theme,
+                cloudParams: CloudParams(
+                    scale: scale,
+                    edgeLow: edgeLow,
+                    edgeHigh: edgeHigh,
+                    seed: Float(seed)
+                )
+            ).ignoresSafeArea()
+
+            VStack(spacing: 16) {
+                CardComponent(
+                    text: "Liquid Glass preview card.",
+                    minHeight: 110
+                )
+
+                Spacer()
+
+                controls
+            }
+            .padding(20)
+        }
+        .navigationTitle("Cloud Lab")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var controls: some View {
+        VStack(spacing: 10) {
+            Picker("Preset", selection: $theme) {
+                ForEach(BackgroundTheme.allCases, id: \.rawValue) { theme in
+                    Text(theme.label).tag(theme)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            sliderRow("Scale", value: $scale, in: 1...8)
+            sliderRow("Low", value: $edgeLow, in: 0...0.5)
+            sliderRow("High", value: $edgeHigh, in: 0.5...1)
+            sliderRow("Seed", value: $seed, in: 0...10, step: 1)
+            sliderRow("Grain", value: $grain, in: 0...0.6)
+
+            Text("scale \(scale, specifier: "%.2f") · edges \(edgeLow, specifier: "%.2f")–\(edgeHigh, specifier: "%.2f") · seed \(Int(seed)) · grain \(grain, specifier: "%.2f")")
+                .font(AppFont.caption.monospaced())
+                .foregroundColor(Material.Text.secondary)
+                .textSelection(.enabled)
+        }
+        .padding(16)
+        .background(Material.Surface.secondary.opacity(0.92))
+        .clipShape(RoundedRectangle(cornerRadius: Material.Shape.x3))
+    }
+
+    private func sliderRow(
+        _ label: String,
+        value: Binding<Double>,
+        in range: ClosedRange<Double>,
+        step: Double? = nil
+    ) -> some View {
+        HStack(spacing: 12) {
+            Text(label)
+                .font(AppFont.label)
+                .foregroundColor(Material.Text.primary)
+                .frame(width: 44, alignment: .leading)
+            if let step {
+                Slider(value: value, in: range, step: step)
+            } else {
+                Slider(value: value, in: range)
+            }
+            Text(String(format: "%.2f", value.wrappedValue))
+                .font(AppFont.caption.monospaced())
+                .foregroundColor(Material.Text.secondary)
+                .frame(width: 40, alignment: .trailing)
+        }
+    }
+}
+
+#Preview("Cloud Lab") {
+    NavigationStack {
+        CloudLabView()
+    }
+}
+#endif
 
 #Preview {
     SettingsView(onShowAnalytics: {}, onDeleteAll: {}, onResetOnboarding: {}, onEnableReminders: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true, onSendTestReminder: {})

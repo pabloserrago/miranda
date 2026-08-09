@@ -186,6 +186,77 @@ enum CardColorTheme: String, CaseIterable {
 }
 
 // ============================================================
+// MARK: - Background Theme
+// ============================================================
+
+/// User-selectable app background. `standard` keeps the flat neutral
+/// backdrop; the colorful presets render a procedural cloud layer
+/// (FBM noise shader) behind the Liquid Glass cards. All stops stay in
+/// the 25–200 light / 700–950 dark range to keep colors muted.
+enum BackgroundTheme: String, CaseIterable {
+
+    /// Flat neutral backdrop — the original default, no cloud layer.
+    case standard
+    /// Rose + lavender clouds.
+    case bloom
+    /// Sage + lavender clouds.
+    case meadow
+    /// Periwinkle + rose clouds.
+    case dusk
+
+    var label: String {
+        switch self {
+        case .standard: return String(localized: "background.standard", defaultValue: "Standard")
+        case .bloom:    return String(localized: "background.bloom",    defaultValue: "Bloom")
+        case .meadow:   return String(localized: "background.meadow",   defaultValue: "Meadow")
+        case .dusk:     return String(localized: "background.dusk",     defaultValue: "Dusk")
+        }
+    }
+
+    /// Three cloud color stops (low → mid → high noise value), adaptive
+    /// light/dark. Empty for `standard`, which draws no cloud layer.
+    var cloudColors: [Color] {
+        switch self {
+        case .standard:
+            return []
+        // Stop order matters: FBM noise concentrates around mid values, so the
+        // first two stops carry the preset's dominant hue and the third is the
+        // accent that appears in the cloud peaks.
+        case .bloom:
+            return [adaptive(light: Palette.rose25,      dark: Palette.rose950),
+                    adaptive(light: Palette.rose100,     dark: Palette.rose900),
+                    adaptive(light: Palette.lavender200, dark: Palette.lavender700)]
+        case .meadow:
+            return [adaptive(light: Palette.sage25,      dark: Palette.sage950),
+                    adaptive(light: Palette.sage100,     dark: Palette.sage900),
+                    adaptive(light: Palette.lavender200, dark: Palette.lavender700)]
+        case .dusk:
+            return [adaptive(light: Palette.blue25,      dark: Palette.blue950),
+                    adaptive(light: Palette.blue100,     dark: Palette.blue900),
+                    adaptive(light: Palette.rose200,     dark: Palette.rose700)]
+        }
+    }
+
+    /// Noise-domain offset — tuned in the Cloud Lab; all presets share the
+    /// same arrangement so switching themes only changes the palette.
+    var cloudSeed: Float {
+        self == .standard ? 0 : 10
+    }
+
+    /// Three representative colors for the Settings swatch.
+    var swatchColors: [Color] {
+        switch self {
+        case .standard:
+            return [Material.Surface.backdrop,
+                    adaptive(light: Palette.neutral100, dark: Palette.neutral800),
+                    adaptive(light: Palette.neutral200, dark: Palette.neutral700)]
+        case .bloom, .meadow, .dusk:
+            return cloudColors
+        }
+    }
+}
+
+// ============================================================
 // MARK: - Adaptive Color Helper
 // ============================================================
 
@@ -566,15 +637,30 @@ struct NoiseConfig {
     )
 }
 
+/// Tunable cloud-shader parameters. Defaults are the production look;
+/// the DEBUG-only Cloud Lab overrides them live to find new values.
+struct CloudParams {
+    var scale: Double = 1.0     // noise frequency: higher = smaller, busier clouds
+    var edgeLow: Double = 0.25  // smoothstep contrast edges: narrower range = punchier
+    var edgeHigh: Double = 0.75
+    var seed: Float? = nil      // nil → theme.cloudSeed
+}
+
 struct NoisyBackgroundView: View {
     let config: NoiseConfig
     let scrollOffset: CGFloat
+    var theme: BackgroundTheme = .standard
+    var cloudParams: CloudParams = .init()
 
     private static let noiseImages: [NoiseConfig.NoiseType: UIImage] = makeAllNoise()
 
     var body: some View {
         ZStack {
             Material.Surface.backdrop.ignoresSafeArea()
+            if theme.cloudColors.count == 3 {
+                CloudLayer(theme: theme, params: cloudParams)
+                    .ignoresSafeArea()
+            }
             if let img = Self.noiseImages[config.noiseType] {
                 Canvas { ctx, size in
                     let tile = CGSize(width: config.noiseSize, height: config.noiseSize)
@@ -638,6 +724,37 @@ struct NoisyBackgroundView: View {
                 .init(color: .black.opacity(bottom * 0.5), location: mid),
                 .init(color: .black.opacity(bottom), location: 1)
             ]
+        }
+    }
+
+    /// Procedural cloud layer — FBM noise shader (Clouds.metal) blending the
+    /// theme's three color stops into soft organic shapes. Static; the per-theme
+    /// seed gives each preset a distinct cloud arrangement.
+    private struct CloudLayer: View {
+        let theme: BackgroundTheme
+        var params: CloudParams = .init()
+
+        var body: some View {
+            let colors = theme.cloudColors
+            let seed = params.seed ?? theme.cloudSeed
+            let scale = Float(params.scale)
+            let edgeLow = Float(params.edgeLow)
+            let edgeHigh = Float(params.edgeHigh)
+            Color.white
+                .visualEffect { content, proxy in
+                    content.colorEffect(
+                        ShaderLibrary.clouds(
+                            .float2(proxy.size),
+                            .color(colors[0]),
+                            .color(colors[1]),
+                            .color(colors[2]),
+                            .float(scale),
+                            .float(seed),
+                            .float(edgeLow),
+                            .float(edgeHigh)
+                        )
+                    )
+                }
         }
     }
 
