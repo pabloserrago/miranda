@@ -636,7 +636,7 @@ struct ContentView: View {
                 recentGlassActionPill
             }
             .padding(.horizontal, 20)
-            .padding(.top, 12)
+            .padding(.top, 20)
             .padding(.bottom, 8)
 
             List {
