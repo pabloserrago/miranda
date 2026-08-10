@@ -600,8 +600,126 @@ struct ContentView: View {
 
     // MARK: - Recent Sheet
 
-    @ViewBuilder
     private var recentSheet: some View {
+        recentSheetContent
+            .tint(Material.Accent.primary)
+            .presentationDetents([.fraction(0.25), .medium, .large])
+            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+            .presentationBackground(Material.Surface.secondary)
+            .interactiveDismissDisabled()
+            .presentationDragIndicator(.visible)
+    }
+
+    @ViewBuilder
+    private var recentSheetContent: some View {
+        if #available(iOS 26.0, *) {
+            recentSheetGlass
+        } else {
+            recentSheetNative
+        }
+    }
+
+    // Custom floating Liquid Glass chrome (iOS 26+): a glass mic/plus pill and a
+    // glass "Find..." search bar, matching Pages-style floating controls.
+    @available(iOS 26.0, *)
+    private var recentSheetGlass: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Recent")
+                    .font(AppFont.headline)
+                    .foregroundColor(Material.Text.primary)
+                Spacer()
+                recentGlassActionPill
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            List {
+                ForEach(filteredNonPriorityCards) { card in
+                    recentRow(card)
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .overlay { recentEmptyState }
+        }
+        .safeAreaInset(edge: .bottom) { recentGlassSearchBar }
+    }
+
+    @available(iOS 26.0, *)
+    private var recentGlassActionPill: some View {
+        GlassEffectContainer(spacing: 6) {
+            HStack(spacing: 6) {
+                if audioInputEnabled {
+                    Button {
+                        newCardText = ""
+                        startWithDictation = true
+                        showCreateModal = true
+                    } label: {
+                        Image(systemName: "mic.fill")
+                            .font(AppFont.body)
+                            .frame(width: 44, height: 40)
+                            .contentShape(Rectangle())
+                    }
+                    .glassEffect(.regular.interactive(), in: Circle())
+                }
+                Button {
+                    newCardText = ""
+                    startWithDictation = false
+                    showCreateModal = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(AppFont.body)
+                        .frame(width: 44, height: 40)
+                        .contentShape(Rectangle())
+                }
+                .glassEffect(.regular.interactive(), in: Circle())
+                .accessibilityIdentifier("create-note-button")
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private var recentGlassSearchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Material.Text.secondary)
+            TextField("Find...", text: $searchText)
+                .textFieldStyle(.plain)
+                .foregroundStyle(Material.Text.primary)
+                .submitLabel(.search)
+            if !searchText.isEmpty {
+                Button { searchText = "" } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Material.Text.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .font(AppFont.body)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+        .glassEffect(.regular, in: Capsule())
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+
+    @ViewBuilder
+    private var recentEmptyState: some View {
+        if filteredNonPriorityCards.isEmpty {
+            VStack(spacing: 12) {
+                Image(systemName: "tray")
+                    .font(.system(size: 36))
+                    .foregroundColor(Material.Icon.muted)
+                Text(searchText.isEmpty ? "All caught up" : "No results")
+                    .font(AppFont.body)
+                    .foregroundColor(Material.Text.secondary)
+            }
+        }
+    }
+
+    private var recentSheetNative: some View {
         NavigationStack {
             List {
                 ForEach(filteredNonPriorityCards) { card in
@@ -610,18 +728,7 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .overlay {
-                if filteredNonPriorityCards.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "tray")
-                            .font(.system(size: 36))
-                            .foregroundColor(Material.Icon.muted)
-                        Text(searchText.isEmpty ? "All caught up" : "No results")
-                            .font(AppFont.body)
-                            .foregroundColor(Material.Text.secondary)
-                    }
-                }
-            }
+            .overlay { recentEmptyState }
             .navigationTitle("Recent")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Find...")
@@ -647,12 +754,6 @@ struct ContentView: View {
                 }
             }
         }
-        .tint(Material.Accent.primary)
-        .presentationDetents([.fraction(0.25), .medium, .large])
-        .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-        .presentationBackground(Material.Surface.secondary)
-        .interactiveDismissDisabled()
-        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Priority Row (gradient card)
