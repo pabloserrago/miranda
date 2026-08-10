@@ -10,6 +10,10 @@ final class HyphenSplitEditEditorUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        // Launch tests cycle device orientations and can leave the simulator
+        // in landscape, where the third seeded card is offscreen and its List
+        // cell is never created.
+        XCUIDevice.shared.orientation = .portrait
     }
 
     @MainActor
