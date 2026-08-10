@@ -461,9 +461,12 @@ struct ContentView: View {
         .onPreferenceChange(PriorityRowHeightKey.self) { heights in
             priorityRowHeights = heights
         }
-        // Disable list scrolling while a card is lifted so the DragGesture
+        // Disable list scrolling only while a card is lifted so the DragGesture
         // can track vertical movement without competing with the scroll view.
-        .scrollDisabled(priorityReorderPressingId != nil || priorityReorderLiftedId != nil)
+        // Keying this on the pre-lift pressing state breaks swipe actions:
+        // pressing begins at touch-down, and toggling scrollDisabled mid-touch
+        // kills the swipe pan for any swipe that starts with a brief rest.
+        .scrollDisabled(priorityReorderLiftedId != nil)
         // DragGesture lives at the List level (above individual cells) so it:
         //   1. Always receives ongoing touches that started on any row, and
         //   2. Never competes with cell-level swipe action pan recognizers.
@@ -605,7 +608,7 @@ struct ContentView: View {
             .tint(Material.Accent.primary)
             .presentationDetents([.fraction(0.25), .medium, .large])
             .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-            .presentationBackground(Material.Surface.secondary)
+            .modifier(RecentSheetBackground())
             .interactiveDismissDisabled()
             .presentationDragIndicator(.visible)
     }
@@ -811,7 +814,9 @@ struct ContentView: View {
         // long press loses gesture arbitration to the button's own press and
         // only fires once movement cancels it — a stationary hold never lifted.
         .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.35, maximumDistance: 50)
+            // 15pt tolerance: since scrolling stays enabled until the lift,
+            // any real swipe or scroll drift must cancel the pending lift fast.
+            LongPressGesture(minimumDuration: 0.35, maximumDistance: 15)
                 .updating($priorityReorderPressingId) { _, state, _ in
                     guard allowDragReorder else { return }
                     if state == nil { Haptics.prepareReorderLift() }
@@ -1782,4 +1787,17 @@ struct PriorityPickerView: View {
 
 #Preview {
     ContentView()
+}
+
+// Recent sheet panel background: translucent glass on iOS 26 so the cloud-shader
+// backdrop refracts through (Files-style tint); opaque elevated surface otherwise.
+private struct RecentSheetBackground: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.presentationBackground(.ultraThinMaterial)
+        } else {
+            content.presentationBackground(Material.Surface.secondary)
+        }
+    }
 }
