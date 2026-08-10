@@ -1368,7 +1368,7 @@ struct NoteDetailView: View {
                             }
                             .frame(maxWidth: .infinity)
                         }
-                        .primaryButtonStyle()
+                        .buttonStyle(.primaryGlass)
                         .padding(.horizontal, 20)
 
                         if !isPriority {

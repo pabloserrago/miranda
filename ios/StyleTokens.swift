@@ -493,6 +493,31 @@ struct FilledButtonStyle: ButtonStyle {
     }
 }
 
+// Primary CTA rendered as tinted native Liquid Glass on iOS 26 (glassier than
+// .glassProminent), sized to match FilledButtonStyle; solid accent capsule pre-26.
+struct PrimaryGlassButtonStyle: ButtonStyle {
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .font(AppFont.body).fontWeight(.semibold)
+                .foregroundColor(Material.Accent.contentPrimary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .glassEffect(.regular.tint(Material.Accent.primary).interactive(), in: Capsule())
+        } else {
+            configuration.label
+                .font(AppFont.body).fontWeight(.semibold)
+                .foregroundColor(Material.Accent.contentPrimary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .background(Material.Accent.primary)
+                .clipShape(Capsule())
+                .modifier(PressEffect(isPressed: configuration.isPressed))
+        }
+    }
+}
+
 struct GhostButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -511,6 +536,10 @@ extension ButtonStyle where Self == SolidButtonStyle {
 
 extension ButtonStyle where Self == FilledButtonStyle {
     static var filled: FilledButtonStyle { .init() }
+}
+
+extension ButtonStyle where Self == PrimaryGlassButtonStyle {
+    static var primaryGlass: PrimaryGlassButtonStyle { .init() }
 }
 
 extension ButtonStyle where Self == GhostButtonStyle {
