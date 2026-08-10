@@ -56,10 +56,6 @@ struct ContentView: View {
     @State private var priorityReorderSettlingId: UUID?
     /// Rendered height (including list insets) of each priority row, by index.
     @State private var priorityRowHeights: [Int: CGFloat] = [:]
-    /// Set while a card is being held before the long-press threshold fires (drives
-    /// the charging scale). GestureState so it auto-resets when the press ends,
-    /// cancels, or succeeds — it can never get stuck.
-    @GestureState private var priorityReorderPressingId: UUID?
     /// After a long-press reorder lifts a card, ignore the finger-up “tap” so the detail sheet does not open.
     @State private var suppressNextPrioritySelectionId: UUID?
 
@@ -179,6 +175,10 @@ struct ContentView: View {
         }
         .tint(Material.Text.accent)
         .onAppear {
+            // Warm the Taptic Engine so the reorder lift thud plays without
+            // delay (there is no press-time prepare anymore — touch-down side
+            // effects broke the List's scroll and swipe recognizers).
+            Haptics.prepareReorderLift()
             #if DEBUG
             if ContentView.isUITestLaunch {
                 Analytics.shared.trackAppOpened()
@@ -533,6 +533,7 @@ struct ContentView: View {
                 priorityReorderProjectedIndex = nil
                 priorityReorderSettlingId = nil
             }
+            Haptics.prepareReorderLift()
         }
         if let id = capturedId {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -764,7 +765,6 @@ struct ContentView: View {
     @ViewBuilder
     private func priorityRow(_ card: Card, index: Int = 0, allowDragReorder: Bool = false) -> some View {
         let liftedHere = priorityReorderLiftedId == card.id
-        let pressingHere = priorityReorderPressingId == card.id
         let settlingHere = priorityReorderSettlingId == card.id
         let reorderActiveElsewhere = allowDragReorder && priorityReorderLiftedId != nil && priorityReorderLiftedId != card.id
         // Live shuffle: non-lifted rows part around the drag so the drop gap is visible.
@@ -816,12 +816,10 @@ struct ContentView: View {
         .simultaneousGesture(
             // 15pt tolerance: since scrolling stays enabled until the lift,
             // any real swipe or scroll drift must cancel the pending lift fast.
+            // No .updating closure: mutating state (and animating the cell)
+            // at touch-down disrupts the List's scroll and swipe-action pans
+            // for every touch that starts on a card.
             LongPressGesture(minimumDuration: 0.35, maximumDistance: 15)
-                .updating($priorityReorderPressingId) { _, state, _ in
-                    guard allowDragReorder else { return }
-                    if state == nil { Haptics.prepareReorderLift() }
-                    state = card.id
-                }
                 .onEnded { _ in
                     guard allowDragReorder, priorityReorderSettlingId == nil else { return }
                     Haptics.reorderLift()
@@ -867,7 +865,7 @@ struct ContentView: View {
             priorityReorderLiftedId != nil ? .spring(response: 0.32, dampingFraction: 0.8) : nil,
             value: shuffleY
         )
-        .scaleEffect(liftedHere && !settlingHere ? 1.06 : (pressingHere ? 1.03 : 1.0))
+        .scaleEffect(liftedHere && !settlingHere ? 1.06 : 1.0)
         .opacity(reorderActiveElsewhere ? 0.55 : 1)
         .zIndex(liftedHere ? 1 : 0)
         // Interactive spring tracks the finger and springs the drop into its
@@ -876,7 +874,6 @@ struct ContentView: View {
             liftedHere ? .interactiveSpring(response: 0.28, dampingFraction: 0.82) : nil,
             value: priorityReorderTranslation
         )
-        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: pressingHere)
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: settlingHere)
         .animation(.spring(response: 0.25, dampingFraction: 0.92), value: liftedHere)
         .shadow(
@@ -1789,13 +1786,15 @@ struct PriorityPickerView: View {
     ContentView()
 }
 
-// Recent sheet panel background: translucent glass on iOS 26 so the cloud-shader
-// backdrop refracts through (Files-style tint); opaque elevated surface otherwise.
+// Recent sheet panel background. On iOS 26 we deliberately apply NO override so the
+// sheet keeps its native Liquid Glass material and the cloud-shader backdrop refracts
+// through (Files-style). Overriding with a Material (even .ultraThinMaterial) defeats
+// that glass and renders a flat, near-opaque panel. Pre-iOS-26 uses the opaque surface.
 private struct RecentSheetBackground: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            content.presentationBackground(.ultraThinMaterial)
+            content
         } else {
             content.presentationBackground(Material.Surface.secondary)
         }
