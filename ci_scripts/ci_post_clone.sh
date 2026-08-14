@@ -23,9 +23,10 @@ import Foundation
 
 enum Secrets {
     /// Master switch for the Supabase backend (analytics upload + feedback).
-    /// Currently off: nothing leaves the device. When re-enabling, also update
-    /// PRIVACY.md, PrivacyInfo.xcprivacy, and the App Store privacy questionnaire.
-    static let supabaseEnabled = false
+    /// On: anonymous events and submitted feedback are uploaded. Note content
+    /// is never sent. Keep in sync with ios/ios/Secrets.swift, PRIVACY.md,
+    /// PrivacyInfo.xcprivacy, and the App Store privacy questionnaire.
+    static let supabaseEnabled = true
 
     static let supabaseURL = "${SUPABASE_URL}"
     static let supabaseAnonKey = "${SUPABASE_ANON_KEY}"
