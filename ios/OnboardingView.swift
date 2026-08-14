@@ -228,7 +228,7 @@ struct OnboardingPage<Content: View>: View {
                         }
 
                         Text(title)
-                            .font(AppFont.headline)
+                            .font(AppFont.title)
                             .foregroundColor(Material.Text.primary)
                             .multilineTextAlignment(.center)
 
