@@ -364,6 +364,7 @@ enum Material {
         static let chip: CGFloat = full
         static let drawer: CGFloat = 32
         static let input: CGFloat = 26
+        static let container: CGFloat = 26  // grouped settings section container
         static let control: CGFloat = 12
         static let handle: CGFloat = 8
         static let appIcon: CGFloat = 14
@@ -906,6 +907,41 @@ struct ListSuggestion: View {
             .background(Material.Control.fillTertiary)
             .clipShape(RoundedRectangle(cornerRadius: Material.Shape.control))
         }
+    }
+}
+
+// MARK: - Settings Section Container
+
+/// Where a row sits in its settings section, which decides the corners it
+/// rounds.
+enum SettingsRowPosition {
+    case top, middle, bottom, single
+
+    fileprivate var topRadius: CGFloat {
+        (self == .top || self == .single) ? Material.Shape.container : 0
+    }
+
+    fileprivate var bottomRadius: CGFloat {
+        (self == .bottom || self == .single) ? Material.Shape.container : 0
+    }
+}
+
+extension View {
+    /// Gives a settings section the same panel treatment as the onboarding
+    /// container. A grouped `List` draws its own section background and will
+    /// not take a custom radius, so each row paints the slice of the container
+    /// that belongs to it and only the outer corners are rounded.
+    func settingsRowBackground(_ position: SettingsRowPosition) -> some View {
+        listRowBackground(
+            UnevenRoundedRectangle(
+                topLeadingRadius: position.topRadius,
+                bottomLeadingRadius: position.bottomRadius,
+                bottomTrailingRadius: position.bottomRadius,
+                topTrailingRadius: position.topRadius,
+                style: .continuous
+            )
+            .fill(Material.Surface.secondary)
+        )
     }
 }
 

@@ -93,7 +93,7 @@ struct SettingsView: View {
                         }
                         .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 0, trailing: 16))
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.top)
                         
                         NavigationLink(destination: HowToAddWidgetView()) {
                             HStack(spacing: 12) {
@@ -106,7 +106,7 @@ struct SettingsView: View {
                         }
                         .opacity(0.7)
                         .listRowSeparator(.hidden)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.bottom)
                     }
                     
                     // Spacer between sections
@@ -126,7 +126,7 @@ struct SettingsView: View {
                                 Text("Audio Input")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.top)
                         .toggleHaptic(audioInputEnabled)
                         
                         Toggle(isOn: $actionTransformEnabled) {
@@ -138,7 +138,7 @@ struct SettingsView: View {
                                 Text("Transform to Actions")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
                         .toggleHaptic(actionTransformEnabled)
 
                         Toggle(isOn: $hyphenSplitEnabled) {
@@ -150,7 +150,7 @@ struct SettingsView: View {
                                 Text("Split by Hyphens")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.bottom)
                         .toggleHaptic(hyphenSplitEnabled)
                     } header: {
                         Text("Capture")
@@ -181,7 +181,7 @@ struct SettingsView: View {
                                 Text("Completion Animation")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.top)
                         .toggleHaptic(completionAnimationEnabled)
 
                         HStack(spacing: 12) {
@@ -196,7 +196,7 @@ struct SettingsView: View {
 
                             BackgroundThemePicker()
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
 
                         HStack(spacing: 12) {
                             Image(systemName: "textformat.size.larger")
@@ -217,7 +217,7 @@ struct SettingsView: View {
                                 .cornerRadius(Material.Shape.x2)
                         }
                         .opacity(0.6)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
 
                         NavigationLink(destination: AppIconPickerView()) {
                             HStack(spacing: 12) {
@@ -229,7 +229,7 @@ struct SettingsView: View {
                                 Text("App Icon")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.bottom)
                     } header: {
                         Text("Personalize")
                             .font(AppFont.body)
@@ -255,7 +255,7 @@ struct SettingsView: View {
                                 Text("Priority Reminders")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.single)
                         .toggleHaptic(notificationsEnabled)
                         .onChange(of: notificationsEnabled) { _, enabled in
                             if enabled {
@@ -285,7 +285,7 @@ struct SettingsView: View {
                                 }
                             }
                             .tint(Material.Text.primary)
-                            .listRowBackground(Material.Surface.primary)
+                            .settingsRowBackground(.single)
                         }
                     }
                     
@@ -305,7 +305,7 @@ struct SettingsView: View {
                             }
                         }
                         .tint(Material.Text.primary)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.single)
                     }
                     
                     // 5. Delete All
@@ -323,7 +323,7 @@ struct SettingsView: View {
                         }
                         .disabled(!hasCaptures)
                         .opacity(hasCaptures ? 1.0 : 0.5)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.single)
                     }
                     
                     // 6. App Version
@@ -348,7 +348,7 @@ struct SettingsView: View {
                             }
                         }
                         .tint(Material.Text.primary)
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.single)
                     }
                     
                     // 7. Developer Settings (debug builds only)
@@ -363,7 +363,7 @@ struct SettingsView: View {
                                 Text("View Components")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.top)
 
                         NavigationLink(destination: CloudLabView()) {
                             HStack(spacing: 12) {
@@ -374,7 +374,7 @@ struct SettingsView: View {
                                 Text("Cloud Lab")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
                         
                         Button(action: onShowAnalytics) {
                             HStack(spacing: 12) {
@@ -385,7 +385,7 @@ struct SettingsView: View {
                                 Text("Analytics Debug")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
                         
                         Button(action: onResetOnboarding) {
                             HStack(spacing: 12) {
@@ -396,7 +396,7 @@ struct SettingsView: View {
                                 Text("Reset Onboarding")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.middle)
 
                         Button(action: onSendTestReminder) {
                             HStack(spacing: 12) {
@@ -407,7 +407,7 @@ struct SettingsView: View {
                                 Text("Send Test Reminder")
                             }
                         }
-                        .listRowBackground(Material.Surface.primary)
+                        .settingsRowBackground(.bottom)
                     } header: {
                         Text("Developer")
                     }
