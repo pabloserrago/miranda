@@ -834,9 +834,6 @@ struct ContentView: View {
     private var recentEmptyState: some View {
         if filteredNonPriorityCards.isEmpty {
             VStack(spacing: 12) {
-                Image(systemName: "tray")
-                    .font(.system(size: 36))
-                    .foregroundColor(Material.Icon.muted)
                 Text(searchText.isEmpty ? "All caught up" : "No results")
                     .font(AppFont.body)
                     .foregroundColor(Material.Text.secondary)
