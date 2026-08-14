@@ -225,6 +225,7 @@ struct WidgetPreview: View {
 /// Used in Settings (Personalize) and onboarding step 3.
 struct BackgroundThemePicker: View {
     @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
         HStack(spacing: 10) {
@@ -251,9 +252,24 @@ struct BackgroundThemePicker: View {
                                 lineWidth: backgroundThemeRaw == theme.rawValue ? 2 : 1
                             )
                         )
+                        .overlay {
+                            // The accent ring is the only colour cue for which
+                            // swatch is chosen, so add a shape when the user has
+                            // asked not to rely on colour. The glyph carries its
+                            // own fill, keeping it legible on any swatch.
+                            if differentiateWithoutColor, backgroundThemeRaw == theme.rawValue {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(Material.Text.inverse, Material.Text.primary)
+                            }
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(theme.label)
+                .accessibilityAddTraits(
+                    backgroundThemeRaw == theme.rawValue ? [.isButton, .isSelected] : .isButton
+                )
             }
         }
     }

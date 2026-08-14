@@ -88,6 +88,10 @@ struct AppIconPickerView: View {
                             AppIconTile(option: option, isSelected: option == selected)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel(option.displayName)
+                        .accessibilityAddTraits(
+                            option == selected ? [.isButton, .isSelected] : .isButton
+                        )
                     }
                 }
                 .padding(24)

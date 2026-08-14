@@ -36,7 +36,22 @@ enum Palette {
     static let neutral800 = UIColor(hex: 0x1C1C1E) // #1C1C1E  ← step 15
     static let neutral900 = UIColor(hex: 0x191919) // #191919  ← step 10
     static let neutral950 = UIColor(hex: 0x000000) // #000000  ← step 5
-    
+
+    // MARK: Translucent ink
+    // Text de-emphasis is expressed as opacity over the surface rather than as
+    // a fixed grey, so a label keeps the same relationship to its background
+    // whichever surface it lands on.
+
+    /// Black at `opacity` — light-mode text de-emphasis.
+    static func ink(_ opacity: CGFloat) -> UIColor {
+        UIColor.black.withAlphaComponent(opacity)
+    }
+
+    /// White at `opacity` — dark-mode text de-emphasis.
+    static func paper(_ opacity: CGFloat) -> UIColor {
+        UIColor.white.withAlphaComponent(opacity)
+    }
+
     // MARK: Green
     static let green50  = UIColor(hex: 0xE4F5EA) // #E4F5EA  ← step 98
     static let green100 = UIColor(hex: 0xC8EDD5) // #C8EDD5  ← step 95
@@ -295,8 +310,11 @@ enum Material {
     
     enum Text {
         static let primary   = adaptive(light: Palette.neutral950, dark: Palette.neutral50)  // headings, body copy, card text, button labels, chip icon overrides, widget text/button
-        static let secondary = adaptive(light: Palette.neutral700, dark: Palette.neutral200) // supporting labels, captions, hints, settings descriptions, debug rows, GhostButtonStyle, widget muted text
-        static let tertiary  = adaptive(light: Palette.neutral400, dark: Palette.neutral500) // subtle: action chip icon on neutral fills, SolidButtonStyle disabled label, widget button text
+        // Secondary and tertiary are translucent ink rather than fixed greys, so
+        // they hold the same relative step down from primary on every surface
+        // they sit on instead of drifting toward the background on darker fills.
+        static let secondary = adaptive(light: Palette.ink(0.60), dark: Palette.paper(0.70)) // supporting labels, captions, hints, settings descriptions, debug rows, GhostButtonStyle, widget muted text
+        static let tertiary  = adaptive(light: Palette.ink(0.55), dark: Palette.paper(0.55)) // subtle: input placeholders, widget secondary links, SolidButtonStyle disabled label
         static let accent    = Accent.primary                                                // settings tint: app icon fill, picker, primary button bg
         static let inverse   = adaptive(light: Palette.neutral50, dark: Palette.neutral950)                                     // text on dark/accent fills: SolidButtonStyle label, settings buttons, slider tint
     }
@@ -313,11 +331,11 @@ enum Material {
     // MARK: Typography — size scale (consumed by AppFont)
     
     enum Typography {
-        static let title:   CGFloat = 40   // AppFont.title
+        static let title:   CGFloat = 34   // AppFont.title
         static let priority: CGFloat = 20   // AppFont.priority — priority card body text
         static let headline: CGFloat = 22  // AppFont.headline
         static let icon:    CGFloat = 20   // AppFont.icon
-        static let body:    CGFloat = 17   // AppFont.body, AppFont.bodyUIFont
+        static let body:    CGFloat = 17   // AppFont.body
         static let subhead: CGFloat = 14   // AppFont.subhead — widget large secondary rows
         static let label:   CGFloat = 13   // AppFont.label
         static let caption: CGFloat = 12   // AppFont.caption, widget medium secondary rows
@@ -340,7 +358,7 @@ enum Material {
     // MARK: Accent — brand color (light: red, dark: green)
     
     enum Accent {
-        static let primary     = adaptive(light: Palette.red800,  dark: Palette.red700)     // ActionChip.accent icon, Text.accent, Card.accent, settings tint
+        static let primary     = adaptive(light: Palette.red900,  dark: Palette.red700)     // ActionChip.accent icon, Text.accent, Card.accent, settings tint
         static let contentPrimary   = adaptive(light: Palette.neutral0,  dark: Palette.neutral950) // text/icon on accent fill (SolidButtonStyle)
     }
     
@@ -360,12 +378,12 @@ enum Material {
         static let full: CGFloat = 9999
         
         // Semantic radii
-        static let card: CGFloat = 30
+        static let card: CGFloat = 32
         static let chip: CGFloat = full
-        static let drawer: CGFloat = 32
+        static let drawer: CGFloat = 28
         static let input: CGFloat = 26
         static let container: CGFloat = 26  // grouped settings section container
-        static let control: CGFloat = 12
+        static let control: CGFloat = 26
         static let handle: CGFloat = 8
         static let appIcon: CGFloat = 14
         
@@ -387,7 +405,7 @@ enum Material {
     enum Status {
         static let success = adaptive(light: Palette.green200, dark: Palette.green100) // complete action chip, settings app icon previews (Messages, Phone)
         static let warning = adaptive(light: Palette.yellow400, dark: Palette.yellow300) // priority action chip, Card.boost gradient
-        static let error   = adaptive(light: Palette.red300,   dark: Palette.red100)   // settings app icon preview (Photos)
+        static let error   = adaptive(light: Palette.red500,   dark: Palette.red100)   // destructive actions (Delete All), settings app icon preview (Photos)
         static let info    = adaptive(light: Palette.blue300,   dark: Palette.blue500)  // archive action chip, settings gradient, Card.wrapper gradient, debug emphasis
     }
     
@@ -426,21 +444,117 @@ enum Material {
 // ============================================================
 
 enum AppFont {
-    static let title    = Font.system(size: Material.Typography.title, weight: .bold, design: .rounded)
-    static let priority = Font.system(size: Material.Typography.priority, weight: .regular)
-    static let headline = Font.system(size: Material.Typography.headline, weight: .bold, design: .rounded)
-    static let icon     = Font.system(size: Material.Typography.icon, weight: .bold)
-    static let body     = Font.system(size: Material.Typography.body, weight: .regular)
-    static let bodyMono = Font.system(size: Material.Typography.body, weight: .regular).monospacedDigit()
-    static let subhead  = Font.system(size: Material.Typography.subhead, weight: .regular)
-    static let label    = Font.system(size: Material.Typography.label, weight: .medium)
-    static let caption  = Font.system(size: Material.Typography.caption, weight: .regular)
-    static let micro    = Font.system(size: Material.Typography.micro, weight: .regular)
-    
+
+    /// Each in-app token, paired with the Dynamic Type style it scales against.
+    ///
+    /// Scaling from the documented `Material.Typography` size — rather than
+    /// adopting a bare `Font.system(.body)` — keeps the design scale intact at
+    /// the default content size while still honouring Larger Text.
+    enum Scale: CaseIterable {
+        case title, priority, headline, icon, body, subhead, label, caption, micro
+
+        var size: CGFloat {
+            switch self {
+            case .title:    return Material.Typography.title
+            case .priority: return Material.Typography.priority
+            case .headline: return Material.Typography.headline
+            case .icon:     return Material.Typography.icon
+            case .body:     return Material.Typography.body
+            case .subhead:  return Material.Typography.subhead
+            case .label:    return Material.Typography.label
+            case .caption:  return Material.Typography.caption
+            case .micro:    return Material.Typography.micro
+            }
+        }
+
+        var textStyle: UIFont.TextStyle {
+            switch self {
+            case .title, .headline:  return .title1
+            case .priority, .icon, .body: return .body
+            case .subhead: return .subheadline
+            case .label:   return .footnote
+            case .caption: return .caption1
+            case .micro:   return .caption2
+            }
+        }
+
+        var weight: UIFont.Weight {
+            switch self {
+            case .title, .headline, .icon: return .bold
+            case .label:                   return .medium
+            default:                       return .regular
+            }
+        }
+
+        var design: UIFontDescriptor.SystemDesign {
+            switch self {
+            case .title, .headline: return .rounded
+            default:                return .default
+            }
+        }
+    }
+
+    /// Resolves a token to a `UIFont` scaled for the given traits (the current
+    /// content size category when `traits` is nil).
+    static func uiFont(_ scale: Scale, compatibleWith traits: UITraitCollection? = nil) -> UIFont {
+        let system = UIFont.systemFont(ofSize: scale.size, weight: scale.weight)
+        let base = system.fontDescriptor.withDesign(scale.design)
+            .map { UIFont(descriptor: $0, size: scale.size) } ?? system
+        return UIFontMetrics(forTextStyle: scale.textStyle)
+            .scaledFont(for: base, compatibleWith: traits)
+    }
+
+    private static func font(_ scale: Scale) -> Font { Font(uiFont(scale)) }
+
+    // Computed, not stored: each access re-resolves against the current content
+    // size category, so the UI reflects a Larger Text change without a relaunch.
+    static var title: Font    { font(.title) }
+    static var priority: Font { font(.priority) }
+    static var headline: Font { font(.headline) }
+    static var icon: Font     { font(.icon) }
+    static var body: Font     { font(.body) }
+    static var bodyMono: Font { font(.body).monospacedDigit() }
+    static var subhead: Font  { font(.subhead) }
+    static var label: Font    { font(.label) }
+    static var caption: Font  { font(.caption) }
+    static var micro: Font    { font(.micro) }
+
+    // Widget heroes stay fixed: widget frames cannot grow, so these rely on
+    // `minimumScaleFactor` to fit instead.
     static let widgetHero      = Font.system(size: Material.Typography.widgetHero, weight: .heavy)
     static let widgetLargeHero = Font.system(size: Material.Typography.widgetLargeHero, weight: .heavy)
-    
-    static let bodyUIFont = UIFont.systemFont(ofSize: Material.Typography.body)
+}
+
+// ============================================================
+// MARK: - Motion
+// ============================================================
+
+enum Motion {
+
+    /// Resolves the effective Reduce Motion state from a view's
+    /// `\.accessibilityReduceMotion` environment value.
+    ///
+    /// The launch-argument override exists because XCUITest cannot toggle the
+    /// simulator's Reduce Motion setting, and `\.accessibilityReduceMotion` is
+    /// a read-only key path so it cannot be injected at the app root either.
+    static func isReduced(_ environmentValue: Bool) -> Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-UITestReduceMotion") { return true }
+        #endif
+        return environmentValue
+    }
+
+    /// Drops an animation when Reduce Motion is on, so the state change lands
+    /// instantly instead of travelling.
+    static func gated(_ animation: Animation?, reduce: Bool) -> Animation? {
+        isReduced(reduce) ? nil : animation
+    }
+
+    /// Reduce Motion asks for less movement, not less feedback — transitions
+    /// fall back to a cross-fade so appearing and disappearing stay legible.
+    static func transition(_ transition: AnyTransition, reduce: Bool) -> AnyTransition {
+        isReduced(reduce) ? .opacity : transition
+    }
 }
 
 // ============================================================
@@ -448,13 +562,15 @@ enum AppFont {
 // ============================================================
 
 private struct PressEffect: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let isPressed: Bool
-    
+
     func body(content: Content) -> some View {
         content
             .opacity(isPressed ? 0.75 : 1)
-            .scaleEffect(isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.15), value: isPressed)
+            // The dim alone carries the press; only the scale is motion.
+            .scaleEffect(isPressed && !Motion.isReduced(reduceMotion) ? 0.97 : 1)
+            .animation(Motion.gated(.easeOut(duration: 0.15), reduce: reduceMotion), value: isPressed)
     }
 }
 
@@ -520,6 +636,8 @@ struct PrimaryGlassButtonStyle: ButtonStyle {
 }
 
 struct GhostButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppFont.body).fontWeight(.medium)
@@ -527,7 +645,8 @@ struct GhostButtonStyle: ButtonStyle {
             .padding(.vertical, 12)
             .padding(.horizontal, 20)
             .opacity(configuration.isPressed ? 0.4 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .animation(Motion.gated(.easeOut(duration: 0.12), reduce: reduceMotion),
+                       value: configuration.isPressed)
     }
 }
 
@@ -619,7 +738,8 @@ extension ButtonStyle where Self == GlassButtonStyle {
 struct ToastModifier: ViewModifier {
     @Binding var isPresented: Bool
     let message: LocalizedStringKey
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         ZStack(alignment: .bottom) {
             content
@@ -634,10 +754,14 @@ struct ToastModifier: ViewModifier {
                     .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
                     .shadow(color: Material.Elevation.shadow.opacity(0.15), radius: 8, x: 0, y: 4)
                     .padding(.bottom, 50)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(Motion.transition(
+                        .move(edge: .bottom).combined(with: .opacity),
+                        reduce: reduceMotion
+                    ))
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isPresented)
+        .animation(Motion.gated(.spring(response: 0.4, dampingFraction: 0.8), reduce: reduceMotion),
+                   value: isPresented)
     }
 }
 

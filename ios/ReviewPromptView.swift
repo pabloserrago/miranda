@@ -4,6 +4,7 @@ import StoreKit
 struct ReviewPromptView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var step: Step = .sentiment
     @State private var showFeedback = false
@@ -14,19 +15,20 @@ struct ReviewPromptView: View {
         VStack(spacing: 0) {
             if step == .sentiment {
                 sentimentContent
-                    .transition(.asymmetric(
+                    .transition(Motion.transition(.asymmetric(
                         insertion: .opacity,
                         removal: .opacity.combined(with: .move(edge: .leading))
-                    ))
+                    ), reduce: reduceMotion))
             } else {
                 thankYouContent
-                    .transition(.asymmetric(
+                    .transition(Motion.transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .trailing)),
                         removal: .opacity
-                    ))
+                    ), reduce: reduceMotion))
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: step)
+        .animation(Motion.gated(.spring(response: 0.35, dampingFraction: 0.85), reduce: reduceMotion),
+                   value: step)
         .padding(.horizontal, 28)
         .padding(.vertical, 36)
         .frame(maxWidth: .infinity)

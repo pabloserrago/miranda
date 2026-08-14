@@ -39,6 +39,20 @@ enum PriorityReorderMath {
         return target
     }
 
+    /// Moves one element to a new index, returning the list unchanged when the
+    /// move is a no-op or out of bounds.
+    ///
+    /// Shared by the drag reorder and the row's Move Up / Move Down
+    /// accessibility actions so both paths produce identical orderings.
+    static func reordered<T>(_ items: [T], from source: Int, to destination: Int) -> [T] {
+        guard source != destination,
+              source >= 0, source < items.count,
+              destination >= 0, destination < items.count else { return items }
+        var result = items
+        result.insert(result.remove(at: source), at: destination)
+        return result
+    }
+
     /// Vertical offset a non-lifted row adopts during the live shuffle: rows
     /// between the source slot and the projected target part by the lifted
     /// card's height so the drop gap is always visible.

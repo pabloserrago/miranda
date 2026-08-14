@@ -92,7 +92,7 @@ private struct WidgetNoteButton: View {
                     .font(AppFont.label).fontWeight(.semibold)
                     .tracking(Material.Typography.Tracking.widgetButton)
             }
-            .foregroundColor(Material.Text.tertiary)
+            .foregroundColor(Material.Text.inverse)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(
@@ -180,7 +180,7 @@ struct MediumWidgetView: View {
                 Link(destination: URL(string: "miranda://capture")!) {
                     Text("+ Note")
                         .font(AppFont.caption)
-                        .foregroundColor(Material.Text.primary.opacity(0.55))
+                        .foregroundColor(Material.Text.tertiary)
                 }
             }
             .padding(.horizontal, 14)
@@ -295,7 +295,7 @@ struct LargeWidgetView: View {
                 Link(destination: URL(string: "miranda://capture")!) {
                     Text("+ Note")
                         .font(AppFont.caption)
-                        .foregroundColor(Material.Text.primary.opacity(0.55))
+                        .foregroundColor(Material.Text.tertiary)
                 }
                 .buttonStyle(.plain)
             }

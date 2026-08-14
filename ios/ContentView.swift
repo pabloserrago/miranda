@@ -28,6 +28,8 @@ private struct PriorityRowHeightKey: PreferenceKey {
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(AppIconManager.storageKey) private var selectedAppIconRaw = AppIconOption.default.rawValue
     @State private var cards: [Card] = []
     @State private var priorityCardIds: [UUID] = []
@@ -231,12 +233,26 @@ struct ContentView: View {
                         Text("🐢")
                             .font(.system(size: 24.2))
                     }
+                    .accessibilityLabel("Settings")
+                    .accessibilityIdentifier("settings-button")
                 }
                 ToolbarItem(placement: .principal) {
                     Text("Miranda First")
                         .font(AppFont.headline)
                         .foregroundColor(Material.Text.primary)
                         .accessibilityIdentifier("home-title")
+                }
+                // The recent sheet is otherwise reachable only by dragging,
+                // which Voice Control and Switch Control cannot perform.
+                // Dismissal already has a system-provided accessible path.
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !cards.isEmpty && !showRecentSheet {
+                        Button { showRecentSheet = true } label: {
+                            Image(systemName: "tray.full")
+                        }
+                        .accessibilityLabel("Show recent notes")
+                        .accessibilityIdentifier("show-recent-button")
+                    }
                 }
             }
         }
@@ -458,6 +474,7 @@ struct ContentView: View {
                                 .font(AppFont.caption).fontWeight(.medium)
                                 .foregroundColor(Material.Text.secondary)
                         }
+                        .accessibilityLabel("Dismiss tip")
                     }
                     Group {
                         Text("Capture anything that's in your mind. Like a dream, idea or to-do. ")
@@ -787,6 +804,8 @@ struct ContentView: View {
                             .contentShape(Circle())
                     }
                     .glassEffect(.regular.interactive(), in: Circle())
+                    .accessibilityLabel("Dictate note")
+                    .accessibilityIdentifier("dictate-note-button")
                 }
                 Button {
                     newCardText = ""
@@ -800,6 +819,7 @@ struct ContentView: View {
                         .contentShape(Circle())
                 }
                 .glassEffect(.regular.interactive(), in: Circle())
+                .accessibilityLabel("New note")
                 .accessibilityIdentifier("create-note-button")
             }
         }
@@ -820,6 +840,7 @@ struct ContentView: View {
                         .foregroundStyle(Material.Text.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
             }
         }
         .font(AppFont.body)
@@ -864,6 +885,8 @@ struct ContentView: View {
                         } label: {
                             Image(systemName: "mic.fill")
                         }
+                        .accessibilityLabel("Dictate note")
+                        .accessibilityIdentifier("dictate-note-button")
                     }
                     Button {
                         newCardText = ""
@@ -872,6 +895,7 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("New note")
                     .accessibilityIdentifier("create-note-button")
                 }
             }
@@ -918,7 +942,9 @@ struct ContentView: View {
                 .font(AppFont.priority)
                 .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(4)
+                // Uncapped at accessibility sizes so the card grows instead of
+                // truncating the note. minHeight is a floor, not a clip.
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 4)
                 .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 20)
@@ -928,6 +954,19 @@ struct ContentView: View {
         .accessibilityLabel(card.simplifiedText)
         .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
         .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
+        // The lift-and-drag reorder is unreachable without precise pointing, so
+        // the same operation is exposed as named actions for Voice Control,
+        // VoiceOver, Switch Control, and Full Keyboard Access.
+        .accessibilityActions {
+            if allowDragReorder {
+                if index > 0 {
+                    Button("Move Up") { movePriorityCard(card, to: index - 1) }
+                }
+                if index < autoPriorityCards.count - 1 {
+                    Button("Move Down") { movePriorityCard(card, to: index + 1) }
+                }
+            }
+        }
         // simultaneousGesture, NOT .onLongPressGesture: on a Button the plain
         // long press loses gesture arbitration to the button's own press and
         // only fires once movement cancels it — a stationary hold never lifted.
@@ -980,20 +1019,30 @@ struct ContentView: View {
         // offsets reset to zero and must NOT animate (the layout swap already
         // places every row where its offset had it — animating would double-move).
         .animation(
-            priorityReorderLiftedId != nil ? .spring(response: 0.32, dampingFraction: 0.8) : nil,
+            Motion.gated(
+                priorityReorderLiftedId != nil ? .spring(response: 0.32, dampingFraction: 0.8) : nil,
+                reduce: reduceMotion
+            ),
             value: shuffleY
         )
-        .scaleEffect(liftedHere && !settlingHere ? 1.06 : 1.0)
+        // The lift already reads through shadow and z-order; the scale is pure
+        // motion, so Reduce Motion drops it.
+        .scaleEffect(liftedHere && !settlingHere && !Motion.isReduced(reduceMotion) ? 1.06 : 1.0)
         .opacity(reorderActiveElsewhere ? 0.55 : 1)
         .zIndex(liftedHere ? 1 : 0)
         // Interactive spring tracks the finger and springs the drop into its
         // slot; nil after commit so the offset reset never animates.
         .animation(
-            liftedHere ? .interactiveSpring(response: 0.28, dampingFraction: 0.82) : nil,
+            Motion.gated(
+                liftedHere ? .interactiveSpring(response: 0.28, dampingFraction: 0.82) : nil,
+                reduce: reduceMotion
+            ),
             value: priorityReorderTranslation
         )
-        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: settlingHere)
-        .animation(.spring(response: 0.25, dampingFraction: 0.92), value: liftedHere)
+        .animation(Motion.gated(.spring(response: 0.3, dampingFraction: 0.85), reduce: reduceMotion),
+                   value: settlingHere)
+        .animation(Motion.gated(.spring(response: 0.25, dampingFraction: 0.92), reduce: reduceMotion),
+                   value: liftedHere)
         .shadow(
             color: liftedHere && !settlingHere ? Material.Elevation.shadow.opacity(0.32) : .clear,
             radius: liftedHere && !settlingHere ? 28 : 0,
@@ -1010,7 +1059,7 @@ struct ContentView: View {
             Text(card.simplifiedText)
                 .font(AppFont.body)
                 .foregroundColor(Material.Text.primary)
-                .lineLimit(2)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1060,6 +1109,7 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
         }
+        .accessibilityIdentifier("completion-celebration")
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .presentationDetents([.height(200)])
@@ -1099,11 +1149,19 @@ struct ContentView: View {
         let count = autoPriorityCards.count
         guard from >= 0, to >= 0, from < count, to < count else { return }
         syncPriorityOrder()
-        var ids = autoPriorityCards.map(\.id)
-        let id = ids.remove(at: from)
-        ids.insert(id, at: to)
-        priorityCardIds = ids
+        priorityCardIds = PriorityReorderMath.reordered(
+            autoPriorityCards.map(\.id), from: from, to: to
+        )
         saveState()
+    }
+
+    /// Pointer-free equivalent of the drag reorder, driven by the row's
+    /// Move Up / Move Down accessibility actions. Skips the lift-and-settle
+    /// animation entirely and commits the new order directly.
+    private func movePriorityCard(_ card: Card, to destination: Int) {
+        guard let source = autoPriorityCards.firstIndex(where: { $0.id == card.id }) else { return }
+        movePriorityFromIndex(from: source, to: destination)
+        Haptics.reorderTick()
     }
 
     /// Converts a drag translation into the slot the lifted card would land on,
@@ -1204,7 +1262,9 @@ struct ContentView: View {
             priorityCardIds.removeAll { $0 == card.id }
         }
         maybePromptReview()
-        if completionAnimationEnabled {
+        // The celebration is a full-screen animated flourish, so the system
+        // setting overrides the user's preference for it.
+        if completionAnimationEnabled && !Motion.isReduced(reduceMotion) {
             // Reset first so a stuck `true` (e.g. sheet dismissed while another sheet was open)
             // still triggers a fresh presentation when the user turns the toggle back on.
             showCompleteTortoise = false
@@ -1407,15 +1467,18 @@ struct NoteDetailView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
                                 VStack(alignment: .leading, spacing: 0) {
-                                    Text(segment)
-                                        .font(AppFont.body)
-                                        .foregroundColor(Material.Text.primary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 10)
-                                        .padding(.horizontal, 13)
-                                        .contentShape(Rectangle())
-                                        .onTapGesture { restoreSegments(from: index) }
-                                        .accessibilityIdentifier("note-segment-\(index)")
+                                    Button { restoreSegments(from: index) } label: {
+                                        Text(segment)
+                                            .font(AppFont.body)
+                                            .foregroundColor(Material.Text.primary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 10)
+                                            .padding(.horizontal, 13)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityHint("Merges this line and the ones below it back into the note")
+                                    .accessibilityIdentifier("note-segment-\(index)")
 
                                     DashedDivider()
                                         .padding(.horizontal, 13)
@@ -1471,11 +1534,14 @@ struct NoteDetailView: View {
                         } label: {
                             Image(systemName: "xmark")
                         }
+                        .accessibilityLabel("Cancel edit")
+                        .accessibilityIdentifier("cancel-edit-button")
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: saveEdit) {
                             Image(systemName: "checkmark")
                         }
+                        .accessibilityLabel("Save note")
                         .accessibilityIdentifier("save-edit-button")
                         .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && committedSegments.isEmpty)
                     }
@@ -1603,6 +1669,7 @@ struct NoteDetailView: View {
 // MARK: - Create Card Modal
 
 struct CreateCardModal: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var text: String
     let startWithDictation: Bool
     let onSave: () -> Void
@@ -1660,15 +1727,18 @@ struct CreateCardModal: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(segment)
-                                .font(AppFont.body)
-                                .foregroundColor(Material.Text.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 10)
-                                .padding(.horizontal, 13)
-                                .contentShape(Rectangle())
-                                .onTapGesture { restoreSegments(from: index) }
-                                .accessibilityIdentifier("note-segment-\(index)")
+                            Button { restoreSegments(from: index) } label: {
+                                Text(segment)
+                                    .font(AppFont.body)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 13)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityHint("Merges this line and the ones below it back into the note")
+                            .accessibilityIdentifier("note-segment-\(index)")
 
                             DashedDivider()
                                 .padding(.horizontal, 13)
@@ -1715,7 +1785,11 @@ struct CreateCardModal: View {
                                 Image(systemName: "waveform")
                                     .font(AppFont.icon)
                                     .foregroundColor(Material.Text.accent)
-                                    .symbolEffect(.variableColor.iterative, options: .repeating)
+                                    // The "Listening…" label carries the state,
+                                    // so the perpetual pulse can go entirely.
+                                    .symbolEffect(.variableColor.iterative,
+                                                  options: .repeating,
+                                                  isActive: !Motion.isReduced(reduceMotion))
                                 Text("Listening…")
                                     .font(AppFont.caption)
                                     .foregroundColor(Material.Text.secondary)
@@ -1842,6 +1916,7 @@ struct PriorityPickerView: View {
     let onCaptureText: () -> Void
     let onCaptureVoice: () -> Void
     @Environment(\.dismiss) var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
 
     var body: some View {
@@ -1901,7 +1976,7 @@ struct PriorityPickerView: View {
                                     Text(card.simplifiedText)
                                         .font(AppFont.body).fontWeight(.medium)
                                         .foregroundColor(Material.Text.primary)
-                                        .lineLimit(2)
+                                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Image(systemName: "lightbulb")
                                         .foregroundColor(Material.Text.secondary)

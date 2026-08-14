@@ -56,7 +56,7 @@ struct FeedbackView: View {
 
                             if feedbackText.isEmpty {
                                 Text("Describe your feedback...")
-                                    .foregroundColor(Material.Text.secondary.opacity(0.5))
+                                    .foregroundColor(Material.Text.tertiary)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 16)
                                     .allowsHitTesting(false)
@@ -97,6 +97,7 @@ struct FeedbackView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(Material.Text.secondary)
                     }
+                    .accessibilityLabel("Close")
                 }
             }
             .alert("Unable to Send", isPresented: $showError) {

@@ -57,7 +57,11 @@ struct SettingsView: View {
 
                             if widgetTab == 0 {
                                 // Home screen preview
+                                // Capped: these are pictures of the OS screen at
+                                // fixed geometry, not app content, so their text
+                                // must not grow with Larger Text.
                                 WidgetPreview(card: previewCard)
+                                    .dynamicTypeSize(...DynamicTypeSize.large)
                             } else {
                                 // Lock screen preview
                                 ZStack {
@@ -84,6 +88,7 @@ struct SettingsView: View {
                                     }
                                 }
                                 .frame(height: 320)
+                                .dynamicTypeSize(...DynamicTypeSize.large)
                                 .cornerRadius(Material.Shape.drawer)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: Material.Shape.drawer)
