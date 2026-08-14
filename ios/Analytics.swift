@@ -95,26 +95,29 @@ class Analytics {
         
         saveEvents(events)
         
-        // Upload only when the Supabase backend is enabled; otherwise
-        // analytics stay strictly on-device (see PRIVACY.md).
-        if Secrets.supabaseEnabled {
-            sendToSupabase(event: name, properties: properties)
-        }
+        // No-op unless the Supabase backend is enabled; otherwise analytics
+        // stay strictly on-device (see PRIVACY.md).
+        sendToSupabase(event: name, properties: properties)
         
         // Print to console for debugging
         print("📊 Analytics: \(name) - \(properties)")
     }
     
     private func sendToSupabase(event: String, properties: [String: Any]) {
-        guard let url = URL(string: "\(Secrets.supabaseURL)/rest/v1/analytics") else { return }
+        let body: [String: Any] = [
+            "event": event,
+            "properties": Analytics.jsonSafeProperties(properties),
+            "app_version": appVersion,
+            "language": appLanguage
+        ]
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(Secrets.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(Secrets.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
+        guard let request = Supabase.insertRequest(table: "analytics", body: body) else { return }
         
-        // Convert properties to JSON-safe types
+        URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
+    }
+    
+    /// Bool is checked before Int so `true` does not bridge to `1`.
+    static func jsonSafeProperties(_ properties: [String: Any]) -> [String: Any] {
         var jsonProperties: [String: Any] = [:]
         for (key, value) in properties {
             if let boolVal = value as? Bool {
@@ -127,17 +130,7 @@ class Analytics {
                 jsonProperties[key] = "\(value)"
             }
         }
-        
-        let body: [String: Any] = [
-            "event": event,
-            "properties": jsonProperties,
-            "app_version": appVersion,
-            "language": appLanguage
-        ]
-        
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        
-        URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
+        return jsonProperties
     }
     
     private func incrementCounter(_ key: String) {

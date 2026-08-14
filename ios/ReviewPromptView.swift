@@ -70,7 +70,12 @@ struct ReviewPromptView: View {
 
                 Button {
                     Analytics.shared.trackReviewSentimentNegative()
-                    showFeedback = true
+                    // Feedback has nowhere to go while the backend is off.
+                    if Secrets.supabaseEnabled {
+                        showFeedback = true
+                    } else {
+                        dismiss()
+                    }
                 } label: {
                     Text("Not really")
                         .frame(maxWidth: .infinity)

@@ -111,15 +111,6 @@ struct FeedbackView: View {
         let trimmed = feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        isSubmitting = true
-
-        let url = URL(string: "\(Secrets.supabaseURL)/rest/v1/feedback")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(Secrets.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(Secrets.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
-
         let body: [String: String] = [
             "category": selectedCategory.rawValue,
             "message": trimmed,
@@ -127,7 +118,12 @@ struct FeedbackView: View {
             "language": appLanguage
         ]
 
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        guard let request = Supabase.insertRequest(table: "feedback", body: body) else {
+            showError = true
+            return
+        }
+
+        isSubmitting = true
 
         URLSession.shared.dataTask(with: request) { _, response, error in
             DispatchQueue.main.async {
