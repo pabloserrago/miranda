@@ -10,6 +10,15 @@ enum NoteSwipeLayout {
 }
 
 enum PriorityNoteActions {
+    /// Home and the widget both show at most three priorities.
+    static let priorityLimit = 3
+
+    /// `includeInPriority` does not enforce the cap on its own — call sites
+    /// that promote a note must check this first.
+    static func canPromoteToPriority(currentPriorityCount: Int) -> Bool {
+        currentPriorityCount < priorityLimit
+    }
+
     static func excludeFromPriority(cardId: UUID, excludedIds: [UUID]) -> [UUID] {
         guard !excludedIds.contains(cardId) else { return excludedIds }
         return excludedIds + [cardId]

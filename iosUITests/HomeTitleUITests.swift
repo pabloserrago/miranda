@@ -25,7 +25,8 @@ final class HomeTitleUITests: XCTestCase {
         XCTAssertEqual(title.label, "Miranda First")
 
         // The principal title must not swallow the leading settings button.
-        let settingsButton = app.buttons["🐢"]
+        // Queried by identifier: its accessibility label overrides the emoji.
+        let settingsButton = app.buttons["settings-button"]
         XCTAssertTrue(
             settingsButton.waitForExistence(timeout: 3),
             "settings button missing from the toolbar; tree:\n\(app.debugDescription)"

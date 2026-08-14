@@ -4,6 +4,13 @@ import UIKit
 import WidgetKit
 #endif
 
+/// The three mutually exclusive home screens.
+enum HomeState {
+    case empty
+    case noPriority
+    case list
+}
+
 private struct ScrollAnchorKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
@@ -82,6 +89,13 @@ struct ContentView: View {
             _lockScreenOnboardingDismissed = State(initialValue: true)
             _showRecentSheet = State(initialValue: false)
         }
+        if ProcessInfo.processInfo.arguments.contains("-UITestNoPriorities") {
+            // Every seeded card excluded, so home lands on the no-priority
+            // state. The recent sheet stays open because that is the real
+            // condition the CTA has to present a sheet over.
+            _excludedFromPriorityIds = State(initialValue: ContentView.uiTestSeedCards.map(\.id))
+            _showRecentSheet = State(initialValue: true)
+        }
         if ProcessInfo.processInfo.arguments.contains("-UITestHyphenSplit") {
             // register(defaults:) is not persisted, so it cannot pollute later launches.
             UserDefaults.standard.register(defaults: ["hyphenSplitEnabled": true])
@@ -121,6 +135,20 @@ struct ContentView: View {
         if arguments.contains("-UITestShowOnboarding") { return true }
         if arguments.contains(where: { $0.hasPrefix("-UITest") }) { return false }
         return !hasCompleted && !hasPersistedCards
+    }
+
+    /// Home renders the capture prompt with no notes at all, the priority
+    /// prompt when every note has been excluded, and the list otherwise.
+    static func homeState(hasCards: Bool, hasPriorities: Bool) -> HomeState {
+        if !hasCards { return .empty }
+        return hasPriorities ? .list : .noPriority
+    }
+
+    /// Whether completing a priority should re-offer the picker. Counts the
+    /// visible priorities, not `priorityCardIds`, which retains ids of notes
+    /// that have since been excluded.
+    static func shouldOfferPicker(priorityCount: Int, cardsEmpty: Bool) -> Bool {
+        PriorityNoteActions.canPromoteToPriority(currentPriorityCount: priorityCount) && !cardsEmpty
     }
 
     // MARK: - Computed Properties
@@ -186,10 +214,13 @@ struct ContentView: View {
                     theme: BackgroundTheme(rawValue: backgroundThemeRaw) ?? .standard
                 ).ignoresSafeArea()
 
-                if cards.isEmpty {
-                    emptyState
-                } else {
-                    cardList
+                switch ContentView.homeState(
+                    hasCards: !cards.isEmpty,
+                    hasPriorities: !autoPriorityCards.isEmpty
+                ) {
+                case .empty: emptyState
+                case .noPriority: noPriorityState
+                case .list: cardList
                 }
             }
             .simultaneousGesture(recentSheetDragGesture)
@@ -241,6 +272,14 @@ struct ContentView: View {
             }
         }
         .onChange(of: priorityCardIds) { _, _ in saveState() }
+        .onChange(of: autoPriorityCards.isEmpty) { _, isEmpty in
+            // The scroll anchor is only published from the list, so leaving it
+            // would freeze the background parallax and stale the next anchor.
+            if isEmpty {
+                scrollAnchorY = nil
+                scrollOffset = 0
+            }
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 syncWidgetCompletions()
@@ -340,10 +379,18 @@ struct ContentView: View {
         .sheet(isPresented: $showPriorityPicker) {
             PriorityPickerView(
                 cards: cards.sorted { $0.timestamp > $1.timestamp }
-                    .filter { !priorityCardIds.contains($0.id) },
+                    .filter { !autoPriorityCardIds.contains($0.id) },
                 onSelect: { card in
+                    guard PriorityNoteActions.canPromoteToPriority(
+                        currentPriorityCount: autoPriorityCards.count
+                    ) else { return }
                     let generator = UINotificationFeedbackGenerator()
                     generator.notificationOccurred(.success)
+                    // Home reads the exclusion list, so the note has to be
+                    // un-excluded as well as ordered.
+                    excludedFromPriorityIds = PriorityNoteActions.includeInPriority(
+                        cardId: card.id, excludedIds: excludedFromPriorityIds
+                    )
                     addToPriorities(card.id)
                     saveState()
                     showPriorityPicker = false
@@ -436,6 +483,34 @@ struct ContentView: View {
                 }
             }
             .primaryButtonStyle()
+
+            Spacer()
+        }
+    }
+
+    /// Notes exist but every one of them has been excluded, so the priority
+    /// list would otherwise render blank with no way back in.
+    @ViewBuilder
+    private var noPriorityState: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            VStack(spacing: 12) {
+                Text("Nothing set as priority")
+                    .font(AppFont.headline)
+                    .foregroundColor(Material.Text.primary)
+                Text("Pick one note to focus on right now")
+                    .font(AppFont.body)
+                    .foregroundColor(Material.Text.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+
+            Button { presentPriorityPicker() } label: {
+                Text("Turn On a Priority")
+            }
+            .primaryButtonStyle()
+            .accessibilityIdentifier("turn-on-priority-button")
 
             Spacer()
         }
@@ -1003,11 +1078,18 @@ struct ContentView: View {
 
     /// After a priority is completed, offer the picker when there is room for more priorities.
     private func schedulePriorityPickerIfNeededAfterCompletion() {
-        if priorityCardIds.count < 3 && !cards.isEmpty {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                showPriorityPicker = true
-            }
-        }
+        guard ContentView.shouldOfferPicker(
+            priorityCount: autoPriorityCards.count,
+            cardsEmpty: cards.isEmpty
+        ) else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { presentPriorityPicker() }
+    }
+
+    /// Only one sheet can be presented from this view at a time, so the recent
+    /// sheet has to close before the picker will appear.
+    private func presentPriorityPicker() {
+        showRecentSheet = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showPriorityPicker = true }
     }
 
     // MARK: - Reorder
