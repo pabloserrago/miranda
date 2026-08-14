@@ -11,11 +11,6 @@ enum HomeState {
     case list
 }
 
-private struct ScrollAnchorKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
-}
-
 /// Collects the rendered height of each priority row (keyed by index) so the
 /// reorder drag can convert translation into slots using real row heights.
 private struct PriorityRowHeightKey: PreferenceKey {
@@ -72,7 +67,6 @@ struct ContentView: View {
     @State private var suppressNextPrioritySelectionId: UUID?
 
     @State private var scrollOffset: CGFloat = 0
-    @State private var scrollAnchorY: CGFloat?
 
     /// Minimum list content-offset delta (pt) before toggling Recent sheet visibility.
     private let recentSheetScrollThreshold: CGFloat = 12
@@ -227,6 +221,7 @@ struct ContentView: View {
             }
             .simultaneousGesture(recentSheetDragGesture)
             .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showSettings = true } label: {
@@ -289,10 +284,9 @@ struct ContentView: View {
         }
         .onChange(of: priorityCardIds) { _, _ in saveState() }
         .onChange(of: autoPriorityCards.isEmpty) { _, isEmpty in
-            // The scroll anchor is only published from the list, so leaving it
-            // would freeze the background parallax and stale the next anchor.
+            // The offset is only published while the list exists, so reset it
+            // to keep the background parallax from freezing mid-scroll.
             if isEmpty {
-                scrollAnchorY = nil
                 scrollOffset = 0
             }
         }
@@ -552,18 +546,6 @@ struct ContentView: View {
     @ViewBuilder
     private var cardList: some View {
         List {
-            Color.clear
-                .frame(height: 0)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets())
-                .background(GeometryReader { geo in
-                    Color.clear.preference(
-                        key: ScrollAnchorKey.self,
-                        value: geo.frame(in: .global).minY
-                    )
-                })
-
             if !widgetOnboardingDismissed && !autoPriorityCards.isEmpty && autoPriorityCards.count < 3 {
                 Section {
                     widgetOnboardingRow
@@ -590,9 +572,18 @@ struct ContentView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .onPreferenceChange(ScrollAnchorKey.self) { y in
-            if scrollAnchorY == nil { scrollAnchorY = y }
-            scrollOffset = max(0, (scrollAnchorY ?? y) - y)
+        // Collapse the plain List's default section spacing above the first
+        // card, then set the gap explicitly: 14 + the first row's 10pt top
+        // inset = 24px below the nav bar.
+        .listSectionSpacing(0)
+        .contentMargins(.top, 14, for: .scrollContent)
+        // Scroll position for the background parallax. Replaces the old
+        // zero-height anchor row, which couldn't shrink below the List's
+        // default minimum row height and pushed the first card down ~44pt.
+        .onScrollGeometryChange(for: CGFloat.self) { geo in
+            geo.contentOffset.y + geo.contentInsets.top
+        } action: { _, offset in
+            scrollOffset = max(0, offset)
         }
         .onPreferenceChange(PriorityRowHeightKey.self) { heights in
             priorityRowHeights = heights
