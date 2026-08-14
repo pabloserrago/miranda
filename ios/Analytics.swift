@@ -21,6 +21,10 @@ class Analytics {
         incrementCounter("total_app_opens")
     }
     
+    func trackOnboardingCompleted() {
+        logEvent("onboarding_completed")
+    }
+
     func trackCardCreated(hasEmoji: Bool) {
         logEvent("card_created", properties: [
             "has_emoji": hasEmoji,

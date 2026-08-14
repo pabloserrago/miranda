@@ -42,6 +42,9 @@ struct ContentView: View {
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
     @State private var showReviewPrompt: Bool = false
+    /// First-launch onboarding cover; completion is persisted via the
+    /// "hasCompletedOnboarding" UserDefaults key (set in completeOnboarding).
+    @State private var showOnboarding: Bool = false
     /// Long-press–then–drag priority reorder (no list edit mode).
     @State private var priorityReorderLiftedId: UUID?
     @State private var priorityReorderLiftedIndex: Int?
@@ -90,7 +93,34 @@ struct ContentView: View {
             // seeded priority note is directly tappable to reach Edit mode.
             UserDefaults.standard.register(defaults: ["hyphenSplitEnabled": true])
         }
+        if ProcessInfo.processInfo.arguments.contains("-UITestShowOnboarding") {
+            // Wipe persisted state so onboarding shows deterministically,
+            // regardless of what earlier test runs left in the container.
+            for key in ["hasCompletedOnboarding", "cards", "priorityCardIds",
+                        "excludedFromPriorityIds", "widgetOnboardingDismissed",
+                        "captureOnboardingDismissed", "lockScreenOnboardingDismissed"] {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
         #endif
+        _showOnboarding = State(initialValue: ContentView.shouldShowOnboarding(
+            hasCompleted: UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"),
+            hasPersistedCards: UserDefaults.standard.data(forKey: "cards") != nil,
+            arguments: ProcessInfo.processInfo.arguments
+        ))
+    }
+
+    /// Onboarding shows only on a fresh install: never completed and no
+    /// existing cards (so users upgrading from pre-onboarding versions skip
+    /// it). UI-test launches suppress it unless they explicitly request it.
+    static func shouldShowOnboarding(
+        hasCompleted: Bool,
+        hasPersistedCards: Bool,
+        arguments: [String]
+    ) -> Bool {
+        if arguments.contains("-UITestShowOnboarding") { return true }
+        if arguments.contains(where: { $0.hasPrefix("-UITest") }) { return false }
+        return !hasCompleted && !hasPersistedCards
     }
 
     // MARK: - Computed Properties
@@ -171,6 +201,12 @@ struct ContentView: View {
                             .font(.system(size: 24.2))
                     }
                 }
+                ToolbarItem(placement: .principal) {
+                    Text("Miranda First")
+                        .font(AppFont.headline)
+                        .foregroundColor(Material.Text.primary)
+                        .accessibilityIdentifier("home-title")
+                }
             }
         }
         .tint(Material.Text.accent)
@@ -195,12 +231,12 @@ struct ContentView: View {
         .onChange(of: cards.isEmpty) { wasEmpty, isEmpty in
             if isEmpty {
                 showRecentSheet = false
-            } else if wasEmpty {
+            } else if wasEmpty, !showOnboarding {
                 showRecentSheet = true
             }
         }
         .onChange(of: cards.count) { oldCount, newCount in
-            if newCount > oldCount, !cards.isEmpty {
+            if newCount > oldCount, !cards.isEmpty, !showOnboarding {
                 showRecentSheet = true
             }
         }
@@ -279,6 +315,14 @@ struct ContentView: View {
                     }
             }
             .presentationBackground(Material.Surface.secondary)
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView(
+                newCardText: $newCardText,
+                latestCard: widgetPriorityCards.first,
+                onSaveNote: { createCard() },
+                onFinish: { completeOnboarding() }
+            )
         }
         .sheet(isPresented: $showCreateModal) {
             CreateCardModal(
@@ -1160,6 +1204,17 @@ struct ContentView: View {
 
     // MARK: - Onboarding
 
+    private func completeOnboarding() {
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        Analytics.shared.trackOnboardingCompleted()
+        showOnboarding = false
+        if !cards.isEmpty {
+            // Present after the cover's dismissal animation to avoid a
+            // sheet/fullScreenCover presentation conflict.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showRecentSheet = true }
+        }
+    }
+
     private func resetOnboarding() {
         withAnimation {
             widgetOnboardingDismissed = false
@@ -1167,12 +1222,17 @@ struct ContentView: View {
             lockScreenOnboardingDismissed = false
             priorityCardIds.removeAll()
             excludedFromPriorityIds.removeAll()
+            UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
             UserDefaults.standard.removeObject(forKey: "widgetOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "captureOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "lockScreenOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "priorityCardIds")
             UserDefaults.standard.removeObject(forKey: "excludedFromPriorityIds")
         }
+        // Replay the flow: close Settings first, then present the cover
+        // (two simultaneous presentations from ContentView would conflict).
+        showSettings = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showOnboarding = true }
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
     }

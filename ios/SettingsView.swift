@@ -15,7 +15,6 @@ struct SettingsView: View {
     @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
-    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     @AppStorage(AppIconManager.storageKey) private var selectedAppIconRaw: String = AppIconOption.default.rawValue
     @State private var showDeleteConfirm: Bool = false
     @State private var showCopiedToast: Bool = false
@@ -58,63 +57,7 @@ struct SettingsView: View {
 
                             if widgetTab == 0 {
                                 // Home screen preview
-                                ZStack {
-                                    // Background gradient (like iOS wallpaper)
-                                    LinearGradient(
-                                        colors: [Material.Status.info.opacity(0.1), Material.Status.success.opacity(0.05)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-
-                                    VStack(spacing: 20) {
-                                        // Status bar area
-                                        HStack {
-                                            Text("9:41")
-                                                .font(AppFont.caption).fontWeight(.semibold)
-                                                .foregroundColor(Material.Text.primary.opacity(0.8))
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal, 24)
-                                        .padding(.top, 12)
-
-                                        // Miranda widget (larger card)
-                                        VStack(spacing: 0) {
-                                            Text(previewCard?.simplifiedText ?? "Your priority")
-                                                .font(AppFont.widgetHero)
-                                                .tracking(Material.Typography.Tracking.widgetHero)
-                                                .foregroundColor(Material.Text.primary)
-                                                .lineLimit(3)
-                                                .multilineTextAlignment(.leading)
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                                .padding(.horizontal, 14)
-                                        }
-                                        .padding(.vertical, 20)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 140)
-                                        .background(Material.Surface.primary)
-                                        .cornerRadius(Material.Shape.drawer)
-                                        .shadow(color: Material.Elevation.shadow.opacity(0.09), radius: 3, x: 0, y: 3)
-                                        .padding(.horizontal, 24)
-
-                                        // iOS app icons below
-                                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                            AppIcon(name: "Photos", icon: "photo.fill.on.rectangle.fill", color: Material.Status.error)
-                                            AppIcon(name: "Messages", icon: "message.fill", color: Material.Status.success)
-                                            AppIcon(name: "Mail", icon: "envelope.fill", color: Material.Status.info)
-                                            AppIcon(name: "Phone", icon: "phone.fill", color: Material.Status.success)
-                                        }
-                                        .padding(.horizontal, 24)
-                                        .padding(.top, 8)
-
-                                        Spacer()
-                                    }
-                                }
-                                .frame(height: 320)
-                                .cornerRadius(Material.Shape.drawer)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: Material.Shape.drawer)
-                                        .stroke(Material.Decoration.tertiary.opacity(0.2), lineWidth: 1)
-                                )
+                                WidgetPreview(card: previewCard)
                             } else {
                                 // Lock screen preview
                                 ZStack {
@@ -251,35 +194,7 @@ struct SettingsView: View {
 
                             Spacer()
 
-                            HStack(spacing: 10) {
-                                ForEach(BackgroundTheme.allCases, id: \.rawValue) { theme in
-                                    Button {
-                                        guard backgroundThemeRaw != theme.rawValue else { return }
-                                        backgroundThemeRaw = theme.rawValue
-                                        Haptics.toggleOn()
-                                    } label: {
-                                        Circle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: theme.swatchColors,
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .frame(width: 28, height: 28)
-                                            .overlay(
-                                                Circle().stroke(
-                                                    backgroundThemeRaw == theme.rawValue
-                                                        ? Material.Text.accent
-                                                        : Material.Decoration.tertiary,
-                                                    lineWidth: backgroundThemeRaw == theme.rawValue ? 2 : 1
-                                                )
-                                            )
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabel(theme.label)
-                                }
-                            }
+                            BackgroundThemePicker()
                         }
                         .listRowBackground(Material.Surface.primary)
 

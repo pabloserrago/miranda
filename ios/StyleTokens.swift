@@ -323,11 +323,11 @@ enum Material {
         static let caption: CGFloat = 12   // AppFont.caption, widget medium secondary rows
         static let micro:   CGFloat = 10   // AppFont.micro
         
-        static let widgetHero:      CGFloat = 28  // AppFont.widgetHero — medium widget rank-0
+        static let widgetHero:      CGFloat = 34  // AppFont.widgetHero — medium widget rank-0
         static let widgetLargeHero: CGFloat = 24  // AppFont.widgetLargeHero — large widget rank-0
         
         enum Tracking {
-            static let widgetHero:      CGFloat = -0.84   // medium widget rank-0
+            static let widgetHero:      CGFloat = -1.02   // medium widget rank-0 (-3% of 34)
             static let widgetLargeHero: CGFloat = -0.72   // large widget rank-0
             static let widgetCompact:   CGFloat = -0.60   // compact widget hero
             static let widgetSecondary: CGFloat = -0.168  // large widget rank-1+
@@ -360,6 +360,7 @@ enum Material {
         static let full: CGFloat = 9999
         
         // Semantic radii
+        static let panel: CGFloat = 40  // large standalone containers (onboarding personalization)
         static let card: CGFloat = 30
         static let chip: CGFloat = full
         static let drawer: CGFloat = 32
@@ -547,18 +548,12 @@ extension ButtonStyle where Self == GhostButtonStyle {
 }
 
 extension View {
-    // Primary call-to-action. Native prominent Liquid Glass on iOS 26,
-    // solid accent capsule on earlier versions.
-    @ViewBuilder
+    // Primary call-to-action: accent-tinted Liquid Glass capsule on iOS 26,
+    // solid accent capsule on earlier versions. Uses PrimaryGlassButtonStyle
+    // rather than .glassProminent because the system style forces a white
+    // label, ignoring the dark-mode on-accent color (Accent.contentPrimary).
     func primaryButtonStyle() -> some View {
-        if #available(iOS 26.0, *) {
-            self
-                .font(AppFont.body.weight(.semibold))
-                .buttonStyle(.glassProminent)
-                .tint(Material.Accent.primary)
-        } else {
-            self.buttonStyle(.solid)
-        }
+        self.buttonStyle(.primaryGlass)
     }
 }
 
@@ -839,6 +834,52 @@ struct NoisyBackgroundView: View {
             result[.staticNoise] = UIImage(cgImage: cg)
         }
         return result
+    }
+}
+
+// ============================================================
+// MARK: - Bottom CTA
+// ============================================================
+
+/// Bottom-anchored call-to-action block: a full-width primary button plus an
+/// optional secondary (ghost) action below it. Attach with
+/// `.safeAreaInset(edge: .bottom) { BottomCTA(...) }` so scrolling content
+/// stays clear of it.
+struct BottomCTA: View {
+    let title: String
+    var systemImage: String? = nil
+    var identifier: String? = nil
+    let action: () -> Void
+    var secondaryTitle: String? = nil
+    var secondaryIdentifier: String? = nil
+    var secondaryAction: () -> Void = {}
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Button(action: action) {
+                HStack(spacing: 8) {
+                    if let systemImage {
+                        Image(systemName: systemImage)
+                    }
+                    Text(title)
+                }
+                .frame(maxWidth: .infinity, minHeight: 24)
+            }
+            .primaryButtonStyle()
+            .accessibilityIdentifier(identifier ?? "")
+
+            if let secondaryTitle {
+                Button(action: secondaryAction) {
+                    Text(secondaryTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.ghost)
+                .accessibilityIdentifier(secondaryIdentifier ?? "")
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
     }
 }
 

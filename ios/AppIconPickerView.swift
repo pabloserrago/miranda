@@ -107,7 +107,7 @@ struct AppIconPickerView: View {
     }
 }
 
-private struct AppIconTile: View {
+struct AppIconTile: View {
     let option: AppIconOption
     let isSelected: Bool
 
