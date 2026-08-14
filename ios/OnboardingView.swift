@@ -153,29 +153,33 @@ struct OnboardingView: View {
                         .font(AppFont.label)
                         .foregroundColor(Material.Text.secondary)
 
-                    Toggle(isOn: $audioInputEnabled) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "mic.fill")
-                                .font(AppFont.icon)
-                                .foregroundColor(Material.Text.primary)
-                                .frame(width: 24, height: 24)
-                            Text("Voice capture")
+                    Group {
+                        Toggle(isOn: $audioInputEnabled) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "mic.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Voice capture")
+                            }
                         }
-                    }
-                    .toggleHaptic(audioInputEnabled)
-                    .padding(.vertical, 8)
+                        .toggleHaptic(audioInputEnabled)
 
-                    Toggle(isOn: $completionAnimationEnabled) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "checkmark.seal.fill")
-                                .font(AppFont.icon)
-                                .foregroundColor(Material.Text.primary)
-                                .frame(width: 24, height: 24)
-                            Text("Completion animation")
+                        Toggle(isOn: $completionAnimationEnabled) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Completion animation")
+                            }
                         }
+                        .toggleHaptic(completionAnimationEnabled)
                     }
-                    .toggleHaptic(completionAnimationEnabled)
                     .padding(.vertical, 8)
+                    // Same accent tint Settings applies to its list, so the
+                    // toggles match Miranda's CTA color instead of iOS green.
+                    .tint(Material.Text.accent)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -183,7 +187,7 @@ struct OnboardingView: View {
             // Same container treatment as the note editor, so the controls
             // stay readable over the live cloud background.
             .background(Material.Surface.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: Material.Shape.panel, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input, style: .continuous))
         }
         .safeAreaInset(edge: .bottom) {
             BottomCTA(

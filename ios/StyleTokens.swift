@@ -360,11 +360,10 @@ enum Material {
         static let full: CGFloat = 9999
         
         // Semantic radii
-        static let panel: CGFloat = 40  // large standalone containers (onboarding personalization)
         static let card: CGFloat = 30
         static let chip: CGFloat = full
         static let drawer: CGFloat = 32
-        static let input: CGFloat = 12
+        static let input: CGFloat = 26
         static let control: CGFloat = 12
         static let handle: CGFloat = 8
         static let appIcon: CGFloat = 14
