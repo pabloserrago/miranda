@@ -653,8 +653,8 @@ struct ContentView: View {
 
     @available(iOS 26.0, *)
     private var recentGlassActionPill: some View {
-        GlassEffectContainer(spacing: 6) {
-            HStack(spacing: 6) {
+        GlassEffectContainer(spacing: 8) {
+            HStack(spacing: 8) {
                 if audioInputEnabled {
                     Button {
                         newCardText = ""
@@ -663,8 +663,9 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "mic.fill")
                             .font(AppFont.body)
-                            .frame(width: 44, height: 40)
-                            .contentShape(Rectangle())
+                            .fontWeight(.semibold)
+                            .frame(width: 50, height: 50)
+                            .contentShape(Circle())
                     }
                     .glassEffect(.regular.interactive(), in: Circle())
                 }
@@ -675,8 +676,9 @@ struct ContentView: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(AppFont.body)
-                        .frame(width: 44, height: 40)
-                        .contentShape(Rectangle())
+                        .fontWeight(.semibold)
+                        .frame(width: 50, height: 50)
+                        .contentShape(Circle())
                 }
                 .glassEffect(.regular.interactive(), in: Circle())
                 .accessibilityIdentifier("create-note-button")
