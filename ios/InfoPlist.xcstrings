@@ -32,19 +32,19 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[de] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda verwendet das Mikrofon für die Spracheingabe, damit du Notizen durch Sprechen erfassen kannst."
           }
         },
         "en" : {
@@ -56,37 +56,37 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "eu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[fr] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda utilise le micro pour la saisie vocale, afin que vous puissiez capturer vos notes en parlant."
           }
         },
         "gl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[nl] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "Miranda gebruikt de microfoon voor spraakinvoer, zodat je notities kunt vastleggen door te praten."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[pt] Miranda uses the microphone for voice input so you can capture notes by speaking."
+            "value" : "A Miranda usa o microfone para entrada de voz, para que possas capturar notas a falar."
           }
         }
       }
@@ -97,19 +97,19 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[de] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transkribiert deine Sprache direkt auf dem Gerät, damit du Notizen durch Sprechen erfassen kannst. Audio wird nie gespeichert oder übertragen."
           }
         },
         "en" : {
@@ -121,37 +121,37 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "eu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[fr] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcrit votre voix directement sur l’appareil pour que vous puissiez capturer vos notes en parlant. L’audio n’est jamais conservé ni envoyé où que ce soit."
           }
         },
         "gl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[es] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[nl] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "Miranda zet je spraak op het apparaat zelf om in tekst, zodat je notities kunt vastleggen door te praten. Audio wordt nooit opgeslagen of verstuurd."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "[pt] Miranda transcribes your speech on-device so you can capture notes by talking. Audio is never stored or sent anywhere."
+            "value" : "A Miranda transcreve a tua voz no próprio dispositivo para que possas capturar notas a falar. O áudio nunca é guardado nem enviado para nenhum lugar."
           }
         }
       }
