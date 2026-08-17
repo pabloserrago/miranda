@@ -136,6 +136,7 @@ struct CaptureNoteIntent: AppIntent {
 
         saveCards(allCards, priorityIds: priorityIds, to: .standard)
         reloadWidget()
+        Analytics.shared.trackIntentRun("capture_note")
 
         return .result(value: String(localized: "intent.capture.result_format", defaultValue: "Captured: \(trimmed)", comment: "Siri intent result shown in Shortcuts"))
     }
@@ -149,6 +150,7 @@ struct ShowTopPriorityIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let text = Self.topPriorityText(from: .standard)
+        Analytics.shared.trackIntentRun("show_top_priority")
         let response = text ?? String(
             localized: "intent.show_priority.empty",
             defaultValue: "You have no active priorities in Miranda.",
@@ -180,6 +182,7 @@ struct CompleteTopPriorityIntent: AppIntent {
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let completedText = Self.completeTopPriority(in: .standard)
         reloadWidget()
+        Analytics.shared.trackIntentRun("complete_top_priority")
         let response: String
         if let text = completedText {
             let format = String(
@@ -243,6 +246,7 @@ struct CaptureAndPrioritizeIntent: AppIntent {
         )
         Self.insertAsPriority(newCard, in: .standard)
         reloadWidget()
+        Analytics.shared.trackIntentRun("capture_and_prioritize")
 
         let resultFormat = String(
             localized: "intent.set_priority.result_format",

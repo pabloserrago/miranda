@@ -1,4 +1,5 @@
 import Foundation
+import WidgetKit
 
 // Lightweight analytics for tracking app usage
 class Analytics {
@@ -14,11 +15,107 @@ class Analytics {
     
     private init() {}
     
+    // MARK: - Install Identity
+    
+    /// Anonymous, app-generated identifier for this install. It exists so
+    /// events can be grouped per install (retention, cohorts, funnels) — it is
+    /// not IDFA/IDFV, never leaves the App Group, and dies with the install.
+    /// Lives in the App Group rather than `UserDefaults.standard` so the widget
+    /// extension can attribute its own events under the same value.
+    static let installIDKey = "analytics_install_id"
+    
+    /// Returns `stored` when it is a well-formed UUID, otherwise a fresh one.
+    static func resolveInstallID(stored: String?) -> String {
+        guard let stored, UUID(uuidString: stored) != nil else { return UUID().uuidString }
+        return stored
+    }
+    
+    /// Reads the install identifier, minting and persisting one on first call.
+    static func installID(in defaults: UserDefaults = SharedCardManager.defaults) -> String {
+        let stored = defaults.string(forKey: installIDKey)
+        let resolved = resolveInstallID(stored: stored)
+        if resolved != stored {
+            defaults.set(resolved, forKey: installIDKey)
+        }
+        return resolved
+    }
+    
     // MARK: - Event Tracking
     
     func trackAppOpened() {
         logEvent("app_opened")
         incrementCounter("total_app_opens")
+    }
+    
+    /// Logged in addition to `app_opened` when the launch came from a widget
+    /// deep link. Kept as its own event rather than a property on `app_opened`
+    /// because `onOpenURL` fires after `onAppear` on a cold launch, so the
+    /// source is not yet known when `app_opened` is sent.
+    func trackWidgetOpened(destination: String) {
+        logEvent("widget_opened", properties: ["destination": destination])
+        incrementCounter("total_widget_opens")
+    }
+    
+    /// Which widget families this install currently has on a Home or Lock
+    /// Screen. Logged only when the set changes, since it is polled on every
+    /// foreground — pair it with `widget_opened` for frequency of use.
+    func trackWidgetInventory(
+        families: [String],
+        in defaults: UserDefaults = SharedCardManager.defaults
+    ) {
+        let signature = Analytics.widgetInventorySignature(families: families)
+        guard Analytics.consumeWidgetInventoryChange(signature: signature, in: defaults) else { return }
+        logEvent("widget_inventory", properties: [
+            "families": signature,
+            "count": families.count
+        ])
+    }
+
+    /// Asks WidgetKit what is installed. `getCurrentConfigurations` is
+    /// completion-handler only, so it is bridged here. A failure is dropped
+    /// rather than logged as "none": an unavailable extension is not the same
+    /// as an empty Home Screen.
+    func refreshWidgetInventory() async {
+        let installed: [WidgetInfo]? = await withCheckedContinuation { continuation in
+            WidgetCenter.shared.getCurrentConfigurations { result in
+                continuation.resume(returning: try? result.get())
+            }
+        }
+        guard let installed else { return }
+        trackWidgetInventory(families: installed.map { String(describing: $0.family) })
+    }
+
+    /// Order-independent description of an installed set, so re-polling the same
+    /// widgets in a different order does not read as a change.
+    static func widgetInventorySignature(families: [String]) -> String {
+        families.isEmpty ? "none" : Set(families).sorted().joined(separator: ",")
+    }
+
+    /// True the first time `signature` differs from the stored one, which it
+    /// then becomes.
+    static func consumeWidgetInventoryChange(signature: String, in defaults: UserDefaults) -> Bool {
+        guard defaults.string(forKey: widgetInventoryKey) != signature else { return false }
+        defaults.set(signature, forKey: widgetInventoryKey)
+        return true
+    }
+
+    static let widgetInventoryKey = "analytics_widget_inventory"
+
+    /// Siri, Shortcuts and Spotlight invocations. These run in the app's own
+    /// process, so they log through the normal path.
+    func trackIntentRun(_ intent: String) {
+        logEvent("intent_run", properties: ["intent": intent])
+    }
+
+    /// Classifies a `miranda://` deep link, or `nil` when the URL is not one
+    /// the widget emits.
+    static func widgetDestination(for url: URL) -> String? {
+        guard url.scheme == "miranda" else { return nil }
+        switch url.host {
+        case "card": return "card"
+        case "capture": return "capture"
+        default: return nil
+        }
     }
     
     func trackOnboardingCompleted() {
@@ -108,16 +205,34 @@ class Analytics {
     }
     
     private func sendToSupabase(event: String, properties: [String: Any]) {
-        let body: [String: Any] = [
-            "event": event,
-            "properties": Analytics.jsonSafeProperties(properties),
-            "app_version": appVersion,
-            "language": appLanguage
-        ]
+        let body = Analytics.eventBody(
+            event: event,
+            properties: properties,
+            appVersion: appVersion,
+            language: appLanguage,
+            installID: Analytics.installID())
         
         guard let request = Supabase.insertRequest(table: "analytics", body: body) else { return }
         
         URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
+    }
+    
+    /// The row shape uploaded to the `analytics` table. `install_id` must exist
+    /// as a column or PostgREST rejects the insert with 400.
+    static func eventBody(
+        event: String,
+        properties: [String: Any],
+        appVersion: String,
+        language: String,
+        installID: String
+    ) -> [String: Any] {
+        [
+            "event": event,
+            "properties": jsonSafeProperties(properties),
+            "app_version": appVersion,
+            "language": language,
+            "install_id": installID
+        ]
     }
     
     /// Bool is checked before Int so `true` does not bridge to `1`.

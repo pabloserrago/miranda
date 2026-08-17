@@ -238,18 +238,6 @@ struct ContentView: View {
                         .foregroundColor(Material.Text.primary)
                         .accessibilityIdentifier("home-title")
                 }
-                // The recent sheet is otherwise reachable only by dragging,
-                // which Voice Control and Switch Control cannot perform.
-                // Dismissal already has a system-provided accessible path.
-                ToolbarItem(placement: .topBarTrailing) {
-                    if !cards.isEmpty && !showRecentSheet {
-                        Button { showRecentSheet = true } label: {
-                            Image(systemName: "tray.full")
-                        }
-                        .accessibilityLabel("Show recent notes")
-                        .accessibilityIdentifier("show-recent-button")
-                    }
-                }
             }
         }
         .tint(Material.Text.accent)
@@ -266,6 +254,9 @@ struct ContentView: View {
             #endif
             loadState()
             Analytics.shared.trackAppOpened()
+            // scenePhase is already .active on a cold launch, so its onChange
+            // never fires for the first foreground.
+            Task { await Analytics.shared.refreshWidgetInventory() }
             showRecentSheet = !cards.isEmpty
         }
         .onChange(of: cards) { _, _ in
@@ -296,10 +287,14 @@ struct ContentView: View {
                 syncWidgetCompletions()
                 NotificationManager.shared.syncAuthorizationStatus()
                 AppIconManager.apply(AppIconOption(rawValue: selectedAppIconRaw) ?? .default, for: colorScheme)
+                Task { await Analytics.shared.refreshWidgetInventory() }
             }
         }
         .onOpenURL { url in
             guard url.scheme == "miranda" else { return }
+            if let destination = Analytics.widgetDestination(for: url) {
+                Analytics.shared.trackWidgetOpened(destination: destination)
+            }
             if url.host == "capture" {
                 newCardText = ""
                 startWithDictation = false

@@ -16,9 +16,10 @@
 		</dict>
 	</array>
 
-	<!-- Uploaded to Supabase when Secrets.supabaseEnabled is true. Neither
-	     type carries an identifier, so both are unlinked and non-tracking.
-	     Note content is never collected. -->
+	<!-- Uploaded to Supabase when Secrets.supabaseEnabled is true. Usage events
+	     carry an app-generated install ID (Analytics.installID) so events can be
+	     grouped per install, which makes that data linked. Nothing is used to
+	     track across apps or websites. Note content is never collected. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<!-- Anonymous usage events (Analytics.swift) -->
@@ -26,13 +27,27 @@
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- App-generated install ID attached to each usage event. Not IDFA/IDFV
+		     and never shared, but it is a device-level identifier. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeDeviceID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
 		<!-- User-written feedback messages (FeedbackView.swift) -->

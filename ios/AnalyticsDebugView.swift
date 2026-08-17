@@ -8,6 +8,22 @@ struct AnalyticsDebugView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    // Install ID — surfaced so a deletion request can name the
+                    // rows it refers to (see PRIVACY.md, Retention).
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Install ID")
+                            .font(AppFont.headline)
+
+                        Text(Analytics.installID())
+                            .font(AppFont.bodyMono)
+                            .foregroundColor(Material.Text.secondary)
+                            .textSelection(.enabled)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Material.Surface.secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: Material.Shape.x3))
+
                     // Stats Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Statistics")
