@@ -17,7 +17,8 @@ struct OnboardingView: View {
 
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
-    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
+    @AppStorage(SharedCardManager.backgroundThemeKey, store: SharedCardManager.defaults)
+    private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     @AppStorage(AppIconManager.storageKey) private var selectedAppIconRaw: String = AppIconOption.default.rawValue
 
     private var selectedAppIcon: AppIconOption {

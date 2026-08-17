@@ -258,6 +258,24 @@ enum BackgroundTheme: String, CaseIterable {
         self == .standard ? 0 : 3
     }
 
+    /// 3x3 arrangement of `cloudColors` for the widget mesh gradient, as indices
+    /// into the stops. The dominant hue (0, 1) covers the grid and the accent (2)
+    /// stays in two cells, mirroring how the shader only surfaces it in the
+    /// cloud peaks.
+    static let widgetMeshLayout = [0, 1, 0,
+                                   1, 0, 2,
+                                   0, 2, 1]
+
+    /// Nine mesh stops for the widget background. WidgetKit renders from an
+    /// archived view out of process, so the app's Metal cloud shader can't run
+    /// there — a mesh gradient over the same three stops keeps the palette while
+    /// approximating the shape. Empty for `standard`, which stays neutral.
+    var widgetMeshColors: [Color] {
+        let stops = cloudColors
+        guard stops.count == 3 else { return [] }
+        return Self.widgetMeshLayout.map { stops[$0] }
+    }
+
     /// Three representative colors for the Settings swatch.
     var swatchColors: [Color] {
         switch self {
@@ -958,6 +976,35 @@ struct NoisyBackgroundView: View {
             result[.staticNoise] = UIImage(cgImage: cg)
         }
         return result
+    }
+}
+
+// ============================================================
+// MARK: - Widget Background
+// ============================================================
+
+/// Backdrop for the home-screen widget families, matching the palette of the
+/// background theme the user picked in the app. `standard` keeps the neutral
+/// surface that makes the widget read as a card on the wallpaper.
+struct WidgetBackground: View {
+    let theme: BackgroundTheme
+
+    var body: some View {
+        let colors = theme.widgetMeshColors
+        if colors.count == 9 {
+            MeshGradient(
+                width: 3,
+                height: 3,
+                points: [
+                    .init(0, 0),    .init(0.5, 0),     .init(1, 0),
+                    .init(0, 0.5),  .init(0.6, 0.45),  .init(1, 0.5),
+                    .init(0, 1),    .init(0.5, 1),     .init(1, 1)
+                ],
+                colors: colors
+            )
+        } else {
+            Material.Surface.primary
+        }
     }
 }
 

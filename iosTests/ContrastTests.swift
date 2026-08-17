@@ -152,6 +152,29 @@ struct ContrastTests {
         ], minimum: textMinimum)
     }
 
+    // MARK: Widget text over the themed background
+
+    /// The widget's mesh background blends the theme's cloud stops, so every
+    /// stop has to carry the widget's text on its own. `Text.tertiary` is absent
+    /// deliberately: it measures below AA on the mid and accent stops, which is
+    /// why the widget's "+ Note" link uses `Text.secondary`.
+    @Test func widgetTextOnThemeBackgrounds() {
+        let foregrounds: [(String, Color)] = [
+            ("Text.primary",   Material.Text.primary),
+            ("Text.secondary", Material.Text.secondary),
+        ]
+        let pairs = BackgroundTheme.allCases.flatMap { theme in
+            theme.cloudColors.enumerated().flatMap { index, stop in
+                foregrounds.map { foreground in
+                    Pair(name: "\(foreground.0) on \(theme) mesh stop \(index)",
+                         foreground: foreground.1,
+                         background: stop)
+                }
+            }
+        }
+        check(pairs, minimum: textMinimum)
+    }
+
     // MARK: Meaningful icons
 
     @Test func iconsOnSurfaces() {

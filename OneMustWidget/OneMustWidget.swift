@@ -25,6 +25,7 @@ struct SimpleEntry: TimelineEntry {
     let date: Date
     let priorityCards: [Card]
     let phase: WidgetPhase
+    var theme: BackgroundTheme = .standard
 }
 
 // MARK: — Provider with Dual-Entry Timeline
@@ -41,13 +42,15 @@ struct Provider: TimelineProvider {
                     timestamp: Date()
                 )
             ],
-            phase: .normal
+            phase: .normal,
+            theme: SharedCardManager.shared.loadBackgroundTheme()
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
         let cards = SharedCardManager.shared.loadPriorityCards()
-        let entry = SimpleEntry(date: Date(), priorityCards: cards, phase: .normal)
+        let entry = SimpleEntry(date: Date(), priorityCards: cards, phase: .normal,
+                                theme: SharedCardManager.shared.loadBackgroundTheme())
         completion(entry)
     }
 
@@ -57,6 +60,7 @@ struct Provider: TimelineProvider {
         defaults?.synchronize()
         
         let cards = SharedCardManager.shared.loadPriorityCards()
+        let theme = SharedCardManager.shared.loadBackgroundTheme()
         
         if defaults?.string(forKey: "completingCardID") != nil {
             defaults?.removeObject(forKey: "completingCardID")
@@ -65,13 +69,13 @@ struct Provider: TimelineProvider {
             let freshCards = SharedCardManager.shared.loadPriorityCards()
             
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
-            let entry = SimpleEntry(date: currentDate, priorityCards: freshCards, phase: .normal)
+            let entry = SimpleEntry(date: currentDate, priorityCards: freshCards, phase: .normal, theme: theme)
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
             completion(timeline)
             return
         }
         
-        let entry = SimpleEntry(date: currentDate, priorityCards: cards, phase: .normal)
+        let entry = SimpleEntry(date: currentDate, priorityCards: cards, phase: .normal, theme: theme)
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -113,17 +117,17 @@ struct OneMustWidgetEntryView : View {
     var body: some View {
         switch widgetFamily {
         case .systemSmall:
-            CompactWidgetView(cards: entry.priorityCards)
+            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme)
         case .systemMedium:
             MediumWidgetView(entry: entry)
         case .systemLarge:
-            LargeWidgetView(cards: entry.priorityCards)
+            LargeWidgetView(cards: entry.priorityCards, theme: entry.theme)
         case .accessoryRectangular:
             LockScreenRectangularView(cards: entry.priorityCards)
         case .accessoryInline:
             LockScreenInlineView(cards: entry.priorityCards)
         default:
-            CompactWidgetView(cards: entry.priorityCards)
+            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme)
         }
     }
 }
@@ -132,6 +136,7 @@ struct OneMustWidgetEntryView : View {
 
 struct CompactWidgetView: View {
     let cards: [Card]
+    var theme: BackgroundTheme = .standard
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -154,7 +159,7 @@ struct CompactWidgetView: View {
             }
         }
         .padding(14)
-        .containerBackground(Material.Surface.primary, for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
         .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
     }
 }
@@ -180,13 +185,13 @@ struct MediumWidgetView: View {
                 Link(destination: URL(string: "miranda://capture")!) {
                     Text("+ Note")
                         .font(AppFont.caption)
-                        .foregroundColor(Material.Text.tertiary)
+                        .foregroundColor(Material.Text.secondary)
                 }
             }
             .padding(.horizontal, 14)
             .padding(.bottom, 14)
         }
-        .containerBackground(Material.Surface.primary, for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(theme: entry.theme) }
     }
 
     @ViewBuilder
@@ -263,6 +268,7 @@ struct TaskRowView: View {
 
 struct LargeWidgetView: View {
     let cards: [Card]
+    var theme: BackgroundTheme = .standard
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -295,14 +301,14 @@ struct LargeWidgetView: View {
                 Link(destination: URL(string: "miranda://capture")!) {
                     Text("+ Note")
                         .font(AppFont.caption)
-                        .foregroundColor(Material.Text.tertiary)
+                        .foregroundColor(Material.Text.secondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .containerBackground(Material.Surface.primary, for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
     }
 }
 
@@ -339,6 +345,7 @@ struct LargeTaskRow: View {
 
 struct EmptyWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
+    var theme: BackgroundTheme = .standard
     
     var body: some View {
         ZStack {
@@ -367,7 +374,7 @@ struct EmptyWidgetView: View {
             .padding(.bottom, 13)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(Material.Surface.primary, for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
     }
 }
 

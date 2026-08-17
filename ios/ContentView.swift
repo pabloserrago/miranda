@@ -75,7 +75,8 @@ struct ContentView: View {
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
-    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
+    @AppStorage(SharedCardManager.backgroundThemeKey, store: SharedCardManager.defaults)
+    private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     init() {
         #if DEBUG
         if ContentView.isUITestLaunch {

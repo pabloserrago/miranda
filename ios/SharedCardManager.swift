@@ -5,7 +5,46 @@ class SharedCardManager {
     static let shared = SharedCardManager()
     
     // IMPORTANT: Replace this with your actual app group identifier
-    private let appGroupID = "group.com.pabloserrano.onemust"
+    static let appGroupID = "group.com.pabloserrano.onemust"
+
+    /// The shared store both the app and the widget extension read from.
+    /// Anything the widget needs to know about (cards, background theme) lives
+    /// here rather than in `UserDefaults.standard`, which the extension cannot see.
+    static let defaults: UserDefaults = {
+        guard let defaults = UserDefaults(suiteName: appGroupID) else {
+            print("⚠️ Failed to initialize UserDefaults with App Group: \(appGroupID)")
+            return .standard
+        }
+        // Force synchronize to initialize the container properly
+        defaults.synchronize()
+        return defaults
+    }()
+
+    // MARK: — Background Theme
+
+    static let backgroundThemeKey = "backgroundTheme"
+
+    static func backgroundTheme(from defaults: UserDefaults) -> BackgroundTheme {
+        guard let raw = defaults.string(forKey: backgroundThemeKey) else { return .standard }
+        return BackgroundTheme(rawValue: raw) ?? .standard
+    }
+
+    /// The theme the widget should render behind its content.
+    func loadBackgroundTheme() -> BackgroundTheme {
+        Self.backgroundTheme(from: Self.defaults)
+    }
+
+    /// The picker used to write to `UserDefaults.standard`, which the widget
+    /// cannot read. Carry an existing pick over the first time the app runs
+    /// after the move; the shared value always wins once it exists.
+    @discardableResult
+    static func migrateBackgroundTheme(from legacy: UserDefaults,
+                                       to shared: UserDefaults = SharedCardManager.defaults) -> Bool {
+        guard shared.string(forKey: backgroundThemeKey) == nil,
+              let legacyValue = legacy.string(forKey: backgroundThemeKey) else { return false }
+        shared.set(legacyValue, forKey: backgroundThemeKey)
+        return true
+    }
     
     // MARK: — Emoji Stripping
     // Strip emojis at the data layer so the widget never sees them
@@ -43,17 +82,7 @@ class SharedCardManager {
         )
     }
     
-    // Lazy initialization to avoid iOS Simulator kCFPreferencesAnyUser error
-    private lazy var sharedDefaults: UserDefaults? = {
-        guard let defaults = UserDefaults(suiteName: appGroupID) else {
-            print("⚠️ Failed to initialize UserDefaults with App Group: \(appGroupID)")
-            return nil
-        }
-        
-        // Force synchronize to initialize the container properly
-        defaults.synchronize()
-        return defaults
-    }()
+    private var sharedDefaults: UserDefaults? { Self.defaults }
     
     func saveCurrentCard(_ card: Card?) {
         guard let defaults = sharedDefaults else { 

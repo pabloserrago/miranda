@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 // MARK: - Card Surface Modifier
 
@@ -224,7 +227,8 @@ struct WidgetPreview: View {
 /// Row of swatch circles bound to the persisted background theme.
 /// Used in Settings (Personalize) and onboarding step 3.
 struct BackgroundThemePicker: View {
-    @AppStorage("backgroundTheme") private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
+    @AppStorage(SharedCardManager.backgroundThemeKey, store: SharedCardManager.defaults)
+    private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
@@ -234,6 +238,9 @@ struct BackgroundThemePicker: View {
                     guard backgroundThemeRaw != theme.rawValue else { return }
                     backgroundThemeRaw = theme.rawValue
                     Haptics.toggleOn()
+                    #if canImport(WidgetKit)
+                    WidgetKit.WidgetCenter.shared.reloadAllTimelines()
+                    #endif
                 } label: {
                     Circle()
                         .fill(
