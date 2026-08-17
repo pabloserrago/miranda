@@ -62,6 +62,10 @@ class Analytics {
     func trackReviewSentimentNegative() {
         logEvent("review_sentiment_negative")
     }
+
+    func trackReviewStoreOpened(source: String) {
+        logEvent("review_store_opened", properties: ["source": source])
+    }
     
     // MARK: - Statistics
     

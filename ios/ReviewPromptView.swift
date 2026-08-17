@@ -1,9 +1,8 @@
 import SwiftUI
-import StoreKit
 
 struct ReviewPromptView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.requestReview) private var requestReview
+    @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var step: Step = .sentiment
@@ -108,7 +107,8 @@ struct ReviewPromptView: View {
             VStack(spacing: 12) {
                 Button {
                     ReviewManager.shared.recordUserRated()
-                    requestReview()
+                    Analytics.shared.trackReviewStoreOpened(source: "prompt")
+                    openURL(AppStoreLink.writeReviewURL)
                     dismiss()
                 } label: {
                     Text("Rate the App")

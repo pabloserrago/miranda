@@ -1,6 +1,13 @@
 import Foundation
 import WidgetKit
 
+enum AppStoreLink {
+    static let id = "6759875091"
+
+    /// No storefront segment, so the App Store resolves the user's own region.
+    static let writeReviewURL = URL(string: "https://apps.apple.com/app/id\(id)?action=write-review")!
+}
+
 final class ReviewManager {
     static let shared = ReviewManager()
     private init() {}

@@ -10,6 +10,7 @@ struct SettingsView: View {
     let hasCaptures: Bool
     let onSendTestReminder: () -> Void
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) private var openURL
     @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
@@ -294,7 +295,30 @@ struct SettingsView: View {
                         }
                     }
                     
-                    // 5. Privacy Policy
+                    // 5. Rate the App
+                    Section {
+                        Button(action: {
+                            ReviewManager.shared.recordUserRated()
+                            Analytics.shared.trackReviewStoreOpened(source: "settings")
+                            openURL(AppStoreLink.writeReviewURL)
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "star.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Rate the App")
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(AppFont.caption)
+                                    .foregroundColor(Material.Text.secondary)
+                            }
+                        }
+                        .tint(Material.Text.primary)
+                        .settingsRowBackground(.single)
+                    }
+
+                    // 6. Privacy Policy
                     Section {
                         Link(destination: URL(string: "https://github.com/pabloserrago/miranda/blob/main/PRIVACY.md")!) {
                             HStack(spacing: 12) {
@@ -313,7 +337,7 @@ struct SettingsView: View {
                         .settingsRowBackground(.single)
                     }
                     
-                    // 5. Delete All
+                    // 7. Delete All
                     Section {
                         Button(role: .destructive, action: {
                             showDeleteConfirm = true
@@ -331,7 +355,7 @@ struct SettingsView: View {
                         .settingsRowBackground(.single)
                     }
                     
-                    // 6. App Version
+                    // 8. App Version
                     Section {
                         Button(action: {
                             UIPasteboard.general.string = "1.0.0"
