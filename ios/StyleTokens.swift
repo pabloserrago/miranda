@@ -291,7 +291,7 @@ enum Material {
     enum Surface {
         static let backdrop  = adaptive(light: Palette.neutral25,  dark: Palette.neutral950)   // app canvas (root ZStack)
         static let primary   = adaptive(light: Palette.neutral50, dark: Palette.neutral900)    // pages: note editor, settings, text editor (UIKit)
-        static let secondary = adaptive(light: Palette.neutral100,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill
+        static let secondary = adaptive(light: Palette.neutral100,  dark: Palette.neutral800)    // elevated panels: drawer, sheets, toast, analytics cards, mic chip fill, recent note rows
         static let tertiary  = backdrop     // page background: NotePage, Settings, WidgetInstructions, DevComponents
         static let primaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral700 : Palette.neutral150 }
         static let secondaryUIColor: UIColor = UIColor { $0.userInterfaceStyle == .dark ? Palette.neutral150 : Palette.neutral700 }

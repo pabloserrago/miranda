@@ -1057,7 +1057,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("recent-note-\(card.id.uuidString)")
-        .cardSurface([Material.Control.fillSecondary], shadow: false, glass: false)
+        .cardSurface([Material.Surface.secondary], shadow: false, glass: false)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
