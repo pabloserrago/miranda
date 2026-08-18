@@ -43,7 +43,7 @@ final class NotificationManager {
             )
             cancelPendingPriorityUpdate()
             guard gate else { return }
-            let content = makeContent(title: "Your priorities", cards: cards)
+            let content = makeContent(title: NotificationManager.priorityUpdateTitle, cards: cards)
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
             await schedule(content: content, identifier: "priority-update", trigger: trigger)
         }
@@ -60,7 +60,7 @@ final class NotificationManager {
             )
             center.removePendingNotificationRequests(withIdentifiers: ["daily-digest"])
             guard gate else { return }
-            let content = makeContent(title: "Good morning — your priorities", cards: cards)
+            let content = makeContent(title: NotificationManager.dailyDigestTitle, cards: cards)
             var components = DateComponents()
             components.hour = 9
             components.minute = 0
@@ -81,7 +81,7 @@ final class NotificationManager {
     func sendTestReminder(cards: [Card]) {
         Task {
             _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
-            let content = makeContent(title: "Your priorities", cards: cards)
+            let content = makeContent(title: NotificationManager.priorityUpdateTitle, cards: cards)
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
             await schedule(content: content, identifier: "priority-update", trigger: trigger)
         }
@@ -101,6 +101,21 @@ final class NotificationManager {
         cards.prefix(3).enumerated()
             .map { "\($0.offset + 1). \($0.element.simplifiedText)" }
             .joined(separator: "\n")
+    }
+
+    // Notification copy is presented by the system, not by SwiftUI, so it is
+    // resolved through the catalog explicitly — a plain String literal passed
+    // as an argument is never extracted for localization.
+    static var priorityUpdateTitle: String {
+        String(localized: "notification.priority_update.title",
+               defaultValue: "Your priorities",
+               comment: "Title of the silent reminder sent shortly after priorities change")
+    }
+
+    static var dailyDigestTitle: String {
+        String(localized: "notification.daily_digest.title",
+               defaultValue: "Good morning — your priorities",
+               comment: "Title of the 9am daily digest notification")
     }
 
     // MARK: — Private

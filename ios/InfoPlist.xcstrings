@@ -59,22 +59,10 @@
             "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Miranda utilise le micro pour la saisie vocale, afin que vous puissiez capturer vos notes en parlant."
-          }
-        },
-        "gl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
         "nl" : {
@@ -87,6 +75,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A Miranda usa o microfone para entrada de voz, para que possas capturar notas a falar."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         }
       }
@@ -124,22 +118,10 @@
             "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Miranda transcrit votre voix directement sur l’appareil pour que vous puissiez capturer vos notes en parlant. L’audio n’est jamais conservé ni envoyé où que ce soit."
-          }
-        },
-        "gl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
         "nl" : {
@@ -152,6 +134,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A Miranda transcreve a tua voz no próprio dispositivo para que possas capturar notas a falar. O áudio nunca é guardado nem enviado para nenhum lugar."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún lugar."
           }
         }
       }

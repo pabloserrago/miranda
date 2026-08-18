@@ -45,13 +45,7 @@
             "value" : "+ Nota"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "+ Nota"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "+ Nota"
@@ -112,13 +106,7 @@
             "value" : "Floración"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Floración"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Floración"
@@ -179,13 +167,7 @@
             "value" : "Crepúsculo"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crepúsculo"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crepúsculo"
@@ -246,13 +228,7 @@
             "value" : "Pradera"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pradera"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pradera"
@@ -313,13 +289,7 @@
             "value" : "Estándar"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estándar"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estándar"
@@ -373,13 +343,7 @@
             "value" : "Capturar una prioridad"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capturar una prioridad"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Capturar una prioridad"
@@ -431,13 +395,7 @@
             "value" : "Captura lo que quieras."
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Captura lo que quieras."
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Captura lo que quieras."
@@ -492,13 +450,7 @@
             "value" : "Completar la tarjeta"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completar la tarjeta"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completar la tarjeta"
@@ -553,13 +505,7 @@
             "value" : "Sin prioridades"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin prioridades"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin prioridades"
@@ -611,13 +557,7 @@
             "value" : "Nota"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nota"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nota"
@@ -676,13 +616,7 @@
             "value" : "Color"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Color"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color"
@@ -741,13 +675,7 @@
             "value" : "Estándar"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estándar"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estándar"
@@ -799,13 +727,7 @@
             "value" : "Tus prioridades capturadas"
           }
         },
-        "eu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus prioridades capturadas"
-          }
-        },
-        "gl" : {
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus prioridades capturadas"

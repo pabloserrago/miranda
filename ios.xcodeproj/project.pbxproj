@@ -314,9 +314,8 @@
 				"ca-ES",
 				de,
 				es,
-				eu,
+				"es-MX",
 				fr,
-				gl,
 				nl,
 				pt,
 			);

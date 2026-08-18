@@ -11,12 +11,33 @@ struct LocalizationTests {
 
     /// Every locale the app claims to support.
     static let shippingLocalizations = [
-        "en", "es", "fr", "de", "nl", "pt", "ca", "ca-ES", "eu", "gl",
+        "en", "es", "es-MX", "fr", "de", "nl", "pt", "ca", "ca-ES",
     ]
+
+    /// Locales carrying their own translations, as opposed to the Spanish
+    /// mirrors. Shared so a new locale cannot be added to one test but missed
+    /// in another.
+    static let translatedLocales = ["es", "es-MX", "fr", "de", "nl", "pt"]
 
     /// Keys chosen because they appear on the first screens a user sees and
     /// because their translations differ from English in every target language.
     static let anchorKeys = ["Settings", "Cancel", "What's on your mind?"]
+
+    /// Every `AppShortcut` utterance declared by `MirandaShortcuts`, in the
+    /// `${applicationName}` form the catalog uses.
+    static let siriPhrases = [
+        "Capture a note in ${applicationName}",
+        "Add a note to ${applicationName}",
+        "Note something in ${applicationName}",
+        "What's my priority in ${applicationName}",
+        "What should I be doing in ${applicationName}",
+        "Show my top priority in ${applicationName}",
+        "I'm done in ${applicationName}",
+        "Mark done in ${applicationName}",
+        "Complete my priority in ${applicationName}",
+        "Add priority to ${applicationName}",
+        "Set my priority in ${applicationName}",
+    ]
 
     @Test func bundleShipsEveryLocalization() {
         let available = Set(Bundle.main.localizations)
@@ -28,7 +49,7 @@ struct LocalizationTests {
         }
     }
 
-    @Test(arguments: ["es", "fr", "de", "nl", "pt"])
+    @Test(arguments: Self.translatedLocales)
     func anchorStringsAreTranslated(code: String) throws {
         let bundle = try #require(
             localizedBundle(for: code),
@@ -49,8 +70,47 @@ struct LocalizationTests {
         }
     }
 
+    /// Peninsular terms and the Mexican wording that must replace them.
+    ///
+    /// A device set to Spanish (Mexico) already resolves `es` by falling back on
+    /// the language, so shipping `es-MX` is only worth the extra locale if the
+    /// copy actually differs. These pairs are the reason it exists.
+    static let mexicanRewordings: [(key: String, peninsular: String, mexican: String)] = [
+        ("Add your first note", "Añade", "Agrega"),
+        ("Count how many pens you have ✍️", "bolis", "plumas"),
+        ("Long press, then drag up or down to reorder", "pulsado", "presionado"),
+        ("Say 'potato' in 3 different accents 🥔", "patata", "papa"),
+    ]
+
+    @Test func mexicanSpanishIsDifferentiatedFromPeninsular() throws {
+        let mexican = try #require(localizedBundle(for: "es-MX"))
+        let spanish = try #require(localizedBundle(for: "es"))
+
+        for (key, peninsular, expected) in Self.mexicanRewordings {
+            let mxValue = mexican.localizedString(forKey: key, value: nil, table: nil)
+            let esValue = spanish.localizedString(forKey: key, value: nil, table: nil)
+
+            #expect(
+                mxValue != esValue,
+                "'\(key)' is identical in es and es-MX, so es-MX adds nothing over the es fallback"
+            )
+            #expect(
+                mxValue.localizedCaseInsensitiveContains(expected),
+                "'\(key)' in es-MX should use '\(expected)': \(mxValue)"
+            )
+            #expect(
+                !mxValue.localizedCaseInsensitiveContains(peninsular),
+                "'\(key)' in es-MX still uses the peninsular '\(peninsular)': \(mxValue)"
+            )
+            #expect(
+                esValue.localizedCaseInsensitiveContains(peninsular),
+                "'\(key)' no longer uses '\(peninsular)' in es — update mexicanRewordings"
+            )
+        }
+    }
+
     /// The Spanish-mirroring locales must resolve, not fall through to English.
-    @Test(arguments: ["ca", "eu", "gl"])
+    @Test(arguments: ["ca", "ca-ES"])
     func spanishMirroringLocalesResolve(code: String) throws {
         let mirrored = try #require(localizedBundle(for: code))
         let spanish = try #require(localizedBundle(for: "es"))
@@ -65,7 +125,7 @@ struct LocalizationTests {
     @Test func permissionPromptsAreTranslated() throws {
         let keys = ["NSMicrophoneUsageDescription", "NSSpeechRecognitionUsageDescription"]
 
-        for code in ["es", "fr", "de", "nl", "pt"] {
+        for code in Self.translatedLocales {
             let bundle = try #require(localizedBundle(for: code))
             for key in keys {
                 let value = bundle.localizedString(
@@ -77,6 +137,39 @@ struct LocalizationTests {
                     "\(key) in \(code) is still a placeholder: \(value)"
                 )
             }
+        }
+    }
+
+    /// Siri phrases live in their own `AppShortcuts` table — they are not
+    /// extracted into `Localizable.xcstrings`, so an app can be fully localized
+    /// and still only respond to English speech.
+    @Test(arguments: Self.translatedLocales)
+    func siriPhrasesAreTranslated(code: String) throws {
+        let bundle = try #require(localizedBundle(for: code))
+
+        for phrase in Self.siriPhrases {
+            let value = bundle.localizedString(
+                forKey: phrase, value: nil, table: "AppShortcuts"
+            )
+            #expect(
+                value != phrase,
+                "Siri phrase '\(phrase)' is untranslated in \(code)"
+            )
+            // The App Intents validator rejects any utterance that drops it.
+            #expect(
+                value.contains("${applicationName}"),
+                "Siri phrase '\(phrase)' in \(code) lost ${applicationName}: \(value)"
+            )
+        }
+    }
+
+    @Test(arguments: Self.translatedLocales)
+    func notificationTitlesAreTranslated(code: String) throws {
+        let bundle = try #require(localizedBundle(for: code))
+
+        for key in NotificationTitleTests.titleKeys {
+            let value = bundle.localizedString(forKey: key, value: nil, table: nil)
+            #expect(value != key, "\(key) is missing an \(code) translation")
         }
     }
 
