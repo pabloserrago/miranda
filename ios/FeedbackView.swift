@@ -14,9 +14,7 @@ struct FeedbackView: View {
 
     var onSuccess: (() -> Void)?
 
-    private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-    }
+    private var appVersion: String { AppInfo.shortVersion }
 
     private var appLanguage: String {
         Locale.current.language.languageCode?.identifier ?? "en"

@@ -5,9 +5,7 @@ import WidgetKit
 class Analytics {
     static let shared = Analytics()
     
-    private let appVersion: String = {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-    }()
+    private let appVersion: String = AppInfo.shortVersion
     
     private let appLanguage: String = {
         Locale.current.language.languageCode?.identifier ?? "en"

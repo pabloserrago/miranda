@@ -345,10 +345,12 @@ struct SettingsView: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "trash.fill")
                                     .font(AppFont.icon)
-                                    .foregroundColor(Material.Status.error)
                                     .frame(width: 24, height: 24)
                                 Text("Delete All Notes")
                             }
+                            // The destructive role would tint the label with the
+                            // system red, which does not match the token.
+                            .foregroundStyle(Material.Status.error)
                         }
                         .disabled(!hasCaptures)
                         .opacity(hasCaptures ? 1.0 : 0.5)
@@ -358,7 +360,7 @@ struct SettingsView: View {
                     // 8. App Version
                     Section {
                         Button(action: {
-                            UIPasteboard.general.string = "1.0.0"
+                            UIPasteboard.general.string = AppInfo.displayVersion
                             showCopiedToast = true
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -372,7 +374,7 @@ struct SettingsView: View {
                                     .frame(width: 24, height: 24)
                                 Text("Version")
                                 Spacer()
-                                Text("1.0.0")
+                                Text(AppInfo.displayVersion)
                                     .foregroundColor(Material.Text.secondary)
                             }
                         }
