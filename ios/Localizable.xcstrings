@@ -40,13 +40,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un espacio tranquilo empieza con lo que te sienta bien."
+            "value" : "Un espai tranquil comença amb allò que et va bé."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un espacio tranquilo empieza con lo que te sienta bien."
+            "value" : "Un espai tranquil comença amb allò que et va bé."
           }
         },
         "de" : {
@@ -92,13 +92,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una valoración en el App Store ayuda a que otros descubran la app."
+            "value" : "Una valoració a l'App Store ajuda que altres descobreixin l'app."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una valoración en el App Store ayuda a que otros descubran la app."
+            "value" : "Una valoració a l'App Store ajuda que altres descobreixin l'app."
           }
         },
         "de" : {
@@ -144,13 +144,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade una nueva nota prioritaria a Miranda."
+            "value" : "Afegeix una nova nota prioritària a Miranda."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade una nueva nota prioritaria a Miranda."
+            "value" : "Afegeix una nova nota prioritària a Miranda."
           }
         },
         "de" : {
@@ -196,13 +196,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añádelo una vez y tenlas siempre a la vista."
+            "value" : "Afegeix-lo un cop i tingues-les sempre a la vista."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añádelo una vez y tenlas siempre a la vista."
+            "value" : "Afegeix-lo un cop i tingues-les sempre a la vista."
           }
         },
         "de" : {
@@ -248,13 +248,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade el widget a tu pantalla de inicio para tener tus prioridades siempre a la vista. "
+            "value" : "Afegeix el widget a la pantalla d'inici per tenir les prioritats sempre a la vista. "
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade el widget a tu pantalla de inicio para tener tus prioridades siempre a la vista. "
+            "value" : "Afegeix el widget a la pantalla d'inici per tenir les prioritats sempre a la vista. "
           }
         },
         "de" : {
@@ -300,13 +300,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir el widget a la pantalla de inicio"
+            "value" : "Afegir el widget a la pantalla d'inici"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir el widget a la pantalla de inicio"
+            "value" : "Afegir el widget a la pantalla d'inici"
           }
         },
         "de" : {
@@ -352,13 +352,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade tu primera nota"
+            "value" : "Afegeix la teva primera nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade tu primera nota"
+            "value" : "Afegeix la teva primera nota"
           }
         },
         "de" : {
@@ -404,13 +404,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todo al día"
+            "value" : "Tot al dia"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todo al día"
+            "value" : "Tot al dia"
           }
         },
         "de" : {
@@ -456,13 +456,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icono de la app"
+            "value" : "Icona de l'app"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icono de la app"
+            "value" : "Icona de l'app"
           }
         },
         "de" : {
@@ -508,13 +508,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Te está gustando la app?"
+            "value" : "T'està agradant l'app?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Te está gustando la app?"
+            "value" : "T'està agradant l'app?"
           }
         },
         "de" : {
@@ -560,13 +560,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada de audio"
+            "value" : "Entrada d'àudio"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada de audio"
+            "value" : "Entrada d'àudio"
           }
         },
         "de" : {
@@ -612,13 +612,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fondo"
+            "value" : "Fons"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fondo"
+            "value" : "Fons"
           }
         },
         "de" : {
@@ -665,13 +665,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aguanta 10 segundos a la pata coja 🦩"
+            "value" : "Aguanta 10 segons a peu coix 🦩"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aguanta 10 segundos a la pata coja 🦩"
+            "value" : "Aguanta 10 segons a peu coix 🦩"
           }
         },
         "de" : {
@@ -718,13 +718,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Parpadea 20 veces muy rápido 👁️"
+            "value" : "Parpelleja 20 vegades ben ràpid 👁️"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Parpadea 20 veces muy rápido 👁️"
+            "value" : "Parpelleja 20 vegades ben ràpid 👁️"
           }
         },
         "de" : {
@@ -770,13 +770,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancelar"
+            "value" : "Cancel·la"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancelar"
+            "value" : "Cancel·la"
           }
         },
         "de" : {
@@ -822,13 +822,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancelar la edición"
+            "value" : "Cancel·la l'edició"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancelar la edición"
+            "value" : "Cancel·la l'edició"
           }
         },
         "de" : {
@@ -874,13 +874,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar"
+            "value" : "Captura"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar"
+            "value" : "Captura"
           }
         },
         "de" : {
@@ -926,13 +926,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota"
+            "value" : "Captura una nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota"
+            "value" : "Captura una nota"
           }
         },
         "de" : {
@@ -978,13 +978,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota"
+            "value" : "Captura una nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota"
+            "value" : "Captura una nota"
           }
         },
         "de" : {
@@ -1032,13 +1032,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura una nota y conviértela en tu prioridad principal en Miranda; si ya tienes 3, se sustituye la más antigua."
+            "value" : "Captura una nota i converteix-la en la teva prioritat principal a Miranda; si ja en tens 3, se substitueix la més antiga."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura una nota y conviértela en tu prioridad principal en Miranda; si ya tienes 3, se sustituye la más antigua."
+            "value" : "Captura una nota i converteix-la en la teva prioritat principal a Miranda; si ja en tens 3, se substitueix la més antiga."
           }
         },
         "de" : {
@@ -1084,13 +1084,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura cualquier cosa que tengas en la cabeza: un sueño, una idea o una tarea. "
+            "value" : "Captura qualsevol cosa que tinguis al cap: un somni, una idea o una tasca. "
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura cualquier cosa que tengas en la cabeza: un sueño, una idea o una tarea. "
+            "value" : "Captura qualsevol cosa que tinguis al cap: un somni, una idea o una tasca. "
           }
         },
         "de" : {
@@ -1136,13 +1136,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura lo que quieras, nosotros nos encargamos del resto."
+            "value" : "Captura el que vulguis, nosaltres ens encarreguem de la resta."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura lo que quieras, nosotros nos encargamos del resto."
+            "value" : "Captura el que vulguis, nosaltres ens encarreguem de la resta."
           }
         },
         "de" : {
@@ -1188,13 +1188,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura algo nuevo para marcarlo como prioridad"
+            "value" : "Captura alguna cosa nova per marcar-la com a prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura algo nuevo para marcarlo como prioridad"
+            "value" : "Captura alguna cosa nova per marcar-la com a prioritat"
           }
         },
         "de" : {
@@ -1240,13 +1240,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Categoría"
+            "value" : "Categoria"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Categoría"
+            "value" : "Categoria"
           }
         },
         "de" : {
@@ -1292,13 +1292,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Borrar la búsqueda"
+            "value" : "Esborra la cerca"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Borrar la búsqueda"
+            "value" : "Esborra la cerca"
           }
         },
         "de" : {
@@ -1344,13 +1344,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerrar"
+            "value" : "Tanca"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerrar"
+            "value" : "Tanca"
           }
         },
         "de" : {
@@ -1396,13 +1396,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar"
+            "value" : "Completa"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar"
+            "value" : "Completa"
           }
         },
         "de" : {
@@ -1450,13 +1450,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar la prioridad principal"
+            "value" : "Completa la prioritat principal"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar la prioridad principal"
+            "value" : "Completa la prioritat principal"
           }
         },
         "de" : {
@@ -1502,13 +1502,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Animación al completar"
+            "value" : "Animació en completar"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Animación al completar"
+            "value" : "Animació en completar"
           }
         },
         "de" : {
@@ -1554,13 +1554,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Animación al completar"
+            "value" : "Animació en completar"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Animación al completar"
+            "value" : "Animació en completar"
           }
         },
         "de" : {
@@ -1607,13 +1607,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hazle un cumplido a tu taza de café ☕️"
+            "value" : "Fes un compliment a la teva tassa de cafè ☕️"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hazle un cumplido a tu taza de café ☕️"
+            "value" : "Fes un compliment a la teva tassa de cafè ☕️"
           }
         },
         "de" : {
@@ -1662,13 +1662,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continuar"
+            "value" : "Continua"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continuar"
+            "value" : "Continua"
           }
         },
         "de" : {
@@ -1715,13 +1715,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuenta desde 10 hacia atrás en inglés 🇬🇧"
+            "value" : "Compta enrere des del 10 en anglès 🇬🇧"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuenta desde 10 hacia atrás en inglés 🇬🇧"
+            "value" : "Compta enrere des del 10 en anglès 🇬🇧"
           }
         },
         "de" : {
@@ -1768,13 +1768,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuenta cuántos bolis tienes ✍️"
+            "value" : "Compta quants bolígrafs tens ✍️"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuenta cuántos bolis tienes ✍️"
+            "value" : "Compta quants bolígrafs tens ✍️"
           }
         },
         "de" : {
@@ -1820,13 +1820,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar"
+            "value" : "Elimina"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar"
+            "value" : "Elimina"
           }
         },
         "de" : {
@@ -1872,13 +1872,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar todo"
+            "value" : "Elimina-ho tot"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar todo"
+            "value" : "Elimina-ho tot"
           }
         },
         "de" : {
@@ -1924,13 +1924,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar todas las notas"
+            "value" : "Elimina totes les notes"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar todas las notas"
+            "value" : "Elimina totes les notes"
           }
         },
         "de" : {
@@ -1976,13 +1976,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Eliminar todas las notas?"
+            "value" : "Vols eliminar totes les notes?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Eliminar todas las notas?"
+            "value" : "Vols eliminar totes les notes?"
           }
         },
         "de" : {
@@ -2028,13 +2028,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Describe tus comentarios…"
+            "value" : "Descriu els teus comentaris…"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Describe tus comentarios…"
+            "value" : "Descriu els teus comentaris…"
           }
         },
         "de" : {
@@ -2080,13 +2080,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictar"
+            "value" : "Dicta"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictar"
+            "value" : "Dicta"
           }
         },
         "de" : {
@@ -2132,13 +2132,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictar la nota"
+            "value" : "Dicta la nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictar la nota"
+            "value" : "Dicta la nota"
           }
         },
         "de" : {
@@ -2186,13 +2186,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictado no disponible"
+            "value" : "Dictat no disponible"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictado no disponible"
+            "value" : "Dictat no disponible"
           }
         },
         "de" : {
@@ -2238,13 +2238,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descartar"
+            "value" : "Descarta"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descartar"
+            "value" : "Descarta"
           }
         },
         "de" : {
@@ -2290,13 +2290,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descartar el consejo"
+            "value" : "Descarta el consell"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descartar el consejo"
+            "value" : "Descarta el consell"
           }
         },
         "de" : {
@@ -2343,13 +2343,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz 5 saltos de tijera 🤸"
+            "value" : "Fes 5 salts de tisora 🤸"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz 5 saltos de tijera 🤸"
+            "value" : "Fes 5 salts de tisora 🤸"
           }
         },
         "de" : {
@@ -2396,13 +2396,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ve a la cocina con un andar ridículo 🚶"
+            "value" : "Ves a la cuina caminant de manera ridícula 🚶"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ve a la cocina con un andar ridículo 🚶"
+            "value" : "Ves a la cuina caminant de manera ridícula 🚶"
           }
         },
         "de" : {
@@ -2448,13 +2448,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Quieres centrarte en conseguir esto?"
+            "value" : "Vols centrar-te a aconseguir-ho?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Quieres centrarte en conseguir esto?"
+            "value" : "Vols centrar-te a aconseguir-ho?"
           }
         },
         "de" : {
@@ -2500,13 +2500,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Listo"
+            "value" : "Fet"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Listo"
+            "value" : "Fet"
           }
         },
         "de" : {
@@ -2553,13 +2553,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bebe un vaso de agua 💧"
+            "value" : "Beu un got d'aigua 💧"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bebe un vaso de agua 💧"
+            "value" : "Beu un got d'aigua 💧"
           }
         },
         "de" : {
@@ -2605,13 +2605,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Facilísimo."
+            "value" : "Bufar i fer ampolles."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Facilísimo."
+            "value" : "Bufar i fer ampolles."
           }
         },
         "de" : {
@@ -2657,13 +2657,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar"
+            "value" : "Edita"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar"
+            "value" : "Edita"
           }
         },
         "de" : {
@@ -2709,13 +2709,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar la nota"
+            "value" : "Edita la nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar la nota"
+            "value" : "Edita la nota"
           }
         },
         "de" : {
@@ -2761,13 +2761,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comentarios enviados"
+            "value" : "Comentaris enviats"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comentarios enviados"
+            "value" : "Comentaris enviats"
           }
         },
         "de" : {
@@ -2813,13 +2813,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar…"
+            "value" : "Cerca…"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar…"
+            "value" : "Cerca…"
           }
         },
         "de" : {
@@ -2865,13 +2865,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finalizar"
+            "value" : "Finalitza"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finalizar"
+            "value" : "Finalitza"
           }
         },
         "de" : {
@@ -2917,13 +2917,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estilo de letra"
+            "value" : "Estil de lletra"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estilo de letra"
+            "value" : "Estil de lletra"
           }
         },
         "de" : {
@@ -2969,13 +2969,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sugerir"
+            "value" : "Suggereix"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sugerir"
+            "value" : "Suggereix"
           }
         },
         "de" : {
@@ -3021,13 +3021,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Nos alegra saberlo!"
+            "value" : "Ens alegra saber-ho!"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Nos alegra saberlo!"
+            "value" : "Ens alegra saber-ho!"
           }
         },
         "de" : {
@@ -3074,13 +3074,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date un choca esos cinco 🙌"
+            "value" : "Fes-te un xoca-la 🙌"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date un choca esos cinco 🙌"
+            "value" : "Fes-te un xoca-la 🙌"
           }
         },
         "de" : {
@@ -3126,13 +3126,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pantalla de inicio"
+            "value" : "Pantalla d'inici"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pantalla de inicio"
+            "value" : "Pantalla d'inici"
           }
         },
         "de" : {
@@ -3178,13 +3178,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cómo añadir el widget"
+            "value" : "Com afegir el widget"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cómo añadir el widget"
+            "value" : "Com afegir el widget"
           }
         },
         "de" : {
@@ -3231,13 +3231,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tararea la melodía de Jeopardy 🎶"
+            "value" : "Taral·leja la melodia del Jeopardy 🎶"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tararea la melodía de Jeopardy 🎶"
+            "value" : "Taral·leja la melodia del Jeopardy 🎶"
           }
         },
         "de" : {
@@ -3290,13 +3290,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escuchando…"
+            "value" : "Escoltant…"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escuchando…"
+            "value" : "Escoltant…"
           }
         },
         "de" : {
@@ -3342,13 +3342,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pantalla bloqueada"
+            "value" : "Pantalla bloquejada"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pantalla bloqueada"
+            "value" : "Pantalla bloquejada"
           }
         },
         "de" : {
@@ -3394,13 +3394,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mantén pulsado y arrastra arriba o abajo para reordenar"
+            "value" : "Mantén premut i arrossega amunt o avall per reordenar"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mantén pulsado y arrastra arriba o abajo para reordenar"
+            "value" : "Mantén premut i arrossega amunt o avall per reordenar"
           }
         },
         "de" : {
@@ -3447,13 +3447,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mira por la ventana durante 30 segundos 🪟"
+            "value" : "Mira per la finestra durant 30 segons 🪟"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mira por la ventana durante 30 segundos 🪟"
+            "value" : "Mira per la finestra durant 30 segons 🪟"
           }
         },
         "de" : {
@@ -3501,13 +3501,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Haz que Miranda sea tuya!"
+            "value" : "Fes que Miranda sigui teva!"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Haz que Miranda sea tuya!"
+            "value" : "Fes que Miranda sigui teva!"
           }
         },
         "de" : {
@@ -3554,13 +3554,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imita el sonido de un pájaro 🐦"
+            "value" : "Imita el so d'un ocell 🐦"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imita el sonido de un pájaro 🐦"
+            "value" : "Imita el so d'un ocell 🐦"
           }
         },
         "de" : {
@@ -3607,13 +3607,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz una mueca rara en el espejo 😜"
+            "value" : "Fes una ganyota rara al mirall 😜"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz una mueca rara en el espejo 😜"
+            "value" : "Fes una ganyota rara al mirall 😜"
           }
         },
         "de" : {
@@ -3660,13 +3660,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invéntate una palabra y úsala en una frase 💭"
+            "value" : "Inventa't una paraula i fes-la servir en una frase 💭"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invéntate una palabra y úsala en una frase 💭"
+            "value" : "Inventa't una paraula i fes-la servir en una frase 💭"
           }
         },
         "de" : {
@@ -3714,13 +3714,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marcar como hecho"
+            "value" : "Marca com a fet"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marcar como hecho"
+            "value" : "Marca com a fet"
           }
         },
         "de" : {
@@ -3766,13 +3766,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marca tu prioridad principal actual como hecha en Miranda."
+            "value" : "Marca la teva prioritat principal actual com a feta a Miranda."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marca tu prioridad principal actual como hecha en Miranda."
+            "value" : "Marca la teva prioritat principal actual com a feta a Miranda."
           }
         },
         "de" : {
@@ -3818,13 +3818,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quizá más tarde"
+            "value" : "Potser més tard"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quizá más tarde"
+            "value" : "Potser més tard"
           }
         },
         "de" : {
@@ -3870,13 +3870,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vuelve a unir esta línea y las de abajo en la nota"
+            "value" : "Torna a unir aquesta línia i les de sota a la nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vuelve a unir esta línea y las de abajo en la nota"
+            "value" : "Torna a unir aquesta línia i les de sota a la nota"
           }
         },
         "de" : {
@@ -3922,13 +3922,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mensaje"
+            "value" : "Missatge"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mensaje"
+            "value" : "Missatge"
           }
         },
         "de" : {
@@ -3976,13 +3976,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se necesita acceso al micrófono"
+            "value" : "Cal accés al micròfon"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se necesita acceso al micrófono"
+            "value" : "Cal accés al micròfon"
           }
         },
         "de" : {
@@ -4031,13 +4031,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda puede mostrar tus prioridades en la pantalla bloqueada. "
+            "value" : "Miranda pot mostrar les teves prioritats a la pantalla bloquejada. "
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda puede mostrar tus prioridades en la pantalla bloqueada. "
+            "value" : "Miranda pot mostrar les teves prioritats a la pantalla bloquejada. "
           }
         },
         "de" : {
@@ -4083,13 +4083,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover abajo"
+            "value" : "Mou avall"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover abajo"
+            "value" : "Mou avall"
           }
         },
         "de" : {
@@ -4135,13 +4135,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover arriba"
+            "value" : "Mou amunt"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover arriba"
+            "value" : "Mou amunt"
           }
         },
         "de" : {
@@ -4188,13 +4188,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di todos los colores que ves 🌈"
+            "value" : "Digues tots els colors que veus 🌈"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di todos los colores que ves 🌈"
+            "value" : "Digues tots els colors que veus 🌈"
           }
         },
         "de" : {
@@ -4241,13 +4241,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di tres cosas por las que estás agradecido 🙏"
+            "value" : "Digues tres coses que agraeixes 🙏"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di tres cosas por las que estás agradecido 🙏"
+            "value" : "Digues tres coses que agraeixes 🙏"
           }
         },
         "de" : {
@@ -4294,13 +4294,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ponles nombre a tus zapatos en voz alta 👟"
+            "value" : "Posa nom a les teves sabates en veu alta 👟"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ponles nombre a tus zapatos en voz alta 👟"
+            "value" : "Posa nom a les teves sabates en veu alta 👟"
           }
         },
         "de" : {
@@ -4346,13 +4346,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nota nueva"
+            "value" : "Nota nova"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nota nueva"
+            "value" : "Nota nova"
           }
         },
         "de" : {
@@ -4398,13 +4398,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nota nueva"
+            "value" : "Nota nova"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nota nueva"
+            "value" : "Nota nova"
           }
         },
         "de" : {
@@ -4450,13 +4450,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No hay más capturas"
+            "value" : "No hi ha més captures"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No hay más capturas"
+            "value" : "No hi ha més captures"
           }
         },
         "de" : {
@@ -4502,13 +4502,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin resultados"
+            "value" : "Sense resultats"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin resultados"
+            "value" : "Sense resultats"
           }
         },
         "de" : {
@@ -4554,13 +4554,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No mucho"
+            "value" : "No gaire"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No mucho"
+            "value" : "No gaire"
           }
         },
         "de" : {
@@ -4658,13 +4658,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Texto de la nota"
+            "value" : "Text de la nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Texto de la nota"
+            "value" : "Text de la nota"
           }
         },
         "de" : {
@@ -4710,13 +4710,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ninguna prioridad definida"
+            "value" : "Cap prioritat definida"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ninguna prioridad definida"
+            "value" : "Cap prioritat definida"
           }
         },
         "de" : {
@@ -4762,13 +4762,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "D'acord"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "D'acord"
           }
         },
         "de" : {
@@ -4816,13 +4816,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El dictado en el dispositivo no está disponible en tu idioma. Aun así, puedes escribir tu nota."
+            "value" : "El dictat al dispositiu no està disponible en el teu idioma. Tot i així, pots escriure la nota."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El dictado en el dispositivo no está disponible en tu idioma. Aun así, puedes escribir tu nota."
+            "value" : "El dictat al dispositiu no està disponible en el teu idioma. Tot i així, pots escriure la nota."
           }
         },
         "de" : {
@@ -4870,13 +4870,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Ajustes"
+            "value" : "Obre la Configuració"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Ajustes"
+            "value" : "Obre la Configuració"
           }
         },
         "de" : {
@@ -4923,13 +4923,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ordena una cosa de tu escritorio 📎"
+            "value" : "Endreça una cosa del teu escriptori 📎"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ordena una cosa de tu escritorio 📎"
+            "value" : "Endreça una cosa del teu escriptori 📎"
           }
         },
         "de" : {
@@ -4975,13 +4975,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizar"
+            "value" : "Personalitza"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizar"
+            "value" : "Personalitza"
           }
         },
         "de" : {
@@ -5027,13 +5027,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personaliza tus notas"
+            "value" : "Personalitza les teves notes"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personaliza tus notas"
+            "value" : "Personalitza les teves notes"
           }
         },
         "de" : {
@@ -5080,13 +5080,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acaricia a un perro imaginario 🐕"
+            "value" : "Acaricia un gos imaginari 🐕"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acaricia a un perro imaginario 🐕"
+            "value" : "Acaricia un gos imaginari 🐕"
           }
         },
         "de" : {
@@ -5132,13 +5132,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige una nota en la que centrarte ahora"
+            "value" : "Tria una nota en què centrar-te ara"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige una nota en la que centrarte ahora"
+            "value" : "Tria una nota en què centrar-te ara"
           }
         },
         "de" : {
@@ -5185,13 +5185,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz de robot durante 15 segundos 🤖"
+            "value" : "Fes de robot durant 15 segons 🤖"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haz de robot durante 15 segundos 🤖"
+            "value" : "Fes de robot durant 15 segons 🤖"
           }
         },
         "de" : {
@@ -5237,13 +5237,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prioridad"
+            "value" : "Prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prioridad"
+            "value" : "Prioritat"
           }
         },
         "de" : {
@@ -5289,13 +5289,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recordatorios de prioridad"
+            "value" : "Recordatoris de prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recordatorios de prioridad"
+            "value" : "Recordatoris de prioritat"
           }
         },
         "de" : {
@@ -5343,13 +5343,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Texto de la prioridad"
+            "value" : "Text de la prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Texto de la prioridad"
+            "value" : "Text de la prioritat"
           }
         },
         "de" : {
@@ -5395,13 +5395,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Política de privacidad"
+            "value" : "Política de privacitat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Política de privacidad"
+            "value" : "Política de privacitat"
           }
         },
         "de" : {
@@ -5447,13 +5447,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valorar la app"
+            "value" : "Valora l'app"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valorar la app"
+            "value" : "Valora l'app"
           }
         },
         "de" : {
@@ -5501,13 +5501,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lee en voz alta tu prioridad principal actual en Miranda."
+            "value" : "Llegeix en veu alta la teva prioritat principal actual a Miranda."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lee en voz alta tu prioridad principal actual en Miranda."
+            "value" : "Llegeix en veu alta la teva prioritat principal actual a Miranda."
           }
         },
         "de" : {
@@ -5553,13 +5553,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recientes"
+            "value" : "Recents"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recientes"
+            "value" : "Recents"
           }
         },
         "de" : {
@@ -5608,13 +5608,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quitar"
+            "value" : "Treu"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quitar"
+            "value" : "Treu"
           }
         },
         "de" : {
@@ -5660,13 +5660,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los informes son anónimos. Solo se incluyen la versión de la app (%1$@) y el idioma (%2$@)."
+            "value" : "Els informes són anònims. Només s'hi inclouen la versió de l'app (%1$@) i l'idioma (%2$@)."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los informes son anónimos. Solo se incluyen la versión de la app (%1$@) y el idioma (%2$@)."
+            "value" : "Els informes són anònims. Només s'hi inclouen la versió de l'app (%1$@) i l'idioma (%2$@)."
           }
         },
         "de" : {
@@ -5718,13 +5718,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardar"
+            "value" : "Desa"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardar"
+            "value" : "Desa"
           }
         },
         "de" : {
@@ -5770,13 +5770,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardar la nota"
+            "value" : "Desa la nota"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardar la nota"
+            "value" : "Desa la nota"
           }
         },
         "de" : {
@@ -5823,13 +5823,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di «patata» con 3 acentos diferentes 🥔"
+            "value" : "Digues «patata» amb 3 accents diferents 🥔"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di «patata» con 3 acentos diferentes 🥔"
+            "value" : "Digues «patata» amb 3 accents diferents 🥔"
           }
         },
         "de" : {
@@ -5876,13 +5876,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di el alfabeto al revés empezando por la G 🔤"
+            "value" : "Digues l'alfabet al revés començant per la G 🔤"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di el alfabeto al revés empezando por la G 🔤"
+            "value" : "Digues l'alfabet al revés començant per la G 🔤"
           }
         },
         "de" : {
@@ -5928,13 +5928,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descubre lo que más importa hoy."
+            "value" : "Descobreix què importa més avui."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descubre lo que más importa hoy."
+            "value" : "Descobreix què importa més avui."
           }
         },
         "de" : {
@@ -5982,13 +5982,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elegir el fondo"
+            "value" : "Tria el fons"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elegir el fondo"
+            "value" : "Tria el fons"
           }
         },
         "de" : {
@@ -6034,13 +6034,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige el icono de tu app"
+            "value" : "Tria la icona de l'app"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige el icono de tu app"
+            "value" : "Tria la icona de l'app"
           }
         },
         "de" : {
@@ -6086,13 +6086,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviando…"
+            "value" : "S'està enviant…"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviando…"
+            "value" : "S'està enviant…"
           }
         },
         "de" : {
@@ -6138,13 +6138,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir la prioridad"
+            "value" : "Defineix la prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir la prioridad"
+            "value" : "Defineix la prioritat"
           }
         },
         "de" : {
@@ -6192,13 +6192,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir la prioridad"
+            "value" : "Defineix la prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir la prioridad"
+            "value" : "Defineix la prioritat"
           }
         },
         "de" : {
@@ -6244,13 +6244,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajustes"
+            "value" : "Configuració"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajustes"
+            "value" : "Configuració"
           }
         },
         "de" : {
@@ -6298,13 +6298,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar la prioridad principal"
+            "value" : "Mostra la prioritat principal"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar la prioridad principal"
+            "value" : "Mostra la prioritat principal"
           }
         },
         "de" : {
@@ -6351,13 +6351,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar las notas recientes"
+            "value" : "Mostra les notes recents"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar las notas recientes"
+            "value" : "Mostra les notes recents"
           }
         },
         "de" : {
@@ -6405,13 +6405,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar la prioridad principal"
+            "value" : "Mostra la prioritat principal"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar la prioridad principal"
+            "value" : "Mostra la prioritat principal"
           }
         },
         "de" : {
@@ -6457,13 +6457,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sencillo."
+            "value" : "Senzill."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sencillo."
+            "value" : "Senzill."
           }
         },
         "de" : {
@@ -6510,13 +6510,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canta una palabra de tu canción favorita 🎵"
+            "value" : "Canta una paraula de la teva cançó preferida 🎵"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canta una palabra de tu canción favorita 🎵"
+            "value" : "Canta una paraula de la teva cançó preferida 🎵"
           }
         },
         "de" : {
@@ -6563,13 +6563,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Huele un limón 🍋"
+            "value" : "Olora una llimona 🍋"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Huele un limón 🍋"
+            "value" : "Olora una llimona 🍋"
           }
         },
         "de" : {
@@ -6616,13 +6616,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chasquea los dedos 10 veces 🫰"
+            "value" : "Fes petar els dits 10 vegades 🫰"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chasquea los dedos 10 veces 🫰"
+            "value" : "Fes petar els dits 10 vegades 🫰"
           }
         },
         "de" : {
@@ -6668,13 +6668,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Algo ha salido mal. Vuelve a intentarlo más tarde."
+            "value" : "Alguna cosa ha anat malament. Torna-ho a provar més tard."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Algo ha salido mal. Vuelve a intentarlo más tarde."
+            "value" : "Alguna cosa ha anat malament. Torna-ho a provar més tard."
           }
         },
         "de" : {
@@ -6720,13 +6720,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pronto"
+            "value" : "Aviat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pronto"
+            "value" : "Aviat"
           }
         },
         "de" : {
@@ -6773,13 +6773,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Da tres vueltas despacio 🌀"
+            "value" : "Fes tres voltes a poc a poc 🌀"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Da tres vueltas despacio 🌀"
+            "value" : "Fes tres voltes a poc a poc 🌀"
           }
         },
         "de" : {
@@ -6825,13 +6825,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dividir por guiones"
+            "value" : "Divideix per guions"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dividir por guiones"
+            "value" : "Divideix per guions"
           }
         },
         "de" : {
@@ -6882,13 +6882,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detener"
+            "value" : "Atura"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detener"
+            "value" : "Atura"
           }
         },
         "de" : {
@@ -6935,13 +6935,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estírate como un gato 🐱"
+            "value" : "Estira't com un gat 🐱"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estírate como un gato 🐱"
+            "value" : "Estira't com un gat 🐱"
           }
         },
         "de" : {
@@ -6987,13 +6987,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviar"
+            "value" : "Envia"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviar"
+            "value" : "Envia"
           }
         },
         "de" : {
@@ -7039,13 +7039,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviar una solicitud"
+            "value" : "Envia una sol·licitud"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enviar una solicitud"
+            "value" : "Envia una sol·licitud"
           }
         },
         "de" : {
@@ -7092,13 +7092,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Respira hondo 3 veces 🫁"
+            "value" : "Respira fondo 3 vegades 🫁"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Respira hondo 3 veces 🫁"
+            "value" : "Respira fondo 3 vegades 🫁"
           }
         },
         "de" : {
@@ -7145,13 +7145,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tócate la nariz 7 veces 👃"
+            "value" : "Toca't el nas 7 vegades 👃"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tócate la nariz 7 veces 👃"
+            "value" : "Toca't el nas 7 vegades 👃"
           }
         },
         "de" : {
@@ -7197,13 +7197,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se eliminarán todas tus notas de forma permanente. Esta acción no se puede deshacer."
+            "value" : "S'eliminaran totes les teves notes de manera permanent. Aquesta acció no es pot desfer."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se eliminarán todas tus notas de forma permanente. Esta acción no se puede deshacer."
+            "value" : "S'eliminaran totes les teves notes de manera permanent. Aquesta acció no es pot desfer."
           }
         },
         "de" : {
@@ -7251,13 +7251,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para capturar notas con la voz, permite el acceso al micrófono y al reconocimiento de voz en Ajustes. Aun así, puedes escribir tu nota."
+            "value" : "Per capturar notes amb la veu, permet l'accés al micròfon i al reconeixement de veu a la Configuració. Tot i així, pots escriure la nota."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para capturar notas con la voz, permite el acceso al micrófono y al reconocimiento de voz en Ajustes. Aun así, puedes escribir tu nota."
+            "value" : "Per capturar notes amb la veu, permet l'accés al micròfon i al reconeixement de veu a la Configuració. Tot i així, pots escriure la nota."
           }
         },
         "de" : {
@@ -7304,13 +7304,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca algo azul 💙"
+            "value" : "Toca alguna cosa blava 💙"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca algo azul 💙"
+            "value" : "Toca alguna cosa blava 💙"
           }
         },
         "de" : {
@@ -7357,13 +7357,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Junta los codos 💪"
+            "value" : "Ajunta els colzes 💪"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Junta los codos 💪"
+            "value" : "Ajunta els colzes 💪"
           }
         },
         "de" : {
@@ -7409,13 +7409,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Convertir en acciones"
+            "value" : "Converteix en accions"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Convertir en acciones"
+            "value" : "Converteix en accions"
           }
         },
         "de" : {
@@ -7461,13 +7461,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activar una prioridad"
+            "value" : "Activa una prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activar una prioridad"
+            "value" : "Activa una prioritat"
           }
         },
         "de" : {
@@ -7513,13 +7513,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desactivar"
+            "value" : "Desactiva-ho"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desactivar"
+            "value" : "Desactiva-ho"
           }
         },
         "de" : {
@@ -7565,13 +7565,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activar"
+            "value" : "Activa-ho"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activar"
+            "value" : "Activa-ho"
           }
         },
         "de" : {
@@ -7617,13 +7617,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se ha podido enviar"
+            "value" : "No s'ha pogut enviar"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se ha podido enviar"
+            "value" : "No s'ha pogut enviar"
           }
         },
         "de" : {
@@ -7669,13 +7669,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versión"
+            "value" : "Versió"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versión"
+            "value" : "Versió"
           }
         },
         "de" : {
@@ -7721,13 +7721,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versión copiada"
+            "value" : "Versió copiada"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versión copiada"
+            "value" : "Versió copiada"
           }
         },
         "de" : {
@@ -7773,13 +7773,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voz"
+            "value" : "Veu"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voz"
+            "value" : "Veu"
           }
         },
         "de" : {
@@ -7825,13 +7825,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura por voz"
+            "value" : "Captura per veu"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura por voz"
+            "value" : "Captura per veu"
           }
         },
         "de" : {
@@ -7878,13 +7878,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saluda a algo al azar 👋"
+            "value" : "Saluda alguna cosa a l'atzar 👋"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saluda a algo al azar 👋"
+            "value" : "Saluda alguna cosa a l'atzar 👋"
           }
         },
         "de" : {
@@ -7930,13 +7930,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué quieres capturar?"
+            "value" : "Què vols capturar?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué quieres capturar?"
+            "value" : "Què vols capturar?"
           }
         },
         "de" : {
@@ -7984,13 +7984,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Cuál debería ser tu prioridad?"
+            "value" : "Quina hauria de ser la teva prioritat?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Cuál debería ser tu prioridad?"
+            "value" : "Quina hauria de ser la teva prioritat?"
           }
         },
         "de" : {
@@ -8036,13 +8036,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué te gustaría capturar?"
+            "value" : "Què t'agradaria capturar?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué te gustaría capturar?"
+            "value" : "Què t'agradaria capturar?"
           }
         },
         "de" : {
@@ -8088,13 +8088,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué tienes en mente?"
+            "value" : "Què tens al cap?"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Qué tienes en mente?"
+            "value" : "Què tens al cap?"
           }
         },
         "de" : {
@@ -8141,13 +8141,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Susúrrale «buen trabajo» a tu planta 🪴"
+            "value" : "Xiuxiueja «bona feina» a la teva planta 🪴"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Susúrrale «buen trabajo» a tu planta 🪴"
+            "value" : "Xiuxiueja «bona feina» a la teva planta 🪴"
           }
         },
         "de" : {
@@ -8193,13 +8193,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget en la pantalla de inicio"
+            "value" : "Widget a la pantalla d'inici"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget en la pantalla de inicio"
+            "value" : "Widget a la pantalla d'inici"
           }
         },
         "de" : {
@@ -8245,13 +8245,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget en la pantalla bloqueada"
+            "value" : "Widget a la pantalla bloquejada"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget en la pantalla bloqueada"
+            "value" : "Widget a la pantalla bloquejada"
           }
         },
         "de" : {
@@ -8298,13 +8298,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mueve los dedos de los pies 🦶"
+            "value" : "Mou els dits dels peus 🦶"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mueve los dedos de los pies 🦶"
+            "value" : "Mou els dits dels peus 🦶"
           }
         },
         "de" : {
@@ -8351,13 +8351,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escribe tu nombre con la mano no dominante ✏️"
+            "value" : "Escriu el teu nom amb la mà no dominant ✏️"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escribe tu nombre con la mano no dominante ✏️"
+            "value" : "Escriu el teu nom amb la mà no dominant ✏️"
           }
         },
         "de" : {
@@ -8403,13 +8403,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Sí, vamos!"
+            "value" : "Sí, endavant!"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡Sí, vamos!"
+            "value" : "Sí, endavant!"
           }
         },
         "de" : {
@@ -8455,13 +8455,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí, me encanta"
+            "value" : "Sí, m'encanta"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí, me encanta"
+            "value" : "Sí, m'encanta"
           }
         },
         "de" : {
@@ -8507,13 +8507,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus comentarios nos ayudan a mejorar."
+            "value" : "Els teus comentaris ens ajuden a millorar."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus comentarios nos ayudan a mejorar."
+            "value" : "Els teus comentaris ens ajuden a millorar."
           }
         },
         "de" : {
@@ -8559,13 +8559,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades se verán en el widget de tu pantalla de inicio."
+            "value" : "Les teves prioritats es veuran al widget de la pantalla d'inici."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades se verán en el widget de tu pantalla de inicio."
+            "value" : "Les teves prioritats es veuran al widget de la pantalla d'inici."
           }
         },
         "de" : {
@@ -8611,13 +8611,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tu prioridad"
+            "value" : "La teva prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tu prioridad"
+            "value" : "La teva prioritat"
           }
         },
         "de" : {
@@ -8664,13 +8664,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oscuro"
+            "value" : "Fosc"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oscuro"
+            "value" : "Fosc"
           }
         },
         "de" : {
@@ -8723,13 +8723,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Predeterminado"
+            "value" : "Predeterminat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Predeterminado"
+            "value" : "Predeterminat"
           }
         },
         "de" : {
@@ -8841,13 +8841,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icono de la app"
+            "value" : "Icona de l'app"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icono de la app"
+            "value" : "Icona de l'app"
           }
         },
         "de" : {
@@ -8902,13 +8902,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Floración"
+            "value" : "Floració"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Floración"
+            "value" : "Floració"
           }
         },
         "de" : {
@@ -8963,13 +8963,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crepúsculo"
+            "value" : "Capvespre"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crepúsculo"
+            "value" : "Capvespre"
           }
         },
         "de" : {
@@ -9024,13 +9024,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pradera"
+            "value" : "Prat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pradera"
+            "value" : "Prat"
           }
         },
         "de" : {
@@ -9085,13 +9085,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "de" : {
@@ -9160,13 +9160,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturado: %@"
+            "value" : "Capturat: %@"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturado: %@"
+            "value" : "Capturat: %@"
           }
         },
         "de" : {
@@ -9220,13 +9220,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No hay ninguna prioridad activa que completar."
+            "value" : "No hi ha cap prioritat activa per completar."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No hay ninguna prioridad activa que completar."
+            "value" : "No hi ha cap prioritat activa per completar."
           }
         },
         "de" : {
@@ -9280,13 +9280,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hecho: %@"
+            "value" : "Fet: %@"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hecho: %@"
+            "value" : "Fet: %@"
           }
         },
         "de" : {
@@ -9340,13 +9340,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prioridad definida: %@"
+            "value" : "Prioritat definida: %@"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prioridad definida: %@"
+            "value" : "Prioritat definida: %@"
           }
         },
         "de" : {
@@ -9400,13 +9400,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No tienes ninguna prioridad activa en Miranda."
+            "value" : "No tens cap prioritat activa a Miranda."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No tienes ninguna prioridad activa en Miranda."
+            "value" : "No tens cap prioritat activa a Miranda."
           }
         },
         "de" : {
@@ -9478,13 +9478,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buenos días: tus prioridades"
+            "value" : "Bon dia: les teves prioritats"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buenos días: tus prioridades"
+            "value" : "Bon dia: les teves prioritats"
           }
         },
         "fr" : {
@@ -9538,13 +9538,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades"
+            "value" : "Les teves prioritats"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades"
+            "value" : "Les teves prioritats"
           }
         },
         "fr" : {
@@ -9638,13 +9638,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "de" : {
@@ -9696,13 +9696,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡ganando poco a poco!"
+            "value" : "guanyant a poc a poc!"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¡ganando poco a poco!"
+            "value" : "guanyant a poc a poc!"
           }
         },
         "de" : {

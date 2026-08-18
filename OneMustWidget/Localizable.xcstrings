@@ -97,13 +97,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Floración"
+            "value" : "Floració"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Floración"
+            "value" : "Floració"
           }
         },
         "es-MX" : {
@@ -158,13 +158,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crepúsculo"
+            "value" : "Capvespre"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crepúsculo"
+            "value" : "Capvespre"
           }
         },
         "es-MX" : {
@@ -219,13 +219,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pradera"
+            "value" : "Prat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pradera"
+            "value" : "Prat"
           }
         },
         "es-MX" : {
@@ -280,13 +280,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "es-MX" : {
@@ -334,13 +334,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una prioridad"
+            "value" : "Captura una prioritat"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una prioridad"
+            "value" : "Captura una prioritat"
           }
         },
         "es-MX" : {
@@ -386,13 +386,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura lo que quieras."
+            "value" : "Captura el que vulguis."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Captura lo que quieras."
+            "value" : "Captura el que vulguis."
           }
         },
         "es-MX" : {
@@ -441,13 +441,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar la tarjeta"
+            "value" : "Completa la targeta"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar la tarjeta"
+            "value" : "Completa la targeta"
           }
         },
         "es-MX" : {
@@ -496,13 +496,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin prioridades"
+            "value" : "Sense prioritats"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin prioridades"
+            "value" : "Sense prioritats"
           }
         },
         "es-MX" : {
@@ -666,13 +666,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar"
+            "value" : "Estàndard"
           }
         },
         "es-MX" : {
@@ -718,13 +718,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades capturadas"
+            "value" : "Les teves prioritats capturades"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus prioridades capturadas"
+            "value" : "Les teves prioritats capturades"
           }
         },
         "es-MX" : {

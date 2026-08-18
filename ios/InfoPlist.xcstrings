@@ -32,13 +32,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
+            "value" : "Miranda utilitza el micròfon per a l'entrada de veu, de manera que puguis capturar notes parlant."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
+            "value" : "Miranda utilitza el micròfon per a l'entrada de veu, de manera que puguis capturar notes parlant."
           }
         },
         "de" : {
@@ -91,13 +91,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
+            "value" : "Miranda transcriu la teva veu al mateix dispositiu perquè puguis capturar notes parlant. L'àudio no s'emmagatzema ni s'envia enlloc."
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
+            "value" : "Miranda transcriu la teva veu al mateix dispositiu perquè puguis capturar notes parlant. L'àudio no s'emmagatzema ni s'envia enlloc."
           }
         },
         "de" : {

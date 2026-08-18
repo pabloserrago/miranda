@@ -7,13 +7,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir una nota a ${applicationName}"
+            "value" : "Afegeix una nota a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir una nota a ${applicationName}"
+            "value" : "Afegeix una nota a ${applicationName}"
           }
         },
         "de" : {
@@ -65,13 +65,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir una prioridad a ${applicationName}"
+            "value" : "Afegeix una prioritat a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir una prioridad a ${applicationName}"
+            "value" : "Afegeix una prioritat a ${applicationName}"
           }
         },
         "de" : {
@@ -123,13 +123,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota en ${applicationName}"
+            "value" : "Captura una nota a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capturar una nota en ${applicationName}"
+            "value" : "Captura una nota a ${applicationName}"
           }
         },
         "de" : {
@@ -182,13 +182,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar mi prioridad en ${applicationName}"
+            "value" : "Completa la meva prioritat a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar mi prioridad en ${applicationName}"
+            "value" : "Completa la meva prioritat a ${applicationName}"
           }
         },
         "de" : {
@@ -240,13 +240,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ya está hecho en ${applicationName}"
+            "value" : "Ja ho he fet a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ya está hecho en ${applicationName}"
+            "value" : "Ja ho he fet a ${applicationName}"
           }
         },
         "de" : {
@@ -299,13 +299,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marcar como hecho en ${applicationName}"
+            "value" : "Marca com a fet a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marcar como hecho en ${applicationName}"
+            "value" : "Marca com a fet a ${applicationName}"
           }
         },
         "de" : {
@@ -358,13 +358,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anotar algo en ${applicationName}"
+            "value" : "Anota alguna cosa a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anotar algo en ${applicationName}"
+            "value" : "Anota alguna cosa a ${applicationName}"
           }
         },
         "de" : {
@@ -417,13 +417,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir mi prioridad en ${applicationName}"
+            "value" : "Defineix la meva prioritat a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Definir mi prioridad en ${applicationName}"
+            "value" : "Defineix la meva prioritat a ${applicationName}"
           }
         },
         "de" : {
@@ -476,13 +476,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muestra mi prioridad principal en ${applicationName}"
+            "value" : "Mostra la meva prioritat principal a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muestra mi prioridad principal en ${applicationName}"
+            "value" : "Mostra la meva prioritat principal a ${applicationName}"
           }
         },
         "de" : {
@@ -535,13 +535,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Qué debería estar haciendo en ${applicationName}"
+            "value" : "Què hauria d'estar fent a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Qué debería estar haciendo en ${applicationName}"
+            "value" : "Què hauria d'estar fent a ${applicationName}"
           }
         },
         "de" : {
@@ -593,13 +593,13 @@
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuál es mi prioridad en ${applicationName}"
+            "value" : "Quina és la meva prioritat a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuál es mi prioridad en ${applicationName}"
+            "value" : "Quina és la meva prioritat a ${applicationName}"
           }
         },
         "de" : {

@@ -17,7 +17,7 @@ struct LocalizationTests {
     /// Locales carrying their own translations, as opposed to the Spanish
     /// mirrors. Shared so a new locale cannot be added to one test but missed
     /// in another.
-    static let translatedLocales = ["es", "es-MX", "fr", "de", "nl", "pt"]
+    static let translatedLocales = ["es", "es-MX", "fr", "de", "nl", "pt", "ca", "ca-ES"]
 
     /// Keys chosen because they appear on the first screens a user sees and
     /// because their translations differ from English in every target language.
@@ -109,16 +109,39 @@ struct LocalizationTests {
         }
     }
 
-    /// The Spanish-mirroring locales must resolve, not fall through to English.
+    /// Spanish wording and the Catalan that must replace it.
+    ///
+    /// Catalan shipped as a byte-for-byte copy of Spanish for several releases:
+    /// the store listing was Catalan while the app itself spoke Spanish. These
+    /// pairs fail if anything ever refills `ca` from `es` again.
+    static let catalanRewordings: [(key: String, spanish: String, catalan: String)] = [
+        ("Settings", "Ajustes", "Configuració"),
+        ("Cancel", "Cancelar", "Cancel·la"),
+        ("Save", "Guardar", "Desa"),
+        ("What's on your mind?", "¿Qué tienes en mente?", "Què tens al cap?"),
+    ]
+
     @Test(arguments: ["ca", "ca-ES"])
-    func spanishMirroringLocalesResolve(code: String) throws {
-        let mirrored = try #require(localizedBundle(for: code))
+    func catalanIsTranslatedNotMirroredFromSpanish(code: String) throws {
+        let catalan = try #require(localizedBundle(for: code))
         let spanish = try #require(localizedBundle(for: "es"))
 
-        for key in Self.anchorKeys {
-            let value = mirrored.localizedString(forKey: key, value: nil, table: nil)
+        for (key, spanishValue, expected) in Self.catalanRewordings {
+            let caValue = catalan.localizedString(forKey: key, value: nil, table: nil)
             let esValue = spanish.localizedString(forKey: key, value: nil, table: nil)
-            #expect(value == esValue, "'\(key)' in \(code) should mirror the Spanish value")
+
+            #expect(
+                caValue == expected,
+                "'\(key)' in \(code) should be '\(expected)': \(caValue)"
+            )
+            #expect(
+                caValue != esValue,
+                "'\(key)' in \(code) is identical to Spanish — Catalan is being mirrored again"
+            )
+            #expect(
+                esValue == spanishValue,
+                "'\(key)' no longer reads '\(spanishValue)' in es — update catalanRewordings"
+            )
         }
     }
 
