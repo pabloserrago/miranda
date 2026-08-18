@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The selectable app icons, in display order (2 rows of 3).
+/// The selectable app icons, in display order (rows of 3).
 enum AppIconOption: String, CaseIterable, Identifiable {
     case `default`
     case dark
@@ -8,6 +8,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
     case bloom
     case meadow
     case dusk
+    case turtle
 
     var id: String { rawValue }
 
@@ -22,6 +23,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .bloom:      return scheme == .dark ? "AppIconBloomDark" : "AppIconBloomLight"
         case .meadow:     return scheme == .dark ? "AppIconMeadowDark" : "AppIconMeadowLight"
         case .dusk:       return scheme == .dark ? "AppIconDuskDark" : "AppIconDuskLight"
+        case .turtle:     return "AppIconTurtle"
         }
     }
 
@@ -34,6 +36,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .bloom:      return "IconPreviewBloom"
         case .meadow:     return "IconPreviewMeadow"
         case .dusk:       return "IconPreviewDusk"
+        case .turtle:     return "IconPreviewTurtle"
         }
     }
 
@@ -45,6 +48,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .bloom:      return String(localized: "background.bloom",   defaultValue: "Bloom")
         case .meadow:     return String(localized: "background.meadow",  defaultValue: "Meadow")
         case .dusk:       return String(localized: "background.dusk",    defaultValue: "Dusk")
+        case .turtle:     return String(localized: "appicon.turtle",     defaultValue: "Turtle")
         }
     }
 }

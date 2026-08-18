@@ -4,8 +4,8 @@ import SwiftUI
 
 struct AppIconOptionTests {
 
-    @Test func hasSixOptionsInDisplayOrder() {
-        #expect(AppIconOption.allCases == [.default, .dark, .silhouette, .bloom, .meadow, .dusk])
+    @Test func hasSevenOptionsInDisplayOrder() {
+        #expect(AppIconOption.allCases == [.default, .dark, .silhouette, .bloom, .meadow, .dusk, .turtle])
     }
 
     @Test func onlyDefaultUsesPrimaryIcon() {
@@ -22,6 +22,8 @@ struct AppIconOptionTests {
         #expect(AppIconOption.dark.iconName(for: .dark) == "AppIconDark")
         #expect(AppIconOption.silhouette.iconName(for: .light) == "AppIconSilhouette")
         #expect(AppIconOption.silhouette.iconName(for: .dark) == "AppIconSilhouette")
+        #expect(AppIconOption.turtle.iconName(for: .light) == "AppIconTurtle")
+        #expect(AppIconOption.turtle.iconName(for: .dark) == "AppIconTurtle")
     }
 
     @Test func colorThemesResolveToAppearanceSpecificAssets() {
