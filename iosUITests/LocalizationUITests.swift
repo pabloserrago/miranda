@@ -46,16 +46,24 @@ final class LocalizationUITests: XCTestCase {
         )
     }
 
-    /// Catalan has no translations of its own — it mirrors Spanish. Verify the
-    /// mirror reaches the UI instead of falling back to English.
+    /// Catalan is a translation target in its own right, so it must show its own
+    /// copy rather than borrowing Spanish or falling back to English.
     @MainActor
-    func testCatalanFallsBackToSpanishNotEnglish() throws {
+    func testCatalanUsesItsOwnCopyNotSpanishOrEnglish() throws {
         let app = launch(language: "ca", locale: "ca_ES")
         openSettings(in: app)
 
         XCTAssertTrue(
-            app.staticTexts["Capturar"].waitForExistence(timeout: 3),
-            "Catalan did not mirror Spanish; tree:\n\(app.debugDescription)"
+            app.staticTexts["Captura"].waitForExistence(timeout: 3),
+            "settings section header is not Catalan; tree:\n\(app.debugDescription)"
+        )
+        XCTAssertFalse(
+            app.staticTexts["Capturar"].exists,
+            "Spanish copy leaked into the Catalan build; tree:\n\(app.debugDescription)"
+        )
+        XCTAssertFalse(
+            app.staticTexts["Capture"].exists,
+            "English copy leaked into the Catalan build; tree:\n\(app.debugDescription)"
         )
     }
 
