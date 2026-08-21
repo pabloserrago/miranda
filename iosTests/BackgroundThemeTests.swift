@@ -14,6 +14,32 @@ struct BackgroundThemeTests {
         #expect(BackgroundTheme(rawValue: "standard") == .standard)
     }
 
+    @Test func themesInDisplayOrder() {
+        #expect(BackgroundTheme.allCases == [.standard, .bloom, .meadow, .dusk, .nostalgia])
+    }
+
+    /// The Settings row fits four swatches beside its label; a fifth wraps the
+    /// label. Nostalgia stays implemented but out of the picker until that row
+    /// gets a layout that scales.
+    @Test func selectableFitsTheSettingsRow() {
+        #expect(BackgroundTheme.selectable == [.standard, .bloom, .meadow, .dusk])
+        #expect(BackgroundTheme.selectable.count <= 4)
+        #expect(!BackgroundTheme.selectable.contains(.nostalgia))
+        #expect(BackgroundTheme.selectable.allSatisfy { BackgroundTheme.allCases.contains($0) })
+    }
+
+    /// Nostalgia is a teal ground with a warm accent, so its peak stop has to
+    /// stay clearly apart from the two stops that cover most of the field —
+    /// otherwise the accent vanishes and the theme reads as a flat wash.
+    @Test func nostalgiaAccentDiffersFromItsGround() {
+        let stops = BackgroundTheme.nostalgia.cloudStops
+        #expect(stops.count == 3)
+        #expect(stops[2].light != stops[0].light)
+        #expect(stops[2].light != stops[1].light)
+        #expect(stops[2].dark != stops[0].dark)
+        #expect(stops[2].dark != stops[1].dark)
+    }
+
     @Test func cloudColorStops() {
         #expect(BackgroundTheme.standard.cloudColors.isEmpty)
         for theme in BackgroundTheme.allCases where theme != .standard {
@@ -28,10 +54,15 @@ struct BackgroundThemeTests {
     }
 
     @Test func widgetMeshColors() {
-        #expect(BackgroundTheme.standard.widgetMeshColors.isEmpty)
-        for theme in BackgroundTheme.allCases where theme != .standard {
-            #expect(theme.widgetMeshColors.count == 9,
-                    "\(theme) must supply 9 colors for a 3x3 mesh")
+        // The mesh is now resolved for a moment in time, but its shape must
+        // hold at every hour, not just the one the test happens to run at.
+        for hour in [2, 10, 18] {
+            let date = Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: Date())!
+            #expect(BackgroundTheme.standard.widgetMeshColors(at: date).isEmpty)
+            for theme in BackgroundTheme.allCases where theme != .standard {
+                #expect(theme.widgetMeshColors(at: date).count == 9,
+                        "\(theme) must supply 9 colors for a 3x3 mesh at hour \(hour)")
+            }
         }
     }
 

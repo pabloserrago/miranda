@@ -117,17 +117,17 @@ struct OneMustWidgetEntryView : View {
     var body: some View {
         switch widgetFamily {
         case .systemSmall:
-            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme)
+            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme, date: entry.date)
         case .systemMedium:
             MediumWidgetView(entry: entry)
         case .systemLarge:
-            LargeWidgetView(cards: entry.priorityCards, theme: entry.theme)
+            LargeWidgetView(cards: entry.priorityCards, theme: entry.theme, date: entry.date)
         case .accessoryRectangular:
             LockScreenRectangularView(cards: entry.priorityCards)
         case .accessoryInline:
             LockScreenInlineView(cards: entry.priorityCards)
         default:
-            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme)
+            CompactWidgetView(cards: entry.priorityCards, theme: entry.theme, date: entry.date)
         }
     }
 }
@@ -137,6 +137,7 @@ struct OneMustWidgetEntryView : View {
 struct CompactWidgetView: View {
     let cards: [Card]
     var theme: BackgroundTheme = .standard
+    var date: Date = .now
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -159,7 +160,7 @@ struct CompactWidgetView: View {
             }
         }
         .padding(14)
-        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme, date: date) }
         .widgetURL(cards.first.map { URL(string: "miranda://card/\($0.id.uuidString)")! })
     }
 }
@@ -191,7 +192,7 @@ struct MediumWidgetView: View {
             .padding(.horizontal, 14)
             .padding(.bottom, 14)
         }
-        .containerBackground(for: .widget) { WidgetBackground(theme: entry.theme) }
+        .containerBackground(for: .widget) { WidgetBackground(theme: entry.theme, date: entry.date) }
     }
 
     @ViewBuilder
@@ -269,6 +270,7 @@ struct TaskRowView: View {
 struct LargeWidgetView: View {
     let cards: [Card]
     var theme: BackgroundTheme = .standard
+    var date: Date = .now
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -308,7 +310,7 @@ struct LargeWidgetView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme, date: date) }
     }
 }
 
@@ -346,6 +348,7 @@ struct LargeTaskRow: View {
 struct EmptyWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
     var theme: BackgroundTheme = .standard
+    var date: Date = .now
     
     var body: some View {
         ZStack {
@@ -374,7 +377,7 @@ struct EmptyWidgetView: View {
             .padding(.bottom, 13)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(for: .widget) { WidgetBackground(theme: theme) }
+        .containerBackground(for: .widget) { WidgetBackground(theme: theme, date: date) }
     }
 }
 

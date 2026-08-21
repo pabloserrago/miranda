@@ -233,7 +233,7 @@ struct BackgroundThemePicker: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ForEach(BackgroundTheme.allCases, id: \.rawValue) { theme in
+            ForEach(BackgroundTheme.selectable, id: \.rawValue) { theme in
                 Button {
                     guard backgroundThemeRaw != theme.rawValue else { return }
                     backgroundThemeRaw = theme.rawValue

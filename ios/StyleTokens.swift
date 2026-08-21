@@ -124,6 +124,19 @@ enum Palette {
     static let lavender900 = UIColor(hex: 0x241B42) // #241B42  ← step 10
     static let lavender950 = UIColor(hex: 0x130E22) // #130E22  ← step 5
 
+    // MARK: Teal — cool blue-green (Card theme: Nostalgia)
+    static let teal25  = UIColor(hex: 0xEAF5F2) // #EAF5F2  ← step 99
+    static let teal200 = UIColor(hex: 0xA8E0D6) // #A8E0D6  ← step 90
+    static let teal800 = UIColor(hex: 0x0E4038) // #0E4038  ← step 20
+    static let teal950 = UIColor(hex: 0x0A201D) // #0A201D  ← step 5
+
+    // MARK: Citron — acid comic yellow (Card theme: Nostalgia accent)
+    // Deliberately not part of the Yellow ramp: `DayPhase` uses yellow200/600 as
+    // its sunrise tint, and a stop that equals its own tint stops responding to
+    // the time of day.
+    static let citron300 = UIColor(hex: 0xF3E34C) // #F3E34C  ← step 80
+    static let citron800 = UIColor(hex: 0x3E3A10) // #3E3A10  ← step 20
+
     // MARK: Sage — muted warm green (Card theme: Meadow, Dusk)
     static let sage25  = UIColor(hex: 0xEEF5F0) // #EEF5F0  ← step 99
     static let sage50  = UIColor(hex: 0xE4F0E8) // #E4F0E8  ← step 98
@@ -204,6 +217,117 @@ enum CardColorTheme: String, CaseIterable {
 // MARK: - Background Theme
 // ============================================================
 
+/// A light/dark color pair before it becomes a dynamic `Color`.
+struct ColorStop {
+    let light: UIColor
+    let dark: UIColor
+}
+
+/// The widget background follows the clock in three eight-hour stretches: a
+/// warm sunrise, a neutral working day and a cool sunset. Phases are anchored
+/// to fixed hours rather than to real solar times, so no location is needed and
+/// the result is deterministic.
+///
+/// The app's own background does not follow this — it keeps rendering the
+/// untinted theme through the cloud shader.
+enum DayPhase {
+    /// 06:00–14:00, warm.
+    case sunrise
+    /// 14:00–22:00, untinted; the reference the other two shift away from.
+    case working
+    /// 22:00–06:00, cool.
+    case sunset
+
+    static func phase(at date: Date, calendar: Calendar = .current) -> DayPhase {
+        switch calendar.component(.hour, from: date) {
+        case 6..<14:  return .sunrise
+        case 14..<22: return .working
+        default:      return .sunset
+        }
+    }
+
+    // MARK: Tint
+
+    /// How far a stop moves toward its phase tint at full strength. Tuned
+    /// against `ContrastTests`, which is what caps it: warmer stops lighten,
+    /// and `Text.secondary` has the least headroom.
+    private static let strength: CGFloat = 0.22
+
+    private struct Anchor {
+        /// Hour of the day where this tint is at full strength — the midpoint
+        /// of its phase, so each phase fully reaches its own character.
+        let hour: Double
+        let tint: ColorStop
+        let strength: CGFloat
+    }
+
+    /// Full-strength moments, in order across a day that starts at the sunset
+    /// anchor. The first entry repeats at the end so the wrap past midnight
+    /// interpolates instead of jumping. The working anchor sits at strength 0,
+    /// which makes its color inert — it is the untinted reference.
+    private static let anchors: [Anchor] = [
+        Anchor(hour: 2,  tint: ColorStop(light: Palette.blue200,   dark: Palette.blue800),   strength: strength),
+        Anchor(hour: 10, tint: ColorStop(light: Palette.yellow200, dark: Palette.yellow600), strength: strength),
+        Anchor(hour: 18, tint: ColorStop(light: Palette.neutral100, dark: Palette.neutral800), strength: 0),
+        Anchor(hour: 26, tint: ColorStop(light: Palette.blue200,   dark: Palette.blue800),   strength: strength),
+    ]
+
+    /// Blends `base` toward `tint` by `amount`, where 0 leaves the base
+    /// untouched and 1 returns the tint.
+    static func blend(_ base: UIColor, toward tint: UIColor, amount: CGFloat) -> UIColor {
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        var tr: CGFloat = 0, tg: CGFloat = 0, tb: CGFloat = 0, ta: CGFloat = 0
+        base.getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        tint.getRed(&tr, green: &tg, blue: &tb, alpha: &ta)
+        let t = min(max(amount, 0), 1)
+        return UIColor(red:   br + (tr - br) * t,
+                       green: bg + (tg - bg) * t,
+                       blue:  bb + (tb - bb) * t,
+                       alpha: ba)
+    }
+
+    /// Shifts a theme stop toward the temperature of the moment. Between two
+    /// anchors the two tints are applied in sequence, so the result lands on
+    /// one anchor exactly at its hour and eases across the hours between.
+    static func tinted(_ stop: ColorStop, at date: Date, calendar: Calendar = .current) -> ColorStop {
+        let components = calendar.dateComponents([.hour, .minute], from: date)
+        let rawHour = Double(components.hour ?? 0) + Double(components.minute ?? 0) / 60
+        // Anchors run 2...26, so pull the small hours up into that window.
+        let hour = rawHour < anchors[0].hour ? rawHour + 24 : rawHour
+
+        guard let index = (0..<(anchors.count - 1)).first(where: {
+            hour >= anchors[$0].hour && hour < anchors[$0 + 1].hour
+        }) else {
+            return stop
+        }
+
+        let from = anchors[index]
+        let to = anchors[index + 1]
+        let progress = CGFloat((hour - from.hour) / (to.hour - from.hour))
+
+        func shift(_ base: UIColor, _ pick: (ColorStop) -> UIColor) -> UIColor {
+            let fading = blend(base, toward: pick(from.tint), amount: from.strength * (1 - progress))
+            return blend(fading, toward: pick(to.tint), amount: to.strength * progress)
+        }
+
+        return ColorStop(light: shift(stop.light, \.light),
+                         dark:  shift(stop.dark,  \.dark))
+    }
+
+    // MARK: Timeline schedule
+
+    private static let entryInterval: TimeInterval = 30 * 60
+    private static let scheduleSpan: TimeInterval = 24 * 60 * 60
+
+    /// Moments the widget should re-render so the background keeps pace with
+    /// the clock. Pre-rendered entries cost nothing against the widget refresh
+    /// budget, unlike asking WidgetKit to reload us every half hour.
+    static func entryDates(from start: Date) -> [Date] {
+        stride(from: 0, to: scheduleSpan, by: entryInterval)
+            .map { start.addingTimeInterval($0) }
+    }
+}
+
 /// User-selectable app background. `standard` keeps the flat neutral
 /// backdrop; the colorful presets render a procedural cloud layer
 /// (FBM noise shader) behind the Liquid Glass cards. All stops stay in
@@ -218,38 +342,68 @@ enum BackgroundTheme: String, CaseIterable {
     case meadow
     /// Periwinkle + rose clouds.
     case dusk
+    /// Teal + warm ochre clouds — retro comic palette.
+    case nostalgia
+
+    /// Themes offered in the Settings and onboarding pickers.
+    ///
+    /// The picker is a fixed row of swatches beside its label, which fits four
+    /// before the label starts wrapping. Nostalgia is fully implemented and
+    /// still reachable from the Cloud Lab, but stays out of this list until the
+    /// row gets a layout that scales past four.
+    static let selectable: [BackgroundTheme] = [.standard, .bloom, .meadow, .dusk]
 
     var label: String {
         switch self {
-        case .standard: return String(localized: "background.standard", defaultValue: "Standard")
-        case .bloom:    return String(localized: "background.bloom",    defaultValue: "Bloom")
-        case .meadow:   return String(localized: "background.meadow",   defaultValue: "Meadow")
-        case .dusk:     return String(localized: "background.dusk",     defaultValue: "Dusk")
+        case .standard:  return String(localized: "background.standard",  defaultValue: "Standard")
+        case .bloom:     return String(localized: "background.bloom",     defaultValue: "Bloom")
+        case .meadow:    return String(localized: "background.meadow",    defaultValue: "Meadow")
+        case .dusk:      return String(localized: "background.dusk",      defaultValue: "Dusk")
+        case .nostalgia: return String(localized: "background.nostalgia", defaultValue: "Nostalgia")
+        }
+    }
+
+    /// The raw light/dark pairs behind `cloudColors`. Kept separate from the
+    /// dynamic colors so the time-of-day tint can blend concrete values, which
+    /// a dynamic `Color` does not allow without resolving traits by hand.
+    ///
+    /// Stop order matters: FBM noise concentrates around mid values, so the
+    /// first two stops carry the preset's dominant hue and the third is the
+    /// accent that appears in the cloud peaks.
+    var cloudStops: [ColorStop] {
+        switch self {
+        case .standard:
+            return []
+        case .bloom:
+            return [ColorStop(light: Palette.rose25,      dark: Palette.rose950),
+                    ColorStop(light: Palette.rose100,     dark: Palette.rose900),
+                    ColorStop(light: Palette.lavender200, dark: Palette.lavender700)]
+        case .meadow:
+            return [ColorStop(light: Palette.sage25,      dark: Palette.sage950),
+                    ColorStop(light: Palette.sage100,     dark: Palette.sage900),
+                    ColorStop(light: Palette.lavender200, dark: Palette.lavender700)]
+        case .dusk:
+            return [ColorStop(light: Palette.blue25,      dark: Palette.blue950),
+                    ColorStop(light: Palette.blue100,     dark: Palette.blue900),
+                    ColorStop(light: Palette.rose200,     dark: Palette.rose700)]
+        case .nostalgia:
+            return [ColorStop(light: Palette.teal25,      dark: Palette.teal950),
+                    ColorStop(light: Palette.teal200,     dark: Palette.teal800),
+                    ColorStop(light: Palette.citron300,   dark: Palette.citron800)]
         }
     }
 
     /// Three cloud color stops (low → mid → high noise value), adaptive
     /// light/dark. Empty for `standard`, which draws no cloud layer.
     var cloudColors: [Color] {
-        switch self {
-        case .standard:
-            return []
-        // Stop order matters: FBM noise concentrates around mid values, so the
-        // first two stops carry the preset's dominant hue and the third is the
-        // accent that appears in the cloud peaks.
-        case .bloom:
-            return [adaptive(light: Palette.rose25,      dark: Palette.rose950),
-                    adaptive(light: Palette.rose100,     dark: Palette.rose900),
-                    adaptive(light: Palette.lavender200, dark: Palette.lavender700)]
-        case .meadow:
-            return [adaptive(light: Palette.sage25,      dark: Palette.sage950),
-                    adaptive(light: Palette.sage100,     dark: Palette.sage900),
-                    adaptive(light: Palette.lavender200, dark: Palette.lavender700)]
-        case .dusk:
-            return [adaptive(light: Palette.blue25,      dark: Palette.blue950),
-                    adaptive(light: Palette.blue100,     dark: Palette.blue900),
-                    adaptive(light: Palette.rose200,     dark: Palette.rose700)]
-        }
+        cloudStops.map { adaptive(light: $0.light, dark: $0.dark) }
+    }
+
+    /// The same stops shifted toward the time-of-day temperature.
+    func cloudColors(at date: Date) -> [Color] {
+        cloudStops
+            .map { DayPhase.tinted($0, at: date) }
+            .map { adaptive(light: $0.light, dark: $0.dark) }
     }
 
     /// Noise-domain offset — tuned in the Cloud Lab; all presets share the
@@ -266,12 +420,13 @@ enum BackgroundTheme: String, CaseIterable {
                                    1, 0, 2,
                                    0, 2, 1]
 
-    /// Nine mesh stops for the widget background. WidgetKit renders from an
-    /// archived view out of process, so the app's Metal cloud shader can't run
-    /// there — a mesh gradient over the same three stops keeps the palette while
-    /// approximating the shape. Empty for `standard`, which stays neutral.
-    var widgetMeshColors: [Color] {
-        let stops = cloudColors
+    /// Nine mesh stops for the widget background at a given moment. WidgetKit
+    /// renders from an archived view out of process, so the app's Metal cloud
+    /// shader can't run there — a mesh gradient over the same three stops keeps
+    /// the palette while approximating the shape. Empty for `standard`, which
+    /// stays neutral at every hour.
+    func widgetMeshColors(at date: Date) -> [Color] {
+        let stops = cloudColors(at: date)
         guard stops.count == 3 else { return [] }
         return Self.widgetMeshLayout.map { stops[$0] }
     }
@@ -283,7 +438,7 @@ enum BackgroundTheme: String, CaseIterable {
             return [Material.Surface.backdrop,
                     adaptive(light: Palette.neutral100, dark: Palette.neutral800),
                     adaptive(light: Palette.neutral200, dark: Palette.neutral700)]
-        case .bloom, .meadow, .dusk:
+        case .bloom, .meadow, .dusk, .nostalgia:
             return cloudColors
         }
     }
@@ -984,13 +1139,15 @@ struct NoisyBackgroundView: View {
 // ============================================================
 
 /// Backdrop for the home-screen widget families, matching the palette of the
-/// background theme the user picked in the app. `standard` keeps the neutral
-/// surface that makes the widget read as a card on the wallpaper.
+/// background theme the user picked in the app, shifted toward the temperature
+/// of the hour in `date`. `standard` keeps the neutral surface that makes the
+/// widget read as a card on the wallpaper.
 struct WidgetBackground: View {
     let theme: BackgroundTheme
+    var date: Date = .now
 
     var body: some View {
-        let colors = theme.widgetMeshColors
+        let colors = theme.widgetMeshColors(at: date)
         if colors.count == 9 {
             MeshGradient(
                 width: 3,
