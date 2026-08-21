@@ -50,7 +50,16 @@ final class LargerTextUITests: XCTestCase {
         XCTAssertTrue(edit.waitForExistence(timeout: 3),
                       "note detail did not open at AX5; tree:\n\(app.debugDescription)")
         XCTAssertTrue(edit.isHittable, "Edit is not hittable at AX5")
-        XCTAssertTrue(app.buttons["Close"].isHittable, "Close is not hittable at AX5")
+        XCTAssertTrue(app.buttons["close-note-button"].isHittable, "Close is not hittable at AX5")
+
+        // The two bottom actions sit side by side at default sizes and stack at
+        // accessibility sizes, where two capsules no longer fit on one row.
+        let toggle = app.buttons["toggle-priority-button"]
+        let done = app.buttons["done-button"]
+        XCTAssertTrue(toggle.isHittable, "the priority toggle is not hittable at AX5")
+        XCTAssertTrue(done.isHittable, "Done is not hittable at AX5")
+        XCTAssertNotEqual(toggle.frame.midY, done.frame.midY,
+                          "the bottom actions should stack rather than share a row at AX5")
     }
 
     @MainActor

@@ -33,7 +33,7 @@ final class PriorityReorderLiftUITests: XCTestCase {
         note.press(forDuration: 0.8)
 
         XCTAssertFalse(
-            app.buttons["Close"].waitForExistence(timeout: 1.5),
+            app.buttons["close-note-button"].waitForExistence(timeout: 1.5),
             "Detail editor opened — the stationary long press fell through to the tap instead of lifting the card"
         )
 
@@ -41,7 +41,7 @@ final class PriorityReorderLiftUITests: XCTestCase {
         // a normal tap afterwards still opens the editor.
         note.tap()
         XCTAssertTrue(
-            app.buttons["Close"].waitForExistence(timeout: 3),
+            app.buttons["close-note-button"].waitForExistence(timeout: 3),
             "Tap after a stationary lift-and-release did not open the editor — reorder state is stuck"
         )
     }

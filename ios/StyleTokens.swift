@@ -474,7 +474,7 @@ enum Material {
     // Buttons, chips, pickers, inputs, card gradients
     
     enum Control {
-        static let fillPrimary   = adaptive(light: Palette.neutral150, dark: Palette.neutral700)  // FilledButtonStyle, ChipPicker selected, Card.base/wrapper gradient
+        static let fillPrimary   = adaptive(light: Palette.neutral150, dark: Palette.neutral700)  // FilledButtonStyle, ChipPicker selected, Card.base/wrapper gradient, EditorControlButtonStyle
         static let fillSecondary = adaptive(light: Palette.neutral0,  dark: Palette.neutral950)  // Card.base/onboarding/widget gradients
         static let fillTertiary  = adaptive(light: Palette.neutral50,  dark: Palette.neutral800)  // mic/plus ActionChips, feedback input, drawer cards, ChipPicker unselected, ListSuggestion, Card.onboarding/widget gradients
     }
@@ -776,7 +776,11 @@ struct FilledButtonStyle: ButtonStyle {
                 .foregroundColor(Material.Text.primary)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 24)
-                .background(Material.Control.fillSecondary)
+                // fillPrimary, as this token's own annotation says: fillSecondary
+                // is a card gradient stop and resolves to the same black as the
+                // backdrop in dark mode, which left this capsule invisible next
+                // to the accent-filled primary action.
+                .background(Material.Control.fillPrimary)
                 .clipShape(Capsule())
                 .modifier(PressEffect(isPressed: configuration.isPressed))
         }
@@ -874,6 +878,96 @@ struct GlassButtonStyle: ButtonStyle {
 extension ButtonStyle where Self == GlassButtonStyle {
     static func glass(tint: Color, foreground: Color = Material.Text.primary) -> GlassButtonStyle {
         .init(tint: tint, foreground: foreground)
+    }
+}
+
+// Floating controls in the note editor: a compact capsule for text actions and
+// a matching circle for icon actions. Smaller than FilledButtonStyle because
+// they overlay the note itself instead of sitting in a button row, and both
+// forms hold a 44pt minimum so they stay tappable as Dynamic Type grows.
+struct EditorControlButtonStyle: ButtonStyle {
+    enum Form { case capsule, circle }
+
+    let form: Form
+    @Environment(\.isEnabled) private var isEnabled
+
+    private var outline: AnyShape {
+        switch form {
+        case .capsule: AnyShape(Capsule())
+        case .circle:  AnyShape(Circle())
+        }
+    }
+
+    @ViewBuilder
+    private func sized(_ label: some View) -> some View {
+        switch form {
+        case .capsule:
+            label
+                .padding(.vertical, 10)
+                .padding(.horizontal, 18)
+                .frame(minHeight: Material.Shape.chipSmall)
+        case .circle:
+            label
+                .padding(12)
+                .frame(minWidth: Material.Shape.chipSmall, minHeight: Material.Shape.chipSmall)
+        }
+    }
+
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        let label = configuration.label
+            .font(AppFont.body)
+            .fontWeight(.medium)
+            .foregroundColor(Material.Text.primary)
+
+        if #available(iOS 26.0, *) {
+            sized(label)
+                .glassEffect(.regular.interactive(), in: outline)
+                .opacity(isEnabled ? 1 : 0.4)
+        } else {
+            // fillPrimary, not fillSecondary: the editor sits on a backdrop
+            // surface, and fillSecondary resolves to the same black in dark mode,
+            // which left these controls reading as bare floating text.
+            sized(label)
+                .background(Material.Control.fillPrimary)
+                .clipShape(outline)
+                .shadow(color: Material.Elevation.shadow.opacity(0.12), radius: 6, x: 0, y: 2)
+                .opacity(isEnabled ? 1 : 0.4)
+                .modifier(PressEffect(isPressed: configuration.isPressed))
+        }
+    }
+}
+
+extension ButtonStyle where Self == EditorControlButtonStyle {
+    static var editorCapsule: EditorControlButtonStyle { .init(form: .capsule) }
+    static var editorIcon: EditorControlButtonStyle { .init(form: .circle) }
+}
+
+/// The control row that tops both note screens — Cancel/undo/save in the editor,
+/// close/new/edit in the preview. Writing a note and reading it back are the
+/// same sheet as far as the user is concerned, so the row has to land on the
+/// same Y in both; it is one view rather than two padding sets because the two
+/// screens drifted apart the first time the constants were duplicated.
+///
+/// Mount it as the first child of a plain `VStack(spacing: 0)`, never through
+/// `safeAreaInset(edge: .top)` — an inset row is placed outside the content's
+/// safe area and lands higher than a stacked one.
+struct NoteChromeRow<Content: View>: View {
+    /// One inset on all three outer edges, so the gap above the row reads the
+    /// same as the gap beside it.
+    private static var inset: CGFloat { 20 }
+
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        HStack(spacing: 12) {
+            content
+        }
+        .padding(.horizontal, Self.inset)
+        .padding(.top, Self.inset)
+        .padding(.bottom, Self.inset)
+        .frame(maxWidth: .infinity)
+        .background(Material.Surface.tertiary)
     }
 }
 

@@ -39,12 +39,39 @@ final class VoiceControlNamingUITests: XCTestCase {
         XCTAssertTrue(note.waitForExistence(timeout: 5))
         note.tap()
 
-        app.buttons["Edit"].tap()
+        // The preview's controls are icon-only, so their spoken names are the
+        // labels rather than any visible text.
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 3),
+                      "no control named Close; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(app.buttons["Edit note"].exists,
+                      "no control named Edit note; tree:\n\(app.debugDescription)")
 
+        app.buttons["Edit note"].tap()
+
+        // The editor opens with the note's existing text, so the icon-only
+        // confirm and undo controls are both showing.
         XCTAssertTrue(app.buttons["Save note"].waitForExistence(timeout: 3),
                       "no control named Save note; tree:\n\(app.debugDescription)")
-        XCTAssertTrue(app.buttons["Cancel edit"].exists,
-                      "no control named Cancel edit; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(app.buttons["Undo"].exists,
+                      "no control named Undo; tree:\n\(app.debugDescription)")
+        // Cancel carries its own visible text, so its name is the text itself.
+        XCTAssertTrue(app.buttons["Cancel"].exists,
+                      "no control named Cancel; tree:\n\(app.debugDescription)")
+    }
+
+    @MainActor
+    func testDictateAndGenerateAreAddressableByName() throws {
+        let app = launchSeededApp()
+        openRecentSheet(in: app)
+
+        let create = app.buttons["create-note-button"].firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: 3))
+        create.tap()
+
+        XCTAssertTrue(app.buttons["Dictate"].waitForExistence(timeout: 3),
+                      "no control named Dictate; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(app.buttons["Generate"].exists,
+                      "no control named Generate; tree:\n\(app.debugDescription)")
     }
 
     @MainActor

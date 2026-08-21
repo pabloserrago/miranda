@@ -33,6 +33,8 @@ struct ContentView: View {
     @State private var showSettings: Bool = false
     @State private var showCreateModal: Bool = false
     @State private var newCardText: String = ""
+    /// The note a save just wrote, previewed in place of the editor.
+    @State private var savedCard: Card? = nil
     @State private var startWithDictation: Bool = false
     @State private var showDoNowDialog: Bool = false
     @State private var pendingCard: Card? = nil
@@ -107,9 +109,12 @@ struct ContentView: View {
         if ProcessInfo.processInfo.arguments.contains("-UITestShowOnboarding") {
             // Wipe persisted state so onboarding shows deterministically,
             // regardless of what earlier test runs left in the container.
+            // `analytics_events` is included so the onboarding pixel assertions
+            // read this run's log rather than a previous run's tail.
             for key in ["hasCompletedOnboarding", "cards", "priorityCardIds",
                         "excludedFromPriorityIds", "widgetOnboardingDismissed",
-                        "captureOnboardingDismissed", "lockScreenOnboardingDismissed"] {
+                        "captureOnboardingDismissed", "lockScreenOnboardingDismissed",
+                        "analytics_events"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }
@@ -296,9 +301,7 @@ struct ContentView: View {
                 Analytics.shared.trackWidgetOpened(destination: destination)
             }
             if url.host == "capture" {
-                newCardText = ""
-                startWithDictation = false
-                showCreateModal = true
+                openCreateEditor()
             } else if url.host == "card",
                       let cardIdString = url.pathComponents.last,
                       let cardId = UUID(uuidString: cardIdString),
@@ -309,13 +312,19 @@ struct ContentView: View {
         .sheet(item: $selectedCard) { card in
             NoteDetailView(
                 card: card,
-                selectedCard: $selectedCard,
                 cards: $cards,
                 excludedFromPriorityIds: $excludedFromPriorityIds,
                 autoPriorityCardIds: autoPriorityCardIds,
                 onSave: saveState,
                 onComplete: completeCard,
-                onCompletePriority: completePriorityCard
+                onCompletePriority: completePriorityCard,
+                onClose: { selectedCard = nil },
+                onNewNote: {
+                    selectedCard = nil
+                    // Deferred: dismissing this sheet and presenting the editor
+                    // in the same update drops the second presentation.
+                    DispatchQueue.main.async { openCreateEditor() }
+                }
             )
             .presentationBackground(Material.Surface.secondary)
         }
@@ -369,17 +378,45 @@ struct ContentView: View {
                 onFinish: { completeOnboarding() }
             )
         }
-        .sheet(isPresented: $showCreateModal) {
-            CreateCardModal(
-                text: $newCardText,
-                startWithDictation: startWithDictation,
-                onSave: { createCard() },
-                onCancel: {
-                    newCardText = ""
-                    showCreateModal = false
-                    startWithDictation = false
+        .sheet(isPresented: $showCreateModal, onDismiss: { savedCard = nil }) {
+            Group {
+                // Saving swaps the editor for the note it just wrote, so the
+                // capture is confirmed without a second sheet.
+                if let card = savedCard {
+                    NoteDetailView(
+                        card: card,
+                        cards: $cards,
+                        excludedFromPriorityIds: $excludedFromPriorityIds,
+                        autoPriorityCardIds: autoPriorityCardIds,
+                        onSave: saveState,
+                        onComplete: completeCard,
+                        onCompletePriority: completePriorityCard,
+                        onClose: {
+                            savedCard = nil
+                            showCreateModal = false
+                        },
+                        onNewNote: {
+                            // Same sheet, back to a blank page — no dismissal to
+                            // sequence.
+                            savedCard = nil
+                            newCardText = ""
+                            startWithDictation = false
+                        }
+                    )
+                } else {
+                    NoteEditor(
+                        text: $newCardText,
+                        mode: .create,
+                        startWithDictation: startWithDictation,
+                        onCancel: {
+                            newCardText = ""
+                            showCreateModal = false
+                            startWithDictation = false
+                        },
+                        onSave: { createCard() }
+                    )
                 }
-            )
+            }
             .presentationBackground(Material.Surface.secondary)
         }
         .sheet(isPresented: $showPriorityPicker) {
@@ -402,14 +439,10 @@ struct ContentView: View {
                     showPriorityPicker = false
                 },
                 onCaptureText: {
-                    newCardText = ""
-                    startWithDictation = false
-                    showCreateModal = true
+                    openCreateEditor()
                 },
                 onCaptureVoice: {
-                    newCardText = ""
-                    startWithDictation = true
-                    showCreateModal = true
+                    openCreateEditor(dictating: true)
                 }
             )
             .presentationBackground(Material.Surface.secondary)
@@ -480,9 +513,7 @@ struct ContentView: View {
             }
 
             Button {
-                newCardText = ""
-                startWithDictation = false
-                showCreateModal = true
+                openCreateEditor()
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
@@ -780,9 +811,7 @@ struct ContentView: View {
             HStack(spacing: 8) {
                 if audioInputEnabled {
                     Button {
-                        newCardText = ""
-                        startWithDictation = true
-                        showCreateModal = true
+                        openCreateEditor(dictating: true)
                     } label: {
                         Image(systemName: "mic.fill")
                             .font(AppFont.body)
@@ -795,9 +824,7 @@ struct ContentView: View {
                     .accessibilityIdentifier("dictate-note-button")
                 }
                 Button {
-                    newCardText = ""
-                    startWithDictation = false
-                    showCreateModal = true
+                    openCreateEditor()
                 } label: {
                     Image(systemName: "plus")
                         .font(AppFont.body)
@@ -866,9 +893,7 @@ struct ContentView: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if audioInputEnabled {
                         Button {
-                            newCardText = ""
-                            startWithDictation = true
-                            showCreateModal = true
+                            openCreateEditor(dictating: true)
                         } label: {
                             Image(systemName: "mic.fill")
                         }
@@ -876,9 +901,7 @@ struct ContentView: View {
                         .accessibilityIdentifier("dictate-note-button")
                     }
                     Button {
-                        newCardText = ""
-                        startWithDictation = false
-                        showCreateModal = true
+                        openCreateEditor()
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -1188,9 +1211,19 @@ struct ContentView: View {
 
     // MARK: - Card Actions
 
+    /// Opens the editor on a blank page. Shared so every entry point resets the
+    /// same state — a stale `savedCard` would open on a preview instead.
+    private func openCreateEditor(dictating: Bool = false) {
+        savedCard = nil
+        newCardText = ""
+        startWithDictation = dictating
+        showCreateModal = true
+    }
+
     private func createCard() {
         guard !newCardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         let noteTexts = hyphenSplitEnabled ? NoteSplitter.split(newCardText) : [newCardText]
+        var created: [Card] = []
         for originalText in noteTexts {
             let actionText = actionTransformEnabled ? transformToAction(originalText) : originalText
             let newCard = Card(
@@ -1200,12 +1233,20 @@ struct ContentView: View {
                 timestamp: Date()
             )
             cards.append(newCard)
+            created.append(newCard)
             let currentPriorityCount = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
             if currentPriorityCount > 3 { excludedFromPriorityIds.append(newCard.id) }
             Analytics.shared.trackCardCreated(hasEmoji: false)
         }
         newCardText = ""
-        showCreateModal = false
+
+        // A save that split into several notes has no single note to show, and
+        // onboarding drives its own screen, so both close the way they always did.
+        if created.count == 1 && showCreateModal {
+            savedCard = created.first
+        } else {
+            showCreateModal = false
+        }
     }
 
     private func completeCard(_ card: Card) {
@@ -1420,478 +1461,6 @@ struct ContentView: View {
         if cards.count != beforeCount {
             SharedCardManager.shared.clearCompletedCards()
         }
-    }
-}
-
-// MARK: - Note Detail View
-
-struct NoteDetailView: View {
-    let card: Card
-    @Binding var selectedCard: Card?
-    @Binding var cards: [Card]
-    @Binding var excludedFromPriorityIds: [UUID]
-    let autoPriorityCardIds: Set<UUID>
-    let onSave: () -> Void
-    let onComplete: (Card) -> Void
-    let onCompletePriority: (Card) -> Void
-
-    @State private var isEditing = false
-    @State private var editText = ""
-    @FocusState private var isTextFocused: Bool
-    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
-    /// Hyphen lines already committed as separate notes (Split by Hyphens on).
-    @State private var committedSegments: [String] = []
-
-    private var isPriority: Bool {
-        autoPriorityCardIds.contains(card.id)
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 50) {
-                    if isEditing {
-                        VStack(alignment: .leading, spacing: 0) {
-                            ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Button { restoreSegments(from: index) } label: {
-                                        Text(segment)
-                                            .font(AppFont.body)
-                                            .foregroundColor(Material.Text.primary)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(.vertical, 10)
-                                            .padding(.horizontal, 13)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityHint("Merges this line and the ones below it back into the note")
-                                    .accessibilityIdentifier("note-segment-\(index)")
-
-                                    DashedDivider()
-                                        .padding(.horizontal, 13)
-                                }
-                            }
-
-                            ZStack(alignment: .topLeading) {
-                                TextEditor(text: $editText)
-                                    .focused($isTextFocused)
-                                    .scrollContentBackground(.hidden)
-                                    .font(AppFont.body)
-                                    .padding(8)
-                                if editText.isEmpty && committedSegments.isEmpty {
-                                    Text("What do you want to capture?")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Material.Text.secondary)
-                                        .padding(.top, 16)
-                                        .padding(.leading, 13)
-                                        .allowsHitTesting(false)
-                                }
-                            }
-                        }
-                        .frame(minHeight: 120)
-                        .background(Material.Surface.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                    } else {
-                        Spacer(minLength: 80)
-                        if let emoji = card.emoji {
-                            Text(emoji).font(.system(size: 120))
-                        }
-                        Text(card.simplifiedText)
-                            .font(AppFont.title)
-                            .foregroundColor(Material.Text.primary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                        Spacer(minLength: 120)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .background(Material.Surface.tertiary)
-            .navigationTitle(isEditing ? "Edit Note" : "")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if isEditing {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button {
-                            isEditing = false
-                            editText = ""
-                            committedSegments = []
-                        } label: {
-                            Image(systemName: "xmark")
-                        }
-                        .accessibilityLabel("Cancel edit")
-                        .accessibilityIdentifier("cancel-edit-button")
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(action: saveEdit) {
-                            Image(systemName: "checkmark")
-                        }
-                        .accessibilityLabel("Save note")
-                        .accessibilityIdentifier("save-edit-button")
-                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && committedSegments.isEmpty)
-                    }
-                } else {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") { selectedCard = nil }
-                    }
-                    ToolbarItem(placement: .primaryAction) {
-                        Button("Edit") {
-                            editText = card.simplifiedText
-                            committedSegments = []
-                            isEditing = true
-                        }
-                        .accessibilityIdentifier("edit-note-button")
-                    }
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                if !isEditing {
-                    VStack(spacing: 12) {
-                        Divider()
-
-                        Button {
-                            selectedCard = nil
-                            if isPriority { onCompletePriority(card) }
-                            else { onComplete(card) }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark").fontWeight(.heavy)
-                                Text("Complete")
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.primaryGlass)
-                        .padding(.horizontal, 20)
-
-                        if !isPriority {
-                            Button {
-                                excludedFromPriorityIds.removeAll { $0 == card.id }
-                                onSave()
-                                selectedCard = nil
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "lightbulb.fill").fontWeight(.heavy)
-                                    Text("Turn this on")
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.filled)
-                            .padding(.horizontal, 20)
-                        } else {
-                            Button {
-                                if !excludedFromPriorityIds.contains(card.id) {
-                                    excludedFromPriorityIds.append(card.id)
-                                }
-                                onSave()
-                                selectedCard = nil
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "lightbulb.slash.fill").fontWeight(.heavy)
-                                    Text("Turn this off")
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.filled)
-                            .padding(.horizontal, 20)
-                        }
-                    }
-                    .padding(.top, 16)
-                    .padding(.bottom, 16)
-                    .background(Material.Surface.tertiary)
-                }
-            }
-        }
-        .onChange(of: isEditing) { _, newValue in
-            if newValue { isTextFocused = true }
-        }
-        .onChange(of: editText) { _, newValue in
-            guard isEditing, hyphenSplitEnabled else { return }
-            let result = NoteSplitter.commitAfterNewline(newValue)
-            guard !result.committed.isEmpty else { return }
-            withAnimation(.easeOut(duration: 0.2)) {
-                committedSegments.append(contentsOf: result.committed)
-            }
-            editText = result.remaining
-        }
-        .onAppear { Analytics.shared.trackCardViewed() }
-    }
-
-    /// Returns the tapped segment (and any after it, in order) to the editor as
-    /// raw hyphen lines so the user can keep editing them.
-    private func restoreSegments(from index: Int) {
-        let restored = committedSegments[index...].map { "- " + $0 }.joined(separator: "\n")
-        withAnimation(.easeOut(duration: 0.2)) {
-            committedSegments.removeSubrange(index...)
-        }
-        editText = restored + (editText.isEmpty ? "" : "\n" + editText)
-        isTextFocused = true
-    }
-
-    private func saveEdit() {
-        let finalText = committedSegments.isEmpty
-            ? editText
-            : NoteSplitter.canonicalText(segments: committedSegments, activeText: editText)
-        let texts = hyphenSplitEnabled
-            ? NoteSplitter.split(finalText)
-            : [finalText.trimmingCharacters(in: .whitespacesAndNewlines)].filter { !$0.isEmpty }
-        guard let result = NoteSplitter.applyEdit(to: card, splitTexts: texts) else { return }
-
-        if let idx = cards.firstIndex(where: { $0.id == card.id }) {
-            cards[idx] = result.updatedOriginal
-        }
-        for newCard in result.newCards {
-            cards.append(newCard)
-            let currentPriorityCount = cards.filter { !excludedFromPriorityIds.contains($0.id) }.count
-            if currentPriorityCount > 3 { excludedFromPriorityIds.append(newCard.id) }
-            Analytics.shared.trackCardCreated(hasEmoji: false)
-        }
-        onSave()
-        committedSegments = []
-        isEditing = false
-    }
-}
-
-// MARK: - Create Card Modal
-
-struct CreateCardModal: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Binding var text: String
-    let startWithDictation: Bool
-    let onSave: () -> Void
-    let onCancel: () -> Void
-    @FocusState private var isTextFocused: Bool
-    @AppStorage("audioInputEnabled") private var audioInputEnabled: Bool = false
-    @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
-    @StateObject private var dictation = SpeechDictationManager()
-    /// Text present when dictation began, so live transcript extends it.
-    @State private var baseText: String = ""
-    /// Hyphen lines already committed as future notes (Split by Hyphens on).
-    @State private var committedSegments: [String] = []
-
-    let randomSuggestions = [
-        String(localized: "Compliment your coffee mug ☕️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Name all the colors you can see 🌈",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Count backwards from 10 in Spanish 🇪🇸",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Do a silly walk to the kitchen 🚶",                  comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Smell a lemon 🍋",                                   comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "High-five yourself 🙌",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Whisper 'good job' to your plant 🪴",                comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Touch something blue 💙",                            comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Make a weird face in the mirror 😜",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Pet an imaginary dog 🐕",                            comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Sing one word of your favorite song 🎵",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Stretch like a cat 🐱",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Blink 20 times really fast 👁️",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Say 'potato' in 3 different accents 🥔",             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Spin around three times slowly 🌀",                  comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Name your shoes out loud 👟",                        comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Wave at something random 👋",                        comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Hum the Jeopardy theme 🎶",                          comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Balance on one foot for 10 seconds 🦩",              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Make up a word and use it in a sentence 💭",         comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Count how many pens you have ✍️",                    comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Tap your nose 7 times 👃",                           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Say the alphabet backwards from G 🔤",               comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Wiggle your toes 🦶",                                comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Name three things you're grateful for 🙏",           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Do 5 jumping jacks 🤸",                              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Drink a glass of water 💧",                          comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Take 3 deep breaths 🫁",                             comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Look out the window for 30 seconds 🪟",              comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Write your name with your non-dominant hand ✏️",     comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Snap your fingers 10 times 🫰",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Touch your elbows together 💪",                      comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Make a bird sound 🐦",                               comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Pretend you're a robot for 15 seconds 🤖",           comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-        String(localized: "Organize one thing on your desk 📎",                 comment: "Playful random suggestion in create note screen — translate if culturally appropriate"),
-    ]
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(committedSegments.enumerated()), id: \.offset) { index, segment in
-                        VStack(alignment: .leading, spacing: 0) {
-                            Button { restoreSegments(from: index) } label: {
-                                Text(segment)
-                                    .font(AppFont.body)
-                                    .foregroundColor(Material.Text.primary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 13)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityHint("Merges this line and the ones below it back into the note")
-                            .accessibilityIdentifier("note-segment-\(index)")
-
-                            DashedDivider()
-                                .padding(.horizontal, 13)
-                        }
-                    }
-
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $text)
-                            .focused($isTextFocused)
-                            .scrollContentBackground(.hidden)
-                            .font(AppFont.body)
-                            .padding(8)
-
-                        if text.isEmpty && committedSegments.isEmpty {
-                            Text("What do you want to capture?")
-                                .font(AppFont.body)
-                                .foregroundColor(Material.Text.secondary)
-                                .padding(.top, 16)
-                                .padding(.leading, 13)
-                                .allowsHitTesting(false)
-                        }
-                    }
-                }
-
-                if audioInputEnabled {
-                    HStack(spacing: 12) {
-                        Button {
-                            if dictation.isRecording {
-                                dictation.stop()
-                            } else {
-                                baseText = text
-                                dictation.requestAuthorizationAndStart()
-                            }
-                        } label: {
-                            Label(
-                                dictation.isRecording ? "Stop" : "Dictate",
-                                systemImage: dictation.isRecording ? "stop.fill" : "mic.fill"
-                            )
-                        }
-                        .buttonStyle(.filled)
-
-                        if dictation.isRecording {
-                            HStack(spacing: 6) {
-                                Image(systemName: "waveform")
-                                    .font(AppFont.icon)
-                                    .foregroundColor(Material.Text.accent)
-                                    // The "Listening…" label carries the state,
-                                    // so the perpetual pulse can go entirely.
-                                    .symbolEffect(.variableColor.iterative,
-                                                  options: .repeating,
-                                                  isActive: !Motion.isReduced(reduceMotion))
-                                Text("Listening…")
-                                    .font(AppFont.caption)
-                                    .foregroundColor(Material.Text.secondary)
-                            }
-                        }
-
-                        Spacer(minLength: 0)
-                    }
-                }
-            }
-            .padding()
-            .background(Material.Surface.tertiary)
-            .navigationTitle("New Note")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dictation.stop()
-                        committedSegments = []
-                        onCancel()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        dictation.stop()
-                        if !committedSegments.isEmpty {
-                            text = NoteSplitter.canonicalText(segments: committedSegments, activeText: text)
-                            committedSegments = []
-                        }
-                        onSave()
-                    }
-                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && committedSegments.isEmpty)
-                }
-                ToolbarItem(placement: .keyboard) {
-                    Button {
-                        text = randomSuggestions.randomElement() ?? ""
-                    } label: {
-                        Label("Generate", systemImage: "dice.fill")
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .onAppear {
-                baseText = text
-                if startWithDictation && audioInputEnabled {
-                    dictation.requestAuthorizationAndStart()
-                } else {
-                    isTextFocused = true
-                }
-            }
-            .onChange(of: text) { _, newValue in
-                guard hyphenSplitEnabled else { return }
-                let result = NoteSplitter.commitAfterNewline(newValue)
-                guard !result.committed.isEmpty else { return }
-                withAnimation(.easeOut(duration: 0.2)) {
-                    committedSegments.append(contentsOf: result.committed)
-                }
-                text = result.remaining
-                baseText = result.remaining
-            }
-            .onChange(of: dictation.transcript) { _, newValue in
-                text = SpeechDictationManager.compose(base: baseText, transcript: newValue)
-            }
-            .onChange(of: dictation.permissionDenied) { _, denied in
-                if denied { isTextFocused = true }
-            }
-            .onChange(of: dictation.onDeviceUnavailable) { _, unavailable in
-                if unavailable { isTextFocused = true }
-            }
-            .onDisappear {
-                dictation.stop()
-            }
-            .alert("Microphone access needed", isPresented: $dictation.permissionDenied) {
-                Button("Open Settings") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: {
-                Text("To capture notes with your voice, allow microphone and speech recognition access in Settings. You can still type your note.")
-            }
-            .alert("Dictation unavailable", isPresented: $dictation.onDeviceUnavailable) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("On-device dictation isn't available for your language on this device. You can still type your note.")
-            }
-        }
-    }
-
-    /// Returns tapped segment (and any after it, preserving order) to the
-    /// editor as raw hyphen lines so the user can keep editing them.
-    private func restoreSegments(from index: Int) {
-        let restored = committedSegments[index...].map { "- " + $0 }.joined(separator: "\n")
-        withAnimation(.easeOut(duration: 0.2)) {
-            committedSegments.removeSubrange(index...)
-        }
-        text = restored + (text.isEmpty ? "" : "\n" + text)
-        baseText = text
-        isTextFocused = true
-    }
-}
-
-/// Thin dashed separator between committed note segments in the create modal.
-private struct DashedDivider: View {
-    var body: some View {
-        GeometryReader { geo in
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: 0.5))
-                path.addLine(to: CGPoint(x: geo.size.width, y: 0.5))
-            }
-            .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-            .foregroundColor(Material.Decoration.tertiary)
-        }
-        .frame(height: 1)
     }
 }
 

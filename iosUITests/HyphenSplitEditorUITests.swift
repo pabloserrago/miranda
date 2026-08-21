@@ -53,7 +53,7 @@ final class HyphenSplitEditorUITests: XCTestCase {
         editor.typeText("- one note\n- another note\n")
         XCTAssertTrue(segment(1, in: app).waitForExistence(timeout: 2))
 
-        app.buttons["Save"].tap()
+        app.buttons["save-edit-button"].tap()
 
         // Saved notes render as consolidated row buttons labeled with the note text.
         XCTAssertTrue(
