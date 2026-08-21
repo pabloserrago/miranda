@@ -9,11 +9,12 @@ enum AppIconOption: String, CaseIterable, Identifiable {
     case meadow
     case dusk
     case turtle
+    case hero
 
     var id: String { rawValue }
 
     /// Physical alternate-icon asset for the given appearance; `nil` restores the primary icon.
-    /// Alternate icons can't auto-switch on the Home Screen, so the color themes resolve to a
+    /// Alternate icons can't auto-switch on the Home Screen, so the adaptive options resolve to a
     /// separate light/dark asset that is applied to match the current appearance.
     func iconName(for scheme: ColorScheme) -> String? {
         switch self {
@@ -23,7 +24,8 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .bloom:      return scheme == .dark ? "AppIconBloomDark" : "AppIconBloomLight"
         case .meadow:     return scheme == .dark ? "AppIconMeadowDark" : "AppIconMeadowLight"
         case .dusk:       return scheme == .dark ? "AppIconDuskDark" : "AppIconDuskLight"
-        case .turtle:     return "AppIconTurtle"
+        case .turtle:     return scheme == .dark ? "AppIconTurtleDark" : "AppIconTurtleLight"
+        case .hero:       return "AppIconHero"
         }
     }
 
@@ -37,6 +39,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .meadow:     return "IconPreviewMeadow"
         case .dusk:       return "IconPreviewDusk"
         case .turtle:     return "IconPreviewTurtle"
+        case .hero:       return "IconPreviewHero"
         }
     }
 
@@ -49,6 +52,7 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         case .meadow:     return String(localized: "background.meadow",  defaultValue: "Meadow")
         case .dusk:       return String(localized: "background.dusk",    defaultValue: "Dusk")
         case .turtle:     return String(localized: "appicon.turtle",     defaultValue: "Turtle")
+        case .hero:       return String(localized: "appicon.hero",       defaultValue: "Hero")
         }
     }
 }

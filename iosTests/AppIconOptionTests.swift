@@ -4,8 +4,8 @@ import SwiftUI
 
 struct AppIconOptionTests {
 
-    @Test func hasSevenOptionsInDisplayOrder() {
-        #expect(AppIconOption.allCases == [.default, .dark, .silhouette, .bloom, .meadow, .dusk, .turtle])
+    @Test func hasEightOptionsInDisplayOrder() {
+        #expect(AppIconOption.allCases == [.default, .dark, .silhouette, .bloom, .meadow, .dusk, .turtle, .hero])
     }
 
     @Test func onlyDefaultUsesPrimaryIcon() {
@@ -22,8 +22,8 @@ struct AppIconOptionTests {
         #expect(AppIconOption.dark.iconName(for: .dark) == "AppIconDark")
         #expect(AppIconOption.silhouette.iconName(for: .light) == "AppIconSilhouette")
         #expect(AppIconOption.silhouette.iconName(for: .dark) == "AppIconSilhouette")
-        #expect(AppIconOption.turtle.iconName(for: .light) == "AppIconTurtle")
-        #expect(AppIconOption.turtle.iconName(for: .dark) == "AppIconTurtle")
+        #expect(AppIconOption.hero.iconName(for: .light) == "AppIconHero")
+        #expect(AppIconOption.hero.iconName(for: .dark) == "AppIconHero")
     }
 
     @Test func colorThemesResolveToAppearanceSpecificAssets() {
@@ -33,10 +33,12 @@ struct AppIconOptionTests {
         #expect(AppIconOption.meadow.iconName(for: .dark) == "AppIconMeadowDark")
         #expect(AppIconOption.dusk.iconName(for: .light) == "AppIconDuskLight")
         #expect(AppIconOption.dusk.iconName(for: .dark) == "AppIconDuskDark")
+        #expect(AppIconOption.turtle.iconName(for: .light) == "AppIconTurtleLight")
+        #expect(AppIconOption.turtle.iconName(for: .dark) == "AppIconTurtleDark")
     }
 
     @Test func colorThemesDifferBetweenLightAndDark() {
-        for option in [AppIconOption.bloom, .meadow, .dusk] {
+        for option in [AppIconOption.bloom, .meadow, .dusk, .turtle] {
             #expect(option.iconName(for: .light) != option.iconName(for: .dark))
         }
     }
