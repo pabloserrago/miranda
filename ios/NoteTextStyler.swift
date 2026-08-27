@@ -15,6 +15,11 @@ enum NoteTextStyler {
     // detector — which is expensive to build — is created once.
     private static let titleColor = UIColor(Material.Text.primary)
     private static let bodyColor = UIColor(Material.Text.secondary)
+    private static let titleParagraphStyle: NSParagraphStyle = {
+        let style = NSMutableParagraphStyle()
+        style.paragraphSpacing = 24
+        return style
+    }()
     private static let linkDetector = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.link.rawValue
     )
@@ -60,7 +65,11 @@ enum NoteTextStyler {
     }
 
     static func titleAttributes(traits: UITraitCollection? = nil) -> [NSAttributedString.Key: Any] {
-        [.font: AppFont.uiFont(.title, compatibleWith: traits), .foregroundColor: titleColor]
+        [
+            .font: AppFont.uiFont(.title, compatibleWith: traits),
+            .foregroundColor: titleColor,
+            .paragraphStyle: titleParagraphStyle,
+        ]
     }
 
     static func bodyAttributes(traits: UITraitCollection? = nil) -> [NSAttributedString.Key: Any] {

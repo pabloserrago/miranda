@@ -91,6 +91,15 @@ struct NoteTextStylerTests {
         #expect(titleFont != bodyFont)
     }
 
+    @Test func applyAddsSpaceBetweenTitleAndBody() {
+        let storage = NSTextStorage(string: "Title\nDescription")
+        NoteTextStyler.apply(to: storage)
+
+        let titleStyle = storage.attribute(.paragraphStyle, at: 0, effectiveRange: nil)
+            as? NSParagraphStyle
+        #expect(titleStyle?.paragraphSpacing == 24)
+    }
+
     @Test func applyUnderlinesLinks() {
         let storage = NSTextStorage(string: "Book it at https://loremipsum.com today")
         NoteTextStyler.apply(to: storage)
