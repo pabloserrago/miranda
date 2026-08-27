@@ -45,11 +45,11 @@ final class LargerTextUITests: XCTestCase {
         note.tap()
 
         let edit = app.descendants(matching: .any)
-            .matching(identifier: "edit-note-button")
+            .matching(identifier: "note-actions-menu-button")
             .firstMatch
         XCTAssertTrue(edit.waitForExistence(timeout: 3),
                       "note detail did not open at AX5; tree:\n\(app.debugDescription)")
-        XCTAssertTrue(edit.isHittable, "Edit is not hittable at AX5")
+        XCTAssertTrue(edit.isHittable, "the more-actions menu is not hittable at AX5")
         XCTAssertTrue(app.buttons["close-note-button"].isHittable, "Close is not hittable at AX5")
 
         // The two bottom actions sit side by side at default sizes and stack at

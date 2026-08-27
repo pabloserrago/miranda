@@ -11,6 +11,40 @@ enum HomeState {
     case list
 }
 
+/// Mutually exclusive age bands for the Recent sheet. Calendar-day boundaries
+/// keep a note in the same section for the whole day, rather than moving it at
+/// the exact minute it was created.
+enum RecentNotesSection: Int, CaseIterable, Identifiable {
+    case first30Days
+    case previous30Days
+    case previous3Months
+    case previousYears
+
+    var id: Self { self }
+
+    var title: LocalizedStringKey? {
+        switch self {
+        case .first30Days: nil
+        case .previous30Days: "Previous 30 Days"
+        case .previous3Months: "Previous 3 Months"
+        case .previousYears: "Previous Years"
+        }
+    }
+
+    static func section(for date: Date, relativeTo now: Date, calendar: Calendar = .current) -> Self {
+        let noteDay = calendar.startOfDay(for: date)
+        let today = calendar.startOfDay(for: now)
+        let ageInDays = max(0, calendar.dateComponents([.day], from: noteDay, to: today).day ?? 0)
+
+        switch ageInDays {
+        case 0..<30: return .first30Days
+        case 30..<90: return .previous30Days
+        case 90..<365: return .previous3Months
+        default: return .previousYears
+        }
+    }
+}
+
 /// Collects the rendered height of each priority row (keyed by index) so the
 /// reorder drag can convert translation into slots using real row heights.
 private struct PriorityRowHeightKey: PreferenceKey {
@@ -44,7 +78,6 @@ struct ContentView: View {
     @State private var searchText: String = ""
     @State private var widgetOnboardingDismissed: Bool = false
     @State private var captureOnboardingDismissed: Bool = false
-    @State private var lockScreenOnboardingDismissed: Bool = false
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
     @State private var showReviewPrompt: Bool = false
@@ -85,7 +118,6 @@ struct ContentView: View {
             _cards = State(initialValue: ContentView.uiTestSeedCards)
             _widgetOnboardingDismissed = State(initialValue: true)
             _captureOnboardingDismissed = State(initialValue: true)
-            _lockScreenOnboardingDismissed = State(initialValue: true)
             _showRecentSheet = State(initialValue: false)
         }
         if ProcessInfo.processInfo.arguments.contains("-UITestNoPriorities") {
@@ -113,7 +145,7 @@ struct ContentView: View {
             // read this run's log rather than a previous run's tail.
             for key in ["hasCompletedOnboarding", "cards", "priorityCardIds",
                         "excludedFromPriorityIds", "widgetOnboardingDismissed",
-                        "captureOnboardingDismissed", "lockScreenOnboardingDismissed",
+                        "captureOnboardingDismissed",
                         "analytics_events"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
@@ -188,6 +220,17 @@ struct ContentView: View {
         return nonPriority.filter {
             $0.simplifiedText.localizedCaseInsensitiveContains(searchText) ||
             $0.originalText.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    private var recentNoteSections: [(section: RecentNotesSection, cards: [Card])] {
+        let now = Date()
+        let grouped = Dictionary(grouping: filteredNonPriorityCards) {
+            RecentNotesSection.section(for: $0.timestamp, relativeTo: now)
+        }
+        return RecentNotesSection.allCases.compactMap { section in
+            guard let cards = grouped[section], !cards.isEmpty else { return nil }
+            return (section, cards.sorted { $0.timestamp > $1.timestamp })
         }
     }
 
@@ -579,12 +622,6 @@ struct ContentView: View {
                 }
             }
 
-            if widgetOnboardingDismissed && !lockScreenOnboardingDismissed && !autoPriorityCards.isEmpty {
-                Section {
-                    lockScreenOnboardingRow
-                }
-            }
-
             if !autoPriorityCards.isEmpty {
                 Section {
                     ForEach(Array(autoPriorityCards.enumerated()), id: \.element.id) { index, card in
@@ -727,35 +764,6 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder
-    private var lockScreenOnboardingRow: some View {
-        Button { showWidgetInstructions = true } label: {
-            VStack(alignment: .leading) {
-                Group {
-                    Text("Miranda can show your priorities on your Lock Screen. ")
-                    + Text("Add it once, see them always.").bold()
-                }
-                .font(AppFont.body)
-                .foregroundColor(Material.Text.primary)
-            }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .buttonStyle(.plain)
-        .cardSurface(Material.Card.onboarding, from: .top, to: .bottom)
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                withAnimation { lockScreenOnboardingDismissed = true }
-                saveState()
-            } label: {
-                Label("Dismiss", systemImage: "xmark")
-            }
-        }
-    }
-
     // MARK: - Recent Sheet
 
     private var recentSheet: some View {
@@ -794,8 +802,16 @@ struct ContentView: View {
             .padding(.bottom, 8)
 
             List {
-                ForEach(filteredNonPriorityCards) { card in
-                    recentRow(card)
+                ForEach(recentNoteSections, id: \.section) { group in
+                    Section {
+                        ForEach(group.cards) { card in
+                            recentRow(card)
+                        }
+                    } header: {
+                        if let title = group.section.title {
+                            Text(title)
+                        }
+                    }
                 }
             }
             .listStyle(.plain)
@@ -879,8 +895,16 @@ struct ContentView: View {
     private var recentSheetNative: some View {
         NavigationStack {
             List {
-                ForEach(filteredNonPriorityCards) { card in
-                    recentRow(card)
+                ForEach(recentNoteSections, id: \.section) { group in
+                    Section {
+                        ForEach(group.cards) { card in
+                            recentRow(card)
+                        }
+                    } header: {
+                        if let title = group.section.title {
+                            Text(title)
+                        }
+                    }
                 }
             }
             .listStyle(.plain)
@@ -1386,13 +1410,11 @@ struct ContentView: View {
         withAnimation {
             widgetOnboardingDismissed = false
             captureOnboardingDismissed = false
-            lockScreenOnboardingDismissed = false
             priorityCardIds.removeAll()
             excludedFromPriorityIds.removeAll()
             UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
             UserDefaults.standard.removeObject(forKey: "widgetOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "captureOnboardingDismissed")
-            UserDefaults.standard.removeObject(forKey: "lockScreenOnboardingDismissed")
             UserDefaults.standard.removeObject(forKey: "priorityCardIds")
             UserDefaults.standard.removeObject(forKey: "excludedFromPriorityIds")
         }
@@ -1414,7 +1436,6 @@ struct ContentView: View {
         UserDefaults.standard.set(priorityCardIds.map { $0.uuidString }, forKey: "priorityCardIds")
         UserDefaults.standard.set(widgetOnboardingDismissed, forKey: "widgetOnboardingDismissed")
         UserDefaults.standard.set(captureOnboardingDismissed, forKey: "captureOnboardingDismissed")
-        UserDefaults.standard.set(lockScreenOnboardingDismissed, forKey: "lockScreenOnboardingDismissed")
         UserDefaults.standard.set(excludedFromPriorityIds.map { $0.uuidString }, forKey: "excludedFromPriorityIds")
 
         SharedCardManager.shared.saveCurrentCard(widgetPriorityCards.first)
@@ -1444,7 +1465,6 @@ struct ContentView: View {
         }
         widgetOnboardingDismissed = UserDefaults.standard.bool(forKey: "widgetOnboardingDismissed")
         captureOnboardingDismissed = UserDefaults.standard.bool(forKey: "captureOnboardingDismissed")
-        lockScreenOnboardingDismissed = UserDefaults.standard.bool(forKey: "lockScreenOnboardingDismissed")
         if let excludedStrings = UserDefaults.standard.array(forKey: "excludedFromPriorityIds") as? [String] {
             excludedFromPriorityIds = excludedStrings.compactMap { UUID(uuidString: $0) }
         }

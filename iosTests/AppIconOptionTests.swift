@@ -8,6 +8,13 @@ struct AppIconOptionTests {
         #expect(AppIconOption.allCases == [.default, .dark, .silhouette, .bloom, .meadow, .dusk, .turtle, .hero])
     }
 
+    @Test func selectableOptionsHideRetiredColorIcons() {
+        #expect(AppIconOption.selectableCases == [.default, .dark, .silhouette, .turtle, .hero])
+        #expect(!AppIconOption.selectableCases.contains(.bloom))
+        #expect(!AppIconOption.selectableCases.contains(.meadow))
+        #expect(!AppIconOption.selectableCases.contains(.dusk))
+    }
+
     @Test func onlyDefaultUsesPrimaryIcon() {
         #expect(AppIconOption.default.iconName(for: .light) == nil)
         #expect(AppIconOption.default.iconName(for: .dark) == nil)

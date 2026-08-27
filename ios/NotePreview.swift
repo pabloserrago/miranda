@@ -1,4 +1,5 @@
 import SwiftUI
+import EventKit
 
 /// A saved note laid out for reading: the first line is the title and the lines
 /// under it are body paragraphs. Blank lines are dropped because the preview
@@ -103,8 +104,15 @@ struct NoteDetailView: View {
     let onNewNote: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isEditing = false
     @State private var editText = ""
+    @State private var calendarEventRequest: CalendarEventEditRequest?
+    @State private var showCalendarAccessError = false
+    @State private var isDateVisible = false
+    @State private var isTurningPriorityOn = false
+    @State private var priorityRingProgress = 0.0
+    @State private var priorityActivationTask: Task<Void, Never>?
     @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
 
     /// Editing rewrites the stored note, so the text is read back from `cards`
@@ -134,6 +142,11 @@ struct NoteDetailView: View {
             }
         }
         .onAppear { Analytics.shared.trackCardViewed() }
+        .onDisappear {
+            priorityActivationTask?.cancel()
+            priorityActivationTask = nil
+        }
+        .interactiveDismissDisabled()
     }
 
     private var readingView: some View {
@@ -141,6 +154,7 @@ struct NoteDetailView: View {
             NoteChromeRow {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
+                        .scaleEffect(1.1)
                 }
                 .buttonStyle(.editorIcon)
                 .accessibilityLabel("Close")
@@ -148,22 +162,7 @@ struct NoteDetailView: View {
 
                 Spacer(minLength: 0)
 
-                Button(action: onNewNote) {
-                    Image(systemName: "plus.square.on.square")
-                }
-                .buttonStyle(.editorIcon)
-                .accessibilityLabel("New note")
-                .accessibilityIdentifier("new-note-from-preview-button")
-
-                Button {
-                    editText = live.simplifiedText
-                    isEditing = true
-                } label: {
-                    Image(systemName: "pencil")
-                }
-                .buttonStyle(.editorIcon)
-                .accessibilityLabel("Edit note")
-                .accessibilityIdentifier("edit-note-button")
+                noteActionGroup
             }
 
             // Short notes centre themselves in the space they are given; long
@@ -173,12 +172,47 @@ struct NoteDetailView: View {
                 ScrollView { noteBody }
             }
             .frame(maxHeight: .infinity)
+            .overlay(alignment: .top) {
+                Text(live.timestamp.formatted(date: .long, time: .shortened))
+                    .font(AppFont.caption)
+                    .foregroundStyle(Material.Text.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 16)
+                    .opacity(isDateVisible ? 1 : 0)
+                    .accessibilityHidden(!isDateVisible)
+                    .accessibilityIdentifier("note-date-caption")
+            }
 
             bottomActions
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Material.Surface.tertiary)
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    let isDownwardSwipe = value.translation.height > abs(value.translation.width)
+                    if isDownwardSwipe {
+                        isDateVisible = true
+                    }
+                }
+        )
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(item: $calendarEventRequest) { request in
+            CalendarEventComposer(request: request) {
+                calendarEventRequest = nil
+            }
+        }
+        .alert("Calendar access needed", isPresented: $showCalendarAccessError) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Allow Miranda to add events to your calendar in Settings.")
+        }
     }
 
     private var noteBody: some View {
@@ -188,6 +222,81 @@ struct NoteDetailView: View {
     }
 
     // MARK: - Actions
+
+    @ViewBuilder
+    private var noteActionGroup: some View {
+        let actions = HStack(spacing: 2) {
+            Button(action: onNewNote) {
+                Image(systemName: "plus")
+                    .scaleEffect(1.1)
+                    .frame(width: Material.Shape.chipSmall, height: Material.Shape.chipSmall)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("New note")
+            .accessibilityIdentifier("new-note-from-preview-button")
+
+            Button(action: addToCalendar) {
+                Image(systemName: "calendar.badge.plus")
+                    .scaleEffect(1.1)
+                    .frame(width: Material.Shape.chipSmall, height: Material.Shape.chipSmall)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("Add to Calendar")
+            .accessibilityIdentifier("add-note-to-calendar-button")
+
+            Menu {
+                Button {
+                    editText = live.simplifiedText
+                    isEditing = true
+                } label: {
+                    HStack {
+                        Image(systemName: "pencil")
+                            .scaleEffect(1.1)
+                        Text("Edit note")
+                    }
+                }
+                .accessibilityIdentifier("edit-note-button")
+            } label: {
+                Image(systemName: "ellipsis")
+                    .scaleEffect(1.1)
+                    .frame(width: Material.Shape.chipSmall, height: Material.Shape.chipSmall)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("More note actions")
+            .accessibilityIdentifier("note-actions-menu-button")
+        }
+        .font(AppFont.body)
+        .fontWeight(.medium)
+        .foregroundStyle(Material.Text.primary)
+        .buttonStyle(.plain)
+        .clipShape(Capsule())
+
+        if #available(iOS 26.0, *) {
+            actions.glassEffect(.regular, in: Capsule())
+        } else {
+            actions
+                .background(Material.Control.fillPrimary)
+                .shadow(color: Material.Elevation.shadow.opacity(0.12), radius: 6, x: 0, y: 2)
+        }
+    }
+
+    private func addToCalendar() {
+        let eventStore = EKEventStore()
+        Task { @MainActor in
+            do {
+                guard try await eventStore.requestWriteOnlyAccessToEvents() else {
+                    showCalendarAccessError = true
+                    return
+                }
+                calendarEventRequest = CalendarEventEditRequest(
+                    eventStore: eventStore,
+                    draft: CalendarEventDraft(noteText: live.simplifiedText)
+                )
+            } catch {
+                showCalendarAccessError = true
+            }
+        }
+    }
 
     private var bottomActions: some View {
         Group {
@@ -214,28 +323,78 @@ struct NoteDetailView: View {
     private var togglePriorityButton: some View {
         Button {
             if isPriority {
-                if !excludedFromPriorityIds.contains(card.id) {
-                    excludedFromPriorityIds.append(card.id)
-                }
+                turnPriorityOff()
             } else {
-                excludedFromPriorityIds.removeAll { $0 == card.id }
+                beginTurningPriorityOn()
             }
-            onSave()
-            onClose()
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: isPriority ? "lightbulb.slash.fill" : "lightbulb.fill")
-                    .fontWeight(.heavy)
-                Text(isPriority ? "Turn Off" : "Turn On")
+                priorityIcon
+                Text("Priority")
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.filled)
+        .buttonStyle(.priorityGlass(isOn: isPriority || isTurningPriorityOn))
+        .disabled(isTurningPriorityOn)
+        .accessibilityValue(isTurningPriorityOn ? "Turning on" : (isPriority ? "On" : "Off"))
         .accessibilityIdentifier("toggle-priority-button")
     }
 
-    /// "Done" rather than "Mark as Done": the longer label wrapped onto two
-    /// lines inside the capsule once the two actions shared a row.
+    private var priorityIcon: some View {
+        ZStack {
+            if isTurningPriorityOn {
+                Circle()
+                    .stroke(Material.Text.primary.opacity(0.2), lineWidth: 2.5)
+                    .frame(width: 28, height: 28)
+
+                Circle()
+                    .trim(from: 0, to: priorityRingProgress)
+                    .stroke(Material.Text.primary, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .frame(width: 28, height: 28)
+                    .rotationEffect(.degrees(-90))
+                    .onAppear {
+                        withAnimation(Motion.gated(.linear(duration: 1), reduce: reduceMotion)) {
+                            priorityRingProgress = 1
+                        }
+                    }
+            }
+
+            Image(systemName: isPriority ? "lightbulb.fill" : "lightbulb.slash.fill")
+                .fontWeight(.heavy)
+                .scaleEffect(isTurningPriorityOn ? 0.8 : 1)
+                .animation(
+                    Motion.gated(.easeInOut(duration: 0.2), reduce: reduceMotion),
+                    value: isTurningPriorityOn
+                )
+        }
+        .frame(width: 28, height: 28)
+    }
+
+    private func turnPriorityOff() {
+        priorityActivationTask?.cancel()
+        priorityActivationTask = nil
+        isTurningPriorityOn = false
+        if !excludedFromPriorityIds.contains(card.id) {
+            excludedFromPriorityIds.append(card.id)
+        }
+        onSave()
+    }
+
+    private func beginTurningPriorityOn() {
+        guard !isTurningPriorityOn else { return }
+        priorityRingProgress = 0
+        isTurningPriorityOn = true
+        priorityActivationTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else { return }
+            excludedFromPriorityIds.removeAll { $0 == card.id }
+            isTurningPriorityOn = false
+            priorityActivationTask = nil
+            onSave()
+        }
+    }
+
+    /// The completion action shares a row with Priority at standard text sizes.
     private var doneButton: some View {
         Button {
             onClose()
@@ -244,7 +403,7 @@ struct NoteDetailView: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark").fontWeight(.heavy)
-                Text("Done")
+                Text("Complete")
             }
             .frame(maxWidth: .infinity)
         }

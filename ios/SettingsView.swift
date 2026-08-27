@@ -21,7 +21,6 @@ struct SettingsView: View {
     @State private var showCopiedToast: Bool = false
     @State private var showFeedback: Bool = false
     @State private var showFeedbackSentToast: Bool = false
-    @State private var widgetTab: Int = 0
     
     private var previewCard: Card? {
         currentPriorityCard ?? lastCapture
@@ -48,54 +47,11 @@ struct SettingsView: View {
                     Section {
                         // iPhone widget preview mockup
                         VStack(spacing: 12) {
-                            Picker("", selection: $widgetTab) {
-                                Text("Home Screen").tag(0)
-                                Text("Lock Screen").tag(1)
-                            }
-                            .pickerStyle(.segmented)
-                            .padding(.horizontal, 8)
-                            .padding(.top, 4)
-
-                            if widgetTab == 0 {
-                                // Home screen preview
-                                // Capped: these are pictures of the OS screen at
-                                // fixed geometry, not app content, so their text
-                                // must not grow with Larger Text.
-                                WidgetPreview(card: previewCard)
-                                    .dynamicTypeSize(...DynamicTypeSize.large)
-                            } else {
-                                // Lock screen preview
-                                ZStack {
-                                    Color.black.opacity(0.85)
-
-                                    VStack(spacing: 8) {
-                                        Text("9:41")
-                                            .font(.system(size: 52, weight: .thin))
-                                            .foregroundColor(.white)
-                                            .padding(.top, 48)
-
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "checklist")
-                                                .font(AppFont.caption)
-                                                .foregroundColor(.white.opacity(0.8))
-                                            Text(previewCard?.simplifiedText ?? "Your priority")
-                                                .font(AppFont.caption)
-                                                .foregroundColor(.white)
-                                                .lineLimit(2)
-                                        }
-                                        .padding(.horizontal, 24)
-
-                                        Spacer()
-                                    }
-                                }
-                                .frame(height: 320)
+                            // Capped: this is a picture of the OS home screen at
+                            // fixed geometry, not app content, so its text must
+                            // not grow with Larger Text.
+                            WidgetPreview(card: previewCard)
                                 .dynamicTypeSize(...DynamicTypeSize.large)
-                                .cornerRadius(Material.Shape.drawer)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: Material.Shape.drawer)
-                                        .stroke(Material.Decoration.tertiary.opacity(0.2), lineWidth: 1)
-                                )
-                            }
                         }
                         .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 0, trailing: 16))
                         .listRowSeparator(.hidden)
@@ -272,72 +228,7 @@ struct SettingsView: View {
                         }
                     }
                     
-                    // 4. Submit a Request (requires the Supabase backend)
-                    if Secrets.supabaseEnabled {
-                        Section {
-                            Button(action: {
-                                showFeedback = true
-                            }) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "checkmark.bubble.fill")
-                                        .font(AppFont.icon)
-                                        .foregroundColor(Material.Text.primary)
-                                        .frame(width: 24, height: 24)
-                                    Text("Submit a Request")
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(AppFont.caption)
-                                        .foregroundColor(Material.Text.secondary)
-                                }
-                            }
-                            .tint(Material.Text.primary)
-                            .settingsRowBackground(.single)
-                        }
-                    }
-                    
-                    // 5. Rate the App
-                    Section {
-                        Button(action: {
-                            ReviewManager.shared.recordUserRated()
-                            Analytics.shared.trackReviewStoreOpened(source: "settings")
-                            openURL(AppStoreLink.writeReviewURL)
-                        }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "star.fill")
-                                    .font(AppFont.icon)
-                                    .foregroundColor(Material.Text.primary)
-                                    .frame(width: 24, height: 24)
-                                Text("Rate the App")
-                                Spacer()
-                                Image(systemName: "arrow.up.right")
-                                    .font(AppFont.caption)
-                                    .foregroundColor(Material.Text.secondary)
-                            }
-                        }
-                        .tint(Material.Text.primary)
-                        .settingsRowBackground(.single)
-                    }
-
-                    // 6. Privacy Policy
-                    Section {
-                        Link(destination: URL(string: "https://github.com/pabloserrago/miranda/blob/main/PRIVACY.md")!) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "hand.raised.fill")
-                                    .font(AppFont.icon)
-                                    .foregroundColor(Material.Text.primary)
-                                    .frame(width: 24, height: 24)
-                                Text("Privacy Policy")
-                                Spacer()
-                                Image(systemName: "arrow.up.right")
-                                    .font(AppFont.caption)
-                                    .foregroundColor(Material.Text.secondary)
-                            }
-                        }
-                        .tint(Material.Text.primary)
-                        .settingsRowBackground(.single)
-                    }
-                    
-                    // 7. Delete All
+                    // 5. Delete All
                     Section {
                         Button(role: .destructive, action: {
                             showDeleteConfirm = true
@@ -356,9 +247,65 @@ struct SettingsView: View {
                         .opacity(hasCaptures ? 1.0 : 0.5)
                         .settingsRowBackground(.single)
                     }
-                    
-                    // 8. App Version
+
+                    // 6. About
                     Section {
+                        if Secrets.supabaseEnabled {
+                            Button(action: {
+                                showFeedback = true
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "checkmark.bubble.fill")
+                                        .font(AppFont.icon)
+                                        .foregroundColor(Material.Text.primary)
+                                        .frame(width: 24, height: 24)
+                                    Text("Submit a Request")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(AppFont.caption)
+                                        .foregroundColor(Material.Text.secondary)
+                                }
+                            }
+                            .tint(Material.Text.primary)
+                            .settingsRowBackground(.top)
+                        }
+
+                        Button(action: {
+                            ReviewManager.shared.recordUserRated()
+                            Analytics.shared.trackReviewStoreOpened(source: "settings")
+                            openURL(AppStoreLink.writeReviewURL)
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "star.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Rate the App")
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(AppFont.caption)
+                                    .foregroundColor(Material.Text.secondary)
+                            }
+                        }
+                        .tint(Material.Text.primary)
+                        .settingsRowBackground(Secrets.supabaseEnabled ? .middle : .top)
+
+                        Link(destination: URL(string: "https://github.com/pabloserrago/miranda/blob/main/PRIVACY.md")!) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "hand.raised.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Privacy Policy")
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(AppFont.caption)
+                                    .foregroundColor(Material.Text.secondary)
+                            }
+                        }
+                        .tint(Material.Text.primary)
+                        .settingsRowBackground(.middle)
+
                         Button(action: {
                             UIPasteboard.general.string = AppInfo.displayVersion
                             showCopiedToast = true
@@ -379,7 +326,13 @@ struct SettingsView: View {
                             }
                         }
                         .tint(Material.Text.primary)
-                        .settingsRowBackground(.single)
+                        .settingsRowBackground(.bottom)
+                    } header: {
+                        Text("About")
+                            .font(AppFont.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Material.Text.primary)
+                            .textCase(nil)
                     }
                     
                     // 7. Developer Settings (debug builds only)
@@ -495,15 +448,6 @@ struct HowToAddWidgetView: View {
                         InstructionStep(number: 1, text: "Long press on home screen, tap +")
                         InstructionStep(number: 2, text: "Search for 'Miranda'")
                         InstructionStep(number: 3, text: "Add the widget to your home screen")
-                    }
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Widget on Lock Screen")
-                            .font(AppFont.headline)
-                            .foregroundColor(Material.Text.primary)
-                        InstructionStep(number: 1, text: "Long press on your lock screen")
-                        InstructionStep(number: 2, text: "Tap Edit, then tap the clock area")
-                        InstructionStep(number: 3, text: "Scroll to Miranda")
-                        InstructionStep(number: 4, text: "Choose Rectangular (top 2 priorities) or Inline (top priority only)")
                     }
                 }
                 .padding()
@@ -759,4 +703,3 @@ struct CloudLabView: View {
         DevComponentsView()
     }
 }
-

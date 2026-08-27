@@ -11,6 +11,9 @@ enum AppIconOption: String, CaseIterable, Identifiable {
     case turtle
     case hero
 
+    /// Options currently offered in Settings and onboarding.
+    static let selectableCases: [AppIconOption] = [.default, .dark, .silhouette, .turtle, .hero]
+
     var id: String { rawValue }
 
     /// Physical alternate-icon asset for the given appearance; `nil` restores the primary icon.
@@ -89,7 +92,7 @@ struct AppIconPickerView: View {
 
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 24) {
-                    ForEach(AppIconOption.allCases) { option in
+                    ForEach(AppIconOption.selectableCases) { option in
                         Button {
                             select(option)
                         } label: {

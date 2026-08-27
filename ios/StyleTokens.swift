@@ -875,9 +875,46 @@ struct GlassButtonStyle: ButtonStyle {
     }
 }
 
+/// Priority state control: warm when active and neutral when inactive while
+/// retaining the system's interactive Liquid Glass treatment on iOS 26.
+struct PriorityGlassButtonStyle: ButtonStyle {
+    let isOn: Bool
+
+    private var tint: Color {
+        isOn ? Material.Status.warning : Material.Control.fillPrimary
+    }
+
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .font(AppFont.body).fontWeight(.medium)
+                .foregroundColor(Material.Text.primary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .glassEffect(.regular.tint(tint).interactive(), in: Capsule())
+        } else {
+            configuration.label
+                .font(AppFont.body).fontWeight(.medium)
+                .foregroundColor(Material.Text.primary)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .background(tint)
+                .clipShape(Capsule())
+                .modifier(PressEffect(isPressed: configuration.isPressed))
+        }
+    }
+}
+
 extension ButtonStyle where Self == GlassButtonStyle {
     static func glass(tint: Color, foreground: Color = Material.Text.primary) -> GlassButtonStyle {
         .init(tint: tint, foreground: foreground)
+    }
+}
+
+extension ButtonStyle where Self == PriorityGlassButtonStyle {
+    static func priorityGlass(isOn: Bool) -> PriorityGlassButtonStyle {
+        .init(isOn: isOn)
     }
 }
 
@@ -1366,4 +1403,3 @@ extension View {
         )
     }
 }
-

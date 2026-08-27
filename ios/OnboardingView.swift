@@ -43,17 +43,17 @@ struct OnboardingView: View {
             }
         }
         .sheet(isPresented: $showNoteSheet) {
-            CreateCardModal(
+            NoteEditor(
                 text: $newCardText,
-                startWithDictation: false,
+                mode: .create,
+                onCancel: {
+                    newCardText = ""
+                    showNoteSheet = false
+                },
                 onSave: {
                     onSaveNote()
                     showNoteSheet = false
                     withAnimation { step = 2 }
-                },
-                onCancel: {
-                    newCardText = ""
-                    showNoteSheet = false
                 }
             )
             .presentationBackground(Material.Surface.secondary)
@@ -136,7 +136,7 @@ struct OnboardingView: View {
                         .foregroundColor(Material.Text.secondary)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(AppIconOption.allCases) { option in
+                            ForEach(AppIconOption.selectableCases) { option in
                                 Button {
                                     selectAppIcon(option)
                                 } label: {

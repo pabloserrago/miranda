@@ -53,6 +53,7 @@ final class HyphenSplitEditEditorUITests: XCTestCase {
         XCTAssertTrue(note.waitForExistence(timeout: 5))
         note.tap()
 
+        app.buttons["note-actions-menu-button"].tap()
         let editButton = app.buttons["edit-note-button"]
         XCTAssertTrue(editButton.waitForExistence(timeout: 3))
         editButton.tap()

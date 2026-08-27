@@ -16,12 +16,24 @@
     "CFBundleName" : {
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
-      "shouldTranslate" : false,
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "ios"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSCalendarsWriteOnlyAccessUsageDescription" : {
+      "comment" : "Privacy - Calendars Write Only Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Miranda adds note details to calendar events when you choose to."
           }
         }
       }
@@ -59,6 +71,12 @@
             "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -75,12 +93,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A Miranda usa o microfone para entrada de voz, para que possas capturar notas a falar."
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda usa el micrófono para la entrada de voz, de modo que puedas capturar notas hablando."
           }
         }
       }
@@ -118,6 +130,12 @@
             "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún sitio."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún lugar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -134,12 +152,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A Miranda transcreve a tua voz no próprio dispositivo para que possas capturar notas a falar. O áudio nunca é guardado nem enviado para nenhum lugar."
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Miranda transcribe tu voz en el propio dispositivo para que puedas capturar notas hablando. El audio nunca se almacena ni se envía a ningún lugar."
           }
         }
       }

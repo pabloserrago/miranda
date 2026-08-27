@@ -54,6 +54,7 @@ final class NoteEditorChromeUITests: XCTestCase {
         XCTAssertTrue(note.waitForExistence(timeout: 5))
         note.tap()
 
+        app.buttons["note-actions-menu-button"].tap()
         let edit = app.buttons["edit-note-button"]
         XCTAssertTrue(edit.waitForExistence(timeout: 3))
         edit.tap()

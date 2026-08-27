@@ -26,10 +26,10 @@ final class NoteChromeGeometryUITests: XCTestCase {
         openSeededNote(in: app)
 
         let preview = try measureRow(
-            in: app, leading: "close-note-button", trailing: "edit-note-button"
+            in: app, leading: "close-note-button", trailing: "note-actions-menu-button"
         )
 
-        app.buttons["edit-note-button"].tap()
+        openEditAction(in: app)
 
         let editor = try measureRow(
             in: app, leading: "cancel-edit-button", trailing: "save-edit-button"
@@ -52,7 +52,7 @@ final class NoteChromeGeometryUITests: XCTestCase {
         openSeededNote(in: app)
 
         let row = try measureRow(
-            in: app, leading: "close-note-button", trailing: "edit-note-button"
+            in: app, leading: "close-note-button", trailing: "note-actions-menu-button"
         )
         XCTAssertEqual(row.leadingInset, row.trailingInset, accuracy: tolerance,
                        "the preview's row is not centred between the sheet edges: \(row)")
@@ -96,7 +96,7 @@ final class NoteChromeGeometryUITests: XCTestCase {
         XCTAssertTrue(app.buttons["close-note-button"].waitForExistence(timeout: 5))
 
         let preview = try measureRow(
-            in: app, leading: "close-note-button", trailing: "edit-note-button"
+            in: app, leading: "close-note-button", trailing: "note-actions-menu-button"
         )
 
         print("editor row:  \(editor)")
@@ -111,6 +111,14 @@ final class NoteChromeGeometryUITests: XCTestCase {
     }
 
     // MARK: - Measurement
+
+    @MainActor
+    private func openEditAction(in app: XCUIApplication) {
+        app.buttons["note-actions-menu-button"].tap()
+        let edit = app.buttons["edit-note-button"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 3))
+        edit.tap()
+    }
 
     private struct RowGeometry: CustomStringConvertible {
         let top: CGFloat

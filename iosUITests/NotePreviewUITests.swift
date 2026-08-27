@@ -41,8 +41,8 @@ final class NotePreviewUITests: XCTestCase {
                       "no close control; tree:\n\(app.debugDescription)")
         XCTAssertTrue(app.buttons["new-note-from-preview-button"].exists,
                       "no new-note control; tree:\n\(app.debugDescription)")
-        XCTAssertTrue(app.buttons["edit-note-button"].exists,
-                      "no edit control; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(app.buttons["note-actions-menu-button"].exists,
+                      "no more-actions control; tree:\n\(app.debugDescription)")
     }
 
     @MainActor
@@ -55,6 +55,7 @@ final class NotePreviewUITests: XCTestCase {
         XCTAssertTrue(toggle.waitForExistence(timeout: 3),
                       "no priority toggle; tree:\n\(app.debugDescription)")
         XCTAssertTrue(done.exists, "no done action; tree:\n\(app.debugDescription)")
+        XCTAssertEqual(done.label, "Complete")
 
         // Side by side, not stacked: same row, done to the right of the toggle.
         XCTAssertEqual(toggle.frame.midY, done.frame.midY, accuracy: 2,
@@ -62,15 +63,36 @@ final class NotePreviewUITests: XCTestCase {
         XCTAssertLessThan(toggle.frame.maxX, done.frame.minX + 1,
                           "the done action should sit to the right of the toggle")
 
-        // Neither label may wrap, which is what retired the longer "Mark as
-        // Done". A capsule is 28pt of padding around a ~20pt line, so a single
+        // Neither label may wrap. A capsule is 28pt of padding around a ~20pt line, so a single
         // line lands near 48–52pt and a wrapped one near 69pt. The two differ by
         // 4pt because the lightbulb glyph is taller than the checkmark.
         let singleLineCeiling: CGFloat = 60
         XCTAssertLessThan(done.frame.height, singleLineCeiling,
-                          "the Done label wrapped onto a second line")
+                          "the Complete label wrapped onto a second line")
         XCTAssertLessThan(toggle.frame.height, singleLineCeiling,
                           "the priority toggle's label wrapped onto a second line")
+    }
+
+    @MainActor
+    func testPriorityToggleKeepsPreviewOpenAndDelaysTurningOn() throws {
+        let app = launchSeededApp()
+        openSeededNote(in: app)
+
+        let toggle = app.buttons["toggle-priority-button"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 3))
+        XCTAssertEqual(toggle.label, "Priority")
+        XCTAssertEqual(toggle.value as? String, "On")
+
+        toggle.tap()
+        XCTAssertTrue(app.buttons["close-note-button"].exists,
+                      "turning priority off closed the note")
+        XCTAssertEqual(toggle.value as? String, "Off")
+
+        toggle.tap()
+        XCTAssertEqual(toggle.value as? String, "Turning on")
+        XCTAssertTrue(app.buttons["close-note-button"].exists,
+                      "turning priority on closed the note")
+        XCTAssertTrue(waitForValue("On", of: toggle, timeout: 2))
     }
 
     @MainActor
@@ -78,7 +100,7 @@ final class NotePreviewUITests: XCTestCase {
         let app = launchSeededApp()
         openSeededNote(in: app)
 
-        app.buttons["edit-note-button"].tap()
+        openEditAction(in: app)
 
         let editor = app.textViews.firstMatch
         XCTAssertTrue(editor.waitForExistence(timeout: 3),
@@ -137,6 +159,22 @@ final class NotePreviewUITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(note.waitForExistence(timeout: 5))
         note.tap()
+    }
+
+    @MainActor
+    private func openEditAction(in app: XCUIApplication) {
+        app.buttons["note-actions-menu-button"].tap()
+        let edit = app.buttons["edit-note-button"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 3),
+                      "the Edit note menu action did not appear; tree:\n\(app.debugDescription)")
+        edit.tap()
+    }
+
+    @MainActor
+    private func waitForValue(_ value: String, of element: XCUIElement, timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "value == %@", value)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
     /// The create control lives in the recent sheet, which a UI-test launch does
