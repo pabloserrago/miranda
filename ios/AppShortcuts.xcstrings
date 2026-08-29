@@ -60,64 +60,6 @@
         }
       }
     },
-    "Add a note to ${applicationName} First" : {
-      "localizations" : {
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afegeix una nota a ${applicationName} First"
-          }
-        },
-        "ca-ES" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afegeix una nota a ${applicationName} First"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notiz zu ${applicationName} First hinzufügen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a note to ${applicationName} First"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir una nota a ${applicationName} First"
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agregar una nota a ${applicationName} First"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter une note à ${applicationName} First"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voeg een notitie toe aan ${applicationName} First"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionar uma nota a ${applicationName} First"
-          }
-        }
-      }
-    },
     "Add priority to ${applicationName}" : {
       "localizations" : {
         "ca" : {
