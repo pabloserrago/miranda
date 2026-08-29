@@ -29,14 +29,17 @@ struct LocalizationTests {
         "Capture a note in ${applicationName}",
         "Add a note to ${applicationName}",
         "Note something in ${applicationName}",
-        "What's my priority in ${applicationName}",
-        "What should I be doing in ${applicationName}",
-        "Show my top priority in ${applicationName}",
-        "I'm done in ${applicationName}",
-        "Mark done in ${applicationName}",
-        "Complete my priority in ${applicationName}",
+        "Capture this in ${applicationName}",
+        "Add this to ${applicationName}",
+        "Add to ${applicationName}",
+        "Remove all priorities in ${applicationName}",
         "Add priority to ${applicationName}",
         "Set my priority in ${applicationName}",
+    ]
+
+    /// Visible and spoken strings used while collecting intent input.
+    static let siriIntentKeys = [
+        "What would you like to add to Miranda?",
     ]
 
     @Test func bundleShipsEveryLocalization() {
@@ -183,6 +186,16 @@ struct LocalizationTests {
                 value.contains("${applicationName}"),
                 "Siri phrase '\(phrase)' in \(code) lost ${applicationName}: \(value)"
             )
+        }
+    }
+
+    @Test(arguments: Self.translatedLocales)
+    func siriIntentStringsAreTranslated(code: String) throws {
+        let bundle = try #require(localizedBundle(for: code))
+
+        for key in Self.siriIntentKeys {
+            let value = bundle.localizedString(forKey: key, value: nil, table: nil)
+            #expect(value != key, "Siri intent string '\(key)' is untranslated in \(code)")
         }
     }
 

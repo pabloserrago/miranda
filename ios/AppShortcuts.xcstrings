@@ -60,6 +60,64 @@
         }
       }
     },
+    "Add a note to ${applicationName} First" : {
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix una nota a ${applicationName} First"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix una nota a ${applicationName} First"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz zu ${applicationName} First hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a note to ${applicationName} First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir una nota a ${applicationName} First"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar una nota a ${applicationName} First"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une note à ${applicationName} First"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg een notitie toe aan ${applicationName} First"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar uma nota a ${applicationName} First"
+          }
+        }
+      }
+    },
     "Add priority to ${applicationName}" : {
       "localizations" : {
         "ca" : {
@@ -114,6 +172,242 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar uma prioridade a ${applicationName}"
+          }
+        }
+      }
+    },
+    "Add this to ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix això a ${applicationName}"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix això a ${applicationName}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das zu ${applicationName} hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add this to ${applicationName}"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir esto a ${applicationName}"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar esto a ${applicationName}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter ceci à ${applicationName}"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg dit toe aan ${applicationName}"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar isto a ${applicationName}"
+          }
+        }
+      }
+    },
+    "Add this to ${applicationName} First" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix això a ${applicationName} First"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix això a ${applicationName} First"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das zu ${applicationName} First hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add this to ${applicationName} First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir esto a ${applicationName} First"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar esto a ${applicationName} First"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter ceci à ${applicationName} First"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg dit toe aan ${applicationName} First"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar isto a ${applicationName} First"
+          }
+        }
+      }
+    },
+    "Add to ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix a ${applicationName}"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix a ${applicationName}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu ${applicationName} hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to ${applicationName}"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir a ${applicationName}"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar a ${applicationName}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter à ${applicationName}"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe aan ${applicationName}"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar a ${applicationName}"
+          }
+        }
+      }
+    },
+    "Add to ${applicationName} First" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix a ${applicationName} First"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afegeix a ${applicationName} First"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu ${applicationName} First hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to ${applicationName} First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir a ${applicationName} First"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar a ${applicationName} First"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter à ${applicationName} First"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe aan ${applicationName} First"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar a ${applicationName} First"
           }
         }
       }
@@ -176,66 +470,126 @@
         }
       }
     },
-    "Complete my priority in ${applicationName}" : {
+    "Capture this in ${applicationName}" : {
       "extractionState" : "stale",
       "localizations" : {
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completa la meva prioritat a ${applicationName}"
+            "value" : "Captura això a ${applicationName}"
           }
         },
         "ca-ES" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completa la meva prioritat a ${applicationName}"
+            "value" : "Captura això a ${applicationName}"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Meine Priorität in ${applicationName} abschließen"
+            "value" : "Das in ${applicationName} erfassen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Complete my priority in ${applicationName}"
+            "value" : "Capture this in ${applicationName}"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar mi prioridad en ${applicationName}"
+            "value" : "Capturar esto en ${applicationName}"
           }
         },
         "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completar mi prioridad en ${applicationName}"
+            "value" : "Capturar esto en ${applicationName}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminer ma priorité dans ${applicationName}"
+            "value" : "Capturer ceci dans ${applicationName}"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rond mijn prioriteit af in ${applicationName}"
+            "value" : "Leg dit vast in ${applicationName}"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Concluir a minha prioridade em ${applicationName}"
+            "value" : "Capturar isto em ${applicationName}"
+          }
+        }
+      }
+    },
+    "Capture this in ${applicationName} First" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captura això a ${applicationName} First"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captura això a ${applicationName} First"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das in ${applicationName} First erfassen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture this in ${applicationName} First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturar esto en ${applicationName} First"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturar esto en ${applicationName} First"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturer ceci dans ${applicationName} First"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leg dit vast in ${applicationName} First"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturar isto em ${applicationName} First"
           }
         }
       }
     },
     "I'm done in ${applicationName}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ca" : {
           "stringUnit" : {
@@ -407,6 +761,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anotar algo em ${applicationName}"
+          }
+        }
+      }
+    },
+    "Remove all priorities in ${applicationName}" : {
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina totes les prioritats a ${applicationName}"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina totes les prioritats a ${applicationName}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Prioritäten in ${applicationName} entfernen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove all priorities in ${applicationName}"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todas las prioridades en ${applicationName}"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todas las prioridades en ${applicationName}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer toutes les priorités dans ${applicationName}"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder alle prioriteiten in ${applicationName}"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover todas as prioridades em ${applicationName}"
           }
         }
       }
@@ -589,6 +1001,7 @@
       }
     },
     "What's my priority in ${applicationName}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ca" : {
           "stringUnit" : {

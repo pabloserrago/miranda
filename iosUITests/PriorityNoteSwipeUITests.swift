@@ -20,11 +20,11 @@ final class PriorityNoteSwipeUITests: XCTestCase {
     }
 
     @MainActor
-    func testSwipeRightRevealsRemoveActionOnLeft() throws {
+    func testSwipeRightRevealsPriorityActionOnLeft() throws {
         let app = launchSeededApp()
         let note = priorityNote(in: app)
         note.swipeRight()
-        XCTAssertTrue(app.buttons["Remove"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Priority"].waitForExistence(timeout: 2))
     }
 
     @MainActor
@@ -37,11 +37,11 @@ final class PriorityNoteSwipeUITests: XCTestCase {
     }
 
     @MainActor
-    func testSwipeRightRemoveExcludesNoteFromPriorityList() throws {
+    func testSwipeRightPriorityExcludesNoteFromPriorityList() throws {
         let app = launchSeededApp()
         let note = priorityNote(in: app)
         note.swipeRight()
-        app.buttons["Remove"].tap()
+        app.buttons["Priority"].tap()
 
         XCTAssertTrue(waitForElementToDisappear(note, timeout: 3))
         XCTAssertTrue(

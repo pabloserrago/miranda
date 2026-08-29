@@ -11,30 +11,21 @@ struct MirandaShortcuts: AppShortcutsProvider {
             phrases: [
                 "Capture a note in \(.applicationName)",
                 "Add a note to \(.applicationName)",
-                "Note something in \(.applicationName)"
+                "Note something in \(.applicationName)",
+                "Capture this in \(.applicationName)",
+                "Add this to \(.applicationName)",
+                "Add to \(.applicationName)"
             ],
             shortTitle: "Capture a note",
             systemImageName: "plus.circle"
         )
         AppShortcut(
-            intent: ShowTopPriorityIntent(),
+            intent: RemoveAllPrioritiesIntent(),
             phrases: [
-                "What's my priority in \(.applicationName)",
-                "What should I be doing in \(.applicationName)",
-                "Show my top priority in \(.applicationName)"
+                "Remove all priorities in \(.applicationName)"
             ],
-            shortTitle: "Show top priority",
-            systemImageName: "star.circle"
-        )
-        AppShortcut(
-            intent: CompleteTopPriorityIntent(),
-            phrases: [
-                "I'm done in \(.applicationName)",
-                "Mark done in \(.applicationName)",
-                "Complete my priority in \(.applicationName)"
-            ],
-            shortTitle: "Mark done",
-            systemImageName: "checkmark.circle"
+            shortTitle: "Remove all priorities",
+            systemImageName: "lightbulb.slash"
         )
         AppShortcut(
             intent: CaptureAndPrioritizeIntent(),
@@ -58,8 +49,7 @@ struct MirandaShortcuts: AppShortcutsProvider {
 //
 // @available(iOS 27, *)
 // extension CaptureNoteIntent: <#ProductivityIntentDomain#> { }
-// extension ShowTopPriorityIntent: <#ProductivityIntentDomain#> { }
-// extension CompleteTopPriorityIntent: <#ProductivityIntentDomain#> { }
+// extension RemoveAllPrioritiesIntent: <#ProductivityIntentDomain#> { }
 // extension CaptureAndPrioritizeIntent: <#ProductivityIntentDomain#> { }
 
 // MARK: — Shared State Helpers
@@ -107,7 +97,10 @@ struct CaptureNoteIntent: AppIntent {
     static var title: LocalizedStringResource = "Capture a Note"
     static var description = IntentDescription("Add a new priority note to Miranda.")
 
-    @Parameter(title: "Note text")
+    @Parameter(
+        title: "Note text",
+        requestValueDialog: "What would you like to add to Miranda?"
+    )
     var text: String
 
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
@@ -122,104 +115,59 @@ struct CaptureNoteIntent: AppIntent {
             emoji: nil,
             timestamp: Date()
         )
-
-        var allCards = loadCards(from: .standard)
-        var priorityIds = loadPriorityIds(from: .standard)
-        let excludedIds = loadExcludedIds(from: .standard)
-
-        allCards.append(newCard)
-
-        let activePriorityCount = priorityIds.filter { !excludedIds.contains($0) }.count
-        if activePriorityCount < 3 {
-            priorityIds.append(newCard.id)
-        }
-
-        saveCards(allCards, priorityIds: priorityIds, to: .standard)
+        Self.capture(newCard, in: .standard)
         reloadWidget()
         Analytics.shared.trackIntentRun("capture_note")
 
         return .result(value: String(localized: "intent.capture.result_format", defaultValue: "Captured: \(trimmed)", comment: "Siri intent result shown in Shortcuts"))
     }
-}
 
-// MARK: — Show Top Priority Intent
-
-struct ShowTopPriorityIntent: AppIntent {
-    static var title: LocalizedStringResource = "Show Top Priority"
-    static var description = IntentDescription("Read out your current top priority in Miranda.")
-
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let text = Self.topPriorityText(from: .standard)
-        Analytics.shared.trackIntentRun("show_top_priority")
-        let response = text ?? String(
-            localized: "intent.show_priority.empty",
-            defaultValue: "You have no active priorities in Miranda.",
-            comment: "Siri response when there are no active priorities"
-        )
-        return .result(value: response)
-    }
-
-    /// Returns the display text of the top active priority, or nil if none exist.
-    static func topPriorityText(from defaults: UserDefaults) -> String? {
-        let allCards = loadCards(from: defaults)
-        let priorityIds = loadPriorityIds(from: defaults)
-        let excludedIds = loadExcludedIds(from: defaults)
-        let cardMap = Dictionary(uniqueKeysWithValues: allCards.map { ($0.id, $0) })
-        return priorityIds
-            .filter { !excludedIds.contains($0) }
-            .compactMap { cardMap[$0] }
-            .first?
-            .simplifiedText
-    }
-}
-
-// MARK: — Complete Top Priority Intent
-
-struct CompleteTopPriorityIntent: AppIntent {
-    static var title: LocalizedStringResource = "Complete Top Priority"
-    static var description = IntentDescription("Mark your current top priority as done in Miranda.")
-
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let completedText = Self.completeTopPriority(in: .standard)
-        reloadWidget()
-        Analytics.shared.trackIntentRun("complete_top_priority")
-        let response: String
-        if let text = completedText {
-            let format = String(
-                localized: "intent.complete_priority.result_format",
-                defaultValue: "Done: %@",
-                comment: "Siri response after completing a priority — %@ is the completed note text"
-            )
-            response = String(format: format, text)
-        } else {
-            response = String(
-                localized: "intent.complete_priority.empty",
-                defaultValue: "No active priority to complete.",
-                comment: "Siri response when there are no active priorities to complete"
-            )
-        }
-        return .result(value: response)
-    }
-
-    /// Removes the current top priority from `cards` and `priorityCardIds`.
-    /// Returns the completed card's display text, or nil if there was nothing to complete.
-    @discardableResult
-    static func completeTopPriority(in defaults: UserDefaults) -> String? {
+    /// Persists a dictated note and fills an available priority slot, matching
+    /// the in-app capture behavior while keeping the transformation testable.
+    static func capture(_ card: Card, in defaults: UserDefaults) {
         var allCards = loadCards(from: defaults)
         var priorityIds = loadPriorityIds(from: defaults)
         let excludedIds = loadExcludedIds(from: defaults)
 
-        guard let completedId = priorityIds.first(where: { !excludedIds.contains($0) }) else {
-            return nil
+        allCards.append(card)
+
+        let activePriorityCount = priorityIds.filter { !excludedIds.contains($0) }.count
+        if activePriorityCount < 3 {
+            priorityIds.append(card.id)
         }
 
-        let completedText = allCards.first(where: { $0.id == completedId })?.simplifiedText
-
-        allCards.removeAll { $0.id == completedId }
-        priorityIds.removeAll { $0 == completedId }
-
         saveCards(allCards, priorityIds: priorityIds, to: defaults)
-        return completedText
+    }
+}
+
+// MARK: — Remove All Priorities Intent
+
+struct RemoveAllPrioritiesIntent: AppIntent {
+    static var title: LocalizedStringResource = "Remove All Priorities"
+    static var description = IntentDescription("Turn off every active priority in Miranda without deleting the notes.")
+
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        let removedCount = Self.removeAllPriorities(in: .standard)
+        reloadWidget()
+        Analytics.shared.trackIntentRun("remove_all_priorities")
+        let response = removedCount == 0
+            ? "No active priorities to remove."
+            : "Removed all priorities. Your notes are still in Miranda."
+        return .result(value: response)
+    }
+
+    /// Excludes every note from the active priority list without deleting it.
+    @discardableResult
+    static func removeAllPriorities(in defaults: UserDefaults) -> Int {
+        let allCards = loadCards(from: defaults)
+        let excludedIds = Set(loadExcludedIds(from: defaults))
+        let activeIds = allCards.map(\.id).filter { !excludedIds.contains($0) }
+
+        defaults.set(
+            Array(excludedIds.union(activeIds)).map { $0.uuidString },
+            forKey: "excludedFromPriorityIds"
+        )
+        return activeIds.count
     }
 }
 

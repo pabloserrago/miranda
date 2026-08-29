@@ -44,6 +44,18 @@ struct NotePreviewContentTests {
         #expect(content.paragraphs.isEmpty)
     }
 
+    @Test func selectableTextContainsTheWholeNoteInOneValue() {
+        let content = NotePreviewContent(
+            text: "https://tickets.example\nLorem ipsum dolor sit amet.\nhttps://loremipsum.com"
+        )
+
+        #expect(
+            String(content.selectableText.characters)
+                == "https://tickets.example\n\nLorem ipsum dolor sit amet.\n\nhttps://loremipsum.com"
+        )
+        #expect(content.selectableText.runs.compactMap(\.link).count == 2)
+    }
+
     // MARK: Link runs
 
     @Test func linkRunCarriesAccentColorAndUnderline() {

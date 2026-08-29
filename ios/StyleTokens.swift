@@ -477,6 +477,7 @@ enum Material {
         static let fillPrimary   = adaptive(light: Palette.neutral150, dark: Palette.neutral700)  // FilledButtonStyle, ChipPicker selected, Card.base/wrapper gradient, EditorControlButtonStyle
         static let fillSecondary = adaptive(light: Palette.neutral0,  dark: Palette.neutral950)  // Card.base/onboarding/widget gradients
         static let fillTertiary  = adaptive(light: Palette.neutral50,  dark: Palette.neutral800)  // mic/plus ActionChips, feedback input, drawer cards, ChipPicker unselected, ListSuggestion, Card.onboarding/widget gradients
+        static let destructiveFill = adaptive(light: Palette.neutral600, dark: Palette.neutral700) // destructive swipe actions
     }
     
     // MARK: Text — text foreground colors
@@ -490,12 +491,17 @@ enum Material {
         static let tertiary  = adaptive(light: Palette.ink(0.55), dark: Palette.paper(0.55)) // subtle: input placeholders, widget secondary links, SolidButtonStyle disabled label
         static let accent    = Accent.primary                                                // settings tint: app icon fill, picker, primary button bg
         static let inverse   = adaptive(light: Palette.neutral50, dark: Palette.neutral950)                                     // text on dark/accent fills: SolidButtonStyle label, settings buttons, slider tint
+        static let onWarning = Color(Palette.neutral950)                                     // fixed dark content on yellow priority actions
+        static let onWarningUIColor = Palette.neutral950                                     // original-rendering UIKit swipe-action icons
+        static let onDestructive = Color(Palette.neutral0)                                   // fixed light content on gray destructive actions
+        static let onDestructiveUIColor = Palette.neutral0                                   // original-rendering UIKit swipe-action icons
     }
     
     // MARK: Icon — icon foreground colors
     
     enum Icon {
         static let primary   = adaptive(light: Palette.neutral950, dark: Palette.neutral50)  // settings tortoise icon, CloseButton xmark, success chip icon
+        static let action    = adaptive(light: Palette.neutral950, dark: Palette.neutral0)   // mic/plus capture actions
         static let tertiary  = adaptive(light: Palette.neutral700, dark: Palette.neutral500) // delete action chip icon (trash)
         static let inverse   = Color(Palette.neutral50)                                      // default ActionChip icon on colored fills
         static let muted     = adaptive(light: Palette.neutral600, dark: Palette.neutral400) // empty-state icons, secondary toolbar icons
@@ -889,14 +895,14 @@ struct PriorityGlassButtonStyle: ButtonStyle {
         if #available(iOS 26.0, *) {
             configuration.label
                 .font(AppFont.body).fontWeight(.medium)
-                .foregroundColor(Material.Text.primary)
+                .foregroundStyle(Material.Text.onWarning)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 24)
                 .glassEffect(.regular.tint(tint).interactive(), in: Capsule())
         } else {
             configuration.label
                 .font(AppFont.body).fontWeight(.medium)
-                .foregroundColor(Material.Text.primary)
+                .foregroundStyle(Material.Text.onWarning)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 24)
                 .background(tint)

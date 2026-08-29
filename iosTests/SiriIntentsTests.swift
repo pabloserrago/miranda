@@ -36,128 +36,76 @@ private func readPriorityIds(from defaults: UserDefaults) -> [UUID] {
     (defaults.array(forKey: "priorityCardIds") as? [String] ?? []).compactMap { UUID(uuidString: $0) }
 }
 
-// MARK: - ShowTopPriorityIntent Tests
+// MARK: - CaptureNoteIntent Tests
 
-struct ShowTopPriorityIntentTests {
+struct CaptureNoteIntentTests {
 
-    @Test func returnsTopPriorityText() {
+    @Test func savesDictatedNote() {
         let defaults = makeTestDefaults()
-        let card = makeCard(text: "Top thing")
-        seed(cards: [card], priorityIds: [card.id], in: defaults)
+        let card = makeCard(text: "Buy milk")
 
-        let result = ShowTopPriorityIntent.topPriorityText(from: defaults)
+        CaptureNoteIntent.capture(card, in: defaults)
 
-        #expect(result == "Top thing")
+        #expect(readCards(from: defaults) == [card])
     }
 
-    @Test func respectsPriorityOrdering() {
+    @Test func fillsAnAvailablePrioritySlot() {
         let defaults = makeTestDefaults()
-        let first = makeCard(text: "First in priority list")
-        let second = makeCard(text: "Second in priority list")
-        // second is listed first in priorityIds — it should be returned
-        seed(cards: [first, second], priorityIds: [second.id, first.id], in: defaults)
+        let existing = makeCard(text: "Existing")
+        seed(cards: [existing], priorityIds: [existing.id], in: defaults)
+        let dictated = makeCard(text: "Dictated")
 
-        let result = ShowTopPriorityIntent.topPriorityText(from: defaults)
+        CaptureNoteIntent.capture(dictated, in: defaults)
 
-        #expect(result == "Second in priority list")
+        #expect(readPriorityIds(from: defaults) == [existing.id, dictated.id])
     }
 
-    @Test func skipsExcludedCardsAndReturnsNextActive() {
+    @Test func keepsNoteButDoesNotExceedThreeActivePriorities() {
         let defaults = makeTestDefaults()
-        let excluded = makeCard(text: "Excluded")
-        let active = makeCard(text: "Active")
-        seed(
-            cards: [excluded, active],
-            priorityIds: [excluded.id, active.id],
-            excludedIds: [excluded.id],
-            in: defaults
-        )
+        let priorities = [makeCard(text: "One"), makeCard(text: "Two"), makeCard(text: "Three")]
+        seed(cards: priorities, priorityIds: priorities.map(\.id), in: defaults)
+        let dictated = makeCard(text: "Saved for later")
 
-        let result = ShowTopPriorityIntent.topPriorityText(from: defaults)
+        CaptureNoteIntent.capture(dictated, in: defaults)
 
-        #expect(result == "Active")
-    }
-
-    @Test func returnsNilWhenPriorityListIsEmpty() {
-        let defaults = makeTestDefaults()
-        let card = makeCard(text: "Not a priority")
-        seed(cards: [card], priorityIds: [], in: defaults)
-
-        let result = ShowTopPriorityIntent.topPriorityText(from: defaults)
-
-        #expect(result == nil)
-    }
-
-    @Test func returnsNilWhenAllPrioritiesAreExcluded() {
-        let defaults = makeTestDefaults()
-        let card = makeCard(text: "Excluded priority")
-        seed(cards: [card], priorityIds: [card.id], excludedIds: [card.id], in: defaults)
-
-        let result = ShowTopPriorityIntent.topPriorityText(from: defaults)
-
-        #expect(result == nil)
-    }
-
-    @Test func returnsNilOnEmptyDefaults() {
-        let result = ShowTopPriorityIntent.topPriorityText(from: makeTestDefaults())
-
-        #expect(result == nil)
+        #expect(readCards(from: defaults).contains(dictated))
+        #expect(readPriorityIds(from: defaults) == priorities.map(\.id))
     }
 }
 
-// MARK: - CompleteTopPriorityIntent Tests
+// MARK: - RemoveAllPrioritiesIntent Tests
 
-struct CompleteTopPriorityIntentTests {
+struct RemoveAllPrioritiesIntentTests {
 
-    @Test func returnsTextOfCompletedCard() {
+    @Test func keepsEveryNote() {
         let defaults = makeTestDefaults()
-        let card = makeCard(text: "Top priority")
-        seed(cards: [card], priorityIds: [card.id], in: defaults)
+        let cards = [makeCard(text: "One"), makeCard(text: "Two")]
+        seed(cards: cards, priorityIds: cards.map(\.id), in: defaults)
 
-        let result = CompleteTopPriorityIntent.completeTopPriority(in: defaults)
+        RemoveAllPrioritiesIntent.removeAllPriorities(in: defaults)
 
-        #expect(result == "Top priority")
+        #expect(readCards(from: defaults) == cards)
     }
 
-    @Test func removesCardFromCards() {
+    @Test func excludesEveryNoteFromPriorities() {
         let defaults = makeTestDefaults()
-        let card = makeCard(text: "Remove me")
-        seed(cards: [card], priorityIds: [card.id], in: defaults)
+        let cards = [makeCard(text: "One"), makeCard(text: "Two")]
+        seed(cards: cards, priorityIds: cards.map(\.id), in: defaults)
 
-        CompleteTopPriorityIntent.completeTopPriority(in: defaults)
+        let count = RemoveAllPrioritiesIntent.removeAllPriorities(in: defaults)
 
-        #expect(readCards(from: defaults).isEmpty)
+        let excluded = Set(
+            (defaults.array(forKey: "excludedFromPriorityIds") as? [String] ?? [])
+                .compactMap(UUID.init(uuidString:))
+        )
+        #expect(count == 2)
+        #expect(excluded == Set(cards.map(\.id)))
     }
 
-    @Test func removesCardFromPriorityIds() {
+    @Test func preservesExistingExclusionsAndReportsOnlyActiveNotes() {
         let defaults = makeTestDefaults()
-        let card = makeCard(text: "Remove me")
-        seed(cards: [card], priorityIds: [card.id], in: defaults)
-
-        CompleteTopPriorityIntent.completeTopPriority(in: defaults)
-
-        #expect(!readPriorityIds(from: defaults).contains(card.id))
-    }
-
-    @Test func onlyRemovesTopPriorityLeavingOthersIntact() {
-        let defaults = makeTestDefaults()
-        let top = makeCard(text: "Top")
-        let second = makeCard(text: "Second")
-        seed(cards: [top, second], priorityIds: [top.id, second.id], in: defaults)
-
-        CompleteTopPriorityIntent.completeTopPriority(in: defaults)
-
-        let remainingCards = readCards(from: defaults)
-        let remainingPriorityIds = readPriorityIds(from: defaults)
-        #expect(remainingCards.count == 1)
-        #expect(remainingCards.first?.simplifiedText == "Second")
-        #expect(remainingPriorityIds == [second.id])
-    }
-
-    @Test func skipsExcludedTopAndCompletesFirstActiveCard() {
-        let defaults = makeTestDefaults()
-        let excluded = makeCard(text: "Excluded top")
-        let active = makeCard(text: "Active second")
+        let excluded = makeCard(text: "Already off")
+        let active = makeCard(text: "Still on")
         seed(
             cards: [excluded, active],
             priorityIds: [excluded.id, active.id],
@@ -165,29 +113,14 @@ struct CompleteTopPriorityIntentTests {
             in: defaults
         )
 
-        let result = CompleteTopPriorityIntent.completeTopPriority(in: defaults)
+        let count = RemoveAllPrioritiesIntent.removeAllPriorities(in: defaults)
 
-        #expect(result == "Active second")
-        let remaining = readCards(from: defaults)
-        #expect(remaining.count == 1)
-        #expect(remaining.first?.id == excluded.id)
+        #expect(count == 1)
+        #expect(readCards(from: defaults) == [excluded, active])
     }
 
-    @Test func returnsNilWhenNoPrioritiesExist() {
-        let result = CompleteTopPriorityIntent.completeTopPriority(in: makeTestDefaults())
-
-        #expect(result == nil)
-    }
-
-    @Test func returnsNilWhenAllPrioritiesAreExcluded() {
-        let defaults = makeTestDefaults()
-        let card = makeCard(text: "Excluded")
-        seed(cards: [card], priorityIds: [card.id], excludedIds: [card.id], in: defaults)
-
-        let result = CompleteTopPriorityIntent.completeTopPriority(in: defaults)
-
-        #expect(result == nil)
-        #expect(readCards(from: defaults).count == 1)
+    @Test func reportsZeroWhenThereAreNoNotes() {
+        #expect(RemoveAllPrioritiesIntent.removeAllPriorities(in: makeTestDefaults()) == 0)
     }
 }
 

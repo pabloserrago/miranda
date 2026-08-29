@@ -332,7 +332,10 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                syncWidgetCompletions()
+                // App Intents can update notes while Miranda is suspended.
+                // Reload the complete persisted state instead of retaining the
+                // stale @State values that were captured before suspension.
+                loadState()
                 NotificationManager.shared.syncAuthorizationStatus()
                 AppIconManager.apply(AppIconOption(rawValue: selectedAppIconRaw) ?? .default, for: colorScheme)
                 Task { await Analytics.shared.refreshWidgetInventory() }
@@ -832,6 +835,7 @@ struct ContentView: View {
                         Image(systemName: "mic.fill")
                             .font(AppFont.body)
                             .fontWeight(.semibold)
+                            .foregroundStyle(Material.Icon.action)
                             .frame(width: 50, height: 50)
                             .contentShape(Circle())
                     }
@@ -845,6 +849,7 @@ struct ContentView: View {
                     Image(systemName: "plus")
                         .font(AppFont.body)
                         .fontWeight(.semibold)
+                        .foregroundStyle(Material.Icon.action)
                         .frame(width: 50, height: 50)
                         .contentShape(Circle())
                 }
@@ -920,6 +925,7 @@ struct ContentView: View {
                             openCreateEditor(dictating: true)
                         } label: {
                             Image(systemName: "mic.fill")
+                                .foregroundStyle(Material.Icon.action)
                         }
                         .accessibilityLabel("Dictate note")
                         .accessibilityIdentifier("dictate-note-button")
@@ -928,6 +934,7 @@ struct ContentView: View {
                         openCreateEditor()
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(Material.Icon.action)
                     }
                     .accessibilityLabel("New note")
                     .accessibilityIdentifier("create-note-button")
@@ -1034,19 +1041,28 @@ struct ContentView: View {
         .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button { removePriorityCard(card) } label: {
-                Label("Remove", systemImage: "lightbulb.slash")
+                Label {
+                    Text("Priority")
+                } icon: {
+                    Image(uiImage: prioritySwipeIcon("lightbulb.slash.fill"))
+                }
             }
-            .tint(.orange)
+            .tint(Material.Status.warning)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) { deleteCard(card) } label: {
-                Label("Delete", systemImage: "trash")
+                Label {
+                    Text("Delete")
+                        .foregroundStyle(Material.Text.onDestructive)
+                } icon: {
+                    Image(uiImage: deleteSwipeIcon)
+                }
             }
-            .tint(.red)
+            .tint(Material.Control.destructiveFill)
             Button { completePriorityCard(card) } label: {
                 Label("Complete", systemImage: "checkmark")
             }
-            .tint(.green)
+            .tint(Material.Accent.primary)
         }
         .offset(y: liftedHere ? priorityReorderTranslation.height : shuffleY)
         // Shuffle spring only while a lift is active; at the array commit the
@@ -1106,13 +1122,18 @@ struct ContentView: View {
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) { deleteCard(card) } label: {
-                Label("Delete", systemImage: "trash")
+                Label {
+                    Text("Delete")
+                        .foregroundStyle(Material.Text.onDestructive)
+                } icon: {
+                    Image(uiImage: deleteSwipeIcon)
+                }
             }
-            .tint(.red)
+            .tint(Material.Control.destructiveFill)
             Button { completeCard(card) } label: {
                 Label("Complete", systemImage: "checkmark")
             }
-            .tint(.green)
+            .tint(Material.Accent.primary)
         }
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button {
@@ -1122,10 +1143,28 @@ struct ContentView: View {
                 saveState()
                 maybePromptReview()
             } label: {
-                Label("Priority", systemImage: "lightbulb.fill")
+                Label {
+                    Text("Priority")
+                } icon: {
+                    Image(uiImage: prioritySwipeIcon("lightbulb.fill"))
+                }
             }
-            .tint(.yellow)
+            .tint(Material.Status.warning)
         }
+    }
+
+    /// Native swipe actions force template symbols to white. Supplying an
+    /// original-rendering image keeps Priority's bulb black in both appearances.
+    private func prioritySwipeIcon(_ systemName: String) -> UIImage {
+        UIImage(systemName: systemName)?
+            .withTintColor(Material.Text.onWarningUIColor, renderingMode: .alwaysOriginal)
+            ?? UIImage()
+    }
+
+    private var deleteSwipeIcon: UIImage {
+        UIImage(systemName: "trash")?
+            .withTintColor(Material.Text.onDestructiveUIColor, renderingMode: .alwaysOriginal)
+            ?? UIImage()
     }
 
     // MARK: - Note Detail
@@ -1554,8 +1593,6 @@ struct PriorityPickerView: View {
                                         .foregroundColor(Material.Text.primary)
                                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                    Image(systemName: "lightbulb")
-                                        .foregroundColor(Material.Text.secondary)
                                 }
                                 .padding(.vertical, 8)
                             }
@@ -1563,7 +1600,7 @@ struct PriorityPickerView: View {
                     }
                 }
             }
-            .navigationTitle("Set Priority")
+            .navigationTitle("Turn on a priority")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

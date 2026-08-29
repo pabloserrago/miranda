@@ -2,7 +2,7 @@ import XCTest
 
 /// Saving a note now shows it back rather than dropping straight to home, and
 /// the same screen is what a tapped note opens. These tests drive that flow and
-/// the three controls the design puts around it: close, new note, edit.
+/// the controls the design puts around it: close, new note, edit, and delete.
 final class NotePreviewUITests: XCTestCase {
 
     private let waterPlantsNoteId = "22222222-2222-2222-2222-222222222222"
@@ -46,6 +46,23 @@ final class NotePreviewUITests: XCTestCase {
     }
 
     @MainActor
+    func testMoreActionsOffersEditThenDelete() throws {
+        let app = launchSeededApp()
+        openSeededNote(in: app)
+
+        app.buttons["note-actions-menu-button"].tap()
+
+        let edit = app.buttons["edit-note-button"]
+        let delete = app.buttons["delete-note-button"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 3),
+                      "the Edit note menu action did not appear; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(delete.exists,
+                      "the Delete note menu action did not appear; tree:\n\(app.debugDescription)")
+        XCTAssertLessThan(edit.frame.midY, delete.frame.midY,
+                          "Delete note should appear below Edit note")
+    }
+
+    @MainActor
     func testPreviewShowsBothActionsSideBySide() throws {
         let app = launchSeededApp()
         openSeededNote(in: app)
@@ -62,10 +79,11 @@ final class NotePreviewUITests: XCTestCase {
                        "the two actions are not on the same row")
         XCTAssertLessThan(toggle.frame.maxX, done.frame.minX + 1,
                           "the done action should sit to the right of the toggle")
+        XCTAssertEqual(toggle.frame.height, done.frame.height, accuracy: 1,
+                       "Priority and Complete should have the same height")
 
         // Neither label may wrap. A capsule is 28pt of padding around a ~20pt line, so a single
-        // line lands near 48–52pt and a wrapped one near 69pt. The two differ by
-        // 4pt because the lightbulb glyph is taller than the checkmark.
+        // line lands near 48–52pt and a wrapped one near 69pt.
         let singleLineCeiling: CGFloat = 60
         XCTAssertLessThan(done.frame.height, singleLineCeiling,
                           "the Complete label wrapped onto a second line")

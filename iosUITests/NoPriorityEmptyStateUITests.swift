@@ -1,7 +1,7 @@
 import XCTest
 
 /// The home screen when notes exist but none are priorities: the CTA must open
-/// the Set Priority sheet (over the already-presented Recent sheet) and the
+/// the priority picker (over the already-presented Recent sheet) and the
 /// picked note must land on the priority list.
 final class NoPriorityEmptyStateUITests: XCTestCase {
 
@@ -40,7 +40,7 @@ final class NoPriorityEmptyStateUITests: XCTestCase {
         // The Recent sheet is already presented at launch here; a second sheet
         // cannot be presented until it closes, so a silent no-op fails here.
         XCTAssertTrue(
-            app.navigationBars["Set Priority"].waitForExistence(timeout: 5),
+            app.navigationBars["Turn on a priority"].waitForExistence(timeout: 5),
             "priority picker did not present; tree:\n\(app.debugDescription)"
         )
     }
@@ -49,7 +49,7 @@ final class NoPriorityEmptyStateUITests: XCTestCase {
     func testPickingANoteMakesItAPriority() throws {
         let app = launchAppWithoutPriorities()
         tapTurnOnPriority(in: app)
-        XCTAssertTrue(app.navigationBars["Set Priority"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Turn on a priority"].waitForExistence(timeout: 5))
 
         let candidate = app.buttons
             .matching(NSPredicate(format: "label CONTAINS[c] %@", "Water the plants"))

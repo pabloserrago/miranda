@@ -1,18 +1,30 @@
 import SwiftUI
 import UIKit
 
-/// Handle the editor's chrome uses to drive the text view: undo, and focus.
+/// Handle the editor's chrome uses to drive word-by-word back/forward edits and focus.
 /// The view itself is owned by UIKit, so the buttons above it need a way in.
 @MainActor
 final class NoteEditorController: ObservableObject {
-    /// Drives the undo button's enabled state.
-    @Published var canUndo = false
+    @Published private(set) var canGoBack = false
+    @Published private(set) var canGoForward = false
 
     fileprivate weak var textView: UITextView?
+    fileprivate var onProgrammaticTextChange: ((UITextView) -> Void)?
+    private var forwardHistory: [(text: String, selection: NSRange)] = []
 
-    func undo() {
-        textView?.undoManager?.undo()
-        refreshUndoState()
+    func goBack() {
+        guard let textView,
+              let deletionRange = Self.previousWordRange(in: textView.text, selection: textView.selectedRange)
+        else { return }
+
+        forwardHistory.append((textView.text, textView.selectedRange))
+        let updated = (textView.text as NSString).replacingCharacters(in: deletionRange, with: "")
+        apply(updated, selection: NSRange(location: deletionRange.location, length: 0), to: textView)
+    }
+
+    func goForward() {
+        guard let textView, let next = forwardHistory.popLast() else { return }
+        apply(next.text, selection: next.selection, to: textView)
     }
 
     func focus() {
@@ -23,9 +35,48 @@ final class NoteEditorController: ObservableObject {
         textView?.resignFirstResponder()
     }
 
-    fileprivate func refreshUndoState() {
-        let available = textView?.undoManager?.canUndo ?? false
-        if canUndo != available { canUndo = available }
+    fileprivate func textDidChange() {
+        forwardHistory.removeAll()
+        refreshNavigationState()
+    }
+
+    fileprivate func refreshNavigationState() {
+        let available = textView.flatMap {
+            Self.previousWordRange(in: $0.text, selection: $0.selectedRange)
+        } != nil
+        if canGoBack != available { canGoBack = available }
+        let canRestore = !forwardHistory.isEmpty
+        if canGoForward != canRestore { canGoForward = canRestore }
+    }
+
+    private func apply(_ text: String, selection: NSRange, to textView: UITextView) {
+        textView.text = text
+        textView.selectedRange = selection
+        onProgrammaticTextChange?(textView)
+        refreshNavigationState()
+    }
+
+    /// Returns the selection, or the whitespace-delimited word immediately
+    /// before the caret together with any trailing whitespace at the caret.
+    private static func previousWordRange(in text: String, selection: NSRange) -> NSRange? {
+        if selection.length > 0 { return selection }
+        guard selection.location > 0,
+              let caret = Range(NSRange(location: 0, length: selection.location), in: text)?.upperBound
+        else { return nil }
+
+        var start = caret
+        while start > text.startIndex {
+            let previous = text.index(before: start)
+            guard text[previous].isWhitespace else { break }
+            start = previous
+        }
+        while start > text.startIndex {
+            let previous = text.index(before: start)
+            guard !text[previous].isWhitespace else { break }
+            start = previous
+        }
+        guard start < caret else { return nil }
+        return NSRange(start..<caret, in: text)
     }
 }
 
@@ -71,6 +122,10 @@ struct RichNoteTextView: UIViewRepresentable {
         textView.text = text
         context.coordinator.restyle(textView)
         controller.textView = textView
+        controller.onProgrammaticTextChange = { [weak coordinator = context.coordinator] textView in
+            coordinator?.syncProgrammaticChange(textView)
+        }
+        controller.refreshNavigationState()
         return textView
     }
 
@@ -88,6 +143,7 @@ struct RichNoteTextView: UIViewRepresentable {
                 textView.selectedRange = NSRange(location: end, length: 0)
             }
             context.coordinator.restyle(textView)
+            controller.textDidChange()
         } else if context.coordinator.styledContentSize != dynamicTypeSize {
             context.coordinator.restyle(textView)
         }
@@ -128,7 +184,12 @@ struct RichNoteTextView: UIViewRepresentable {
             guard textView.markedTextRange == nil else { return }
             text.wrappedValue = textView.text
             restyle(textView)
-            controller.refreshUndoState()
+            controller.textDidChange()
+        }
+
+        func syncProgrammaticChange(_ textView: UITextView) {
+            text.wrappedValue = textView.text
+            restyle(textView)
         }
 
         func textViewDidChangeSelection(_ textView: UITextView) {
@@ -138,6 +199,7 @@ struct RichNoteTextView: UIViewRepresentable {
                 at: textView.selectedRange.location,
                 traits: textView.traitCollection
             )
+            controller.refreshNavigationState()
         }
     }
 }

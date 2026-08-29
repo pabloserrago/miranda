@@ -49,11 +49,11 @@ final class VoiceControlNamingUITests: XCTestCase {
         app.buttons["Edit note"].tap()
 
         // The editor opens with the note's existing text, so the icon-only
-        // confirm and undo controls are both showing.
+        // confirm and back controls are both showing.
         XCTAssertTrue(app.buttons["Save note"].waitForExistence(timeout: 3),
                       "no control named Save note; tree:\n\(app.debugDescription)")
-        XCTAssertTrue(app.buttons["Undo"].exists,
-                      "no control named Undo; tree:\n\(app.debugDescription)")
+        XCTAssertTrue(app.buttons["Back"].exists,
+                      "no control named Back; tree:\n\(app.debugDescription)")
         // Cancel carries its own visible text, so its name is the text itself.
         XCTAssertTrue(app.buttons["Cancel"].exists,
                       "no control named Cancel; tree:\n\(app.debugDescription)")

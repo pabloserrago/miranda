@@ -1,8 +1,8 @@
 import XCTest
 
 /// The editor's controls follow the note's state: a blank page offers only a way
-/// out, and the undo and confirm controls appear once there is something worth
-/// keeping. These tests drive that transition and the undo stack behind it.
+/// out, and the back and confirm controls appear once there is something worth
+/// keeping. These tests drive that transition and the word restore history.
 final class NoteEditorChromeUITests: XCTestCase {
 
     private let waterPlantsNoteId = "22222222-2222-2222-2222-222222222222"
@@ -24,12 +24,12 @@ final class NoteEditorChromeUITests: XCTestCase {
                       "editor did not open; tree:\n\(app.debugDescription)")
         XCTAssertFalse(app.buttons["save-edit-button"].exists,
                        "confirm control should be hidden on a blank note")
-        XCTAssertFalse(app.buttons["undo-note-button"].exists,
-                       "undo control should be hidden on a blank note")
+        XCTAssertFalse(app.buttons["back-note-button"].exists,
+                       "back control should be hidden on a blank note")
     }
 
     @MainActor
-    func testTypingRevealsUndoAndConfirm() throws {
+    func testTypingRevealsBackAndConfirm() throws {
         let app = launchApp()
         openCreateEditor(in: app)
 
@@ -40,12 +40,12 @@ final class NoteEditorChromeUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["save-edit-button"].waitForExistence(timeout: 3),
                       "confirm control did not appear after typing; tree:\n\(app.debugDescription)")
-        XCTAssertTrue(app.buttons["undo-note-button"].exists,
-                      "undo control did not appear after typing")
+        XCTAssertTrue(app.buttons["back-note-button"].exists,
+                      "back control did not appear after typing")
     }
 
     @MainActor
-    func testUndoRevertsTypingInEditMode() throws {
+    func testBackRemovesOneWordAndForwardRestoresIt() throws {
         let app = launchApp()
 
         let note = app.descendants(matching: .any)
@@ -66,14 +66,24 @@ final class NoteEditorChromeUITests: XCTestCase {
 
         editor.tap()
         editor.typeText(" and then some")
-        XCTAssertNotEqual(editor.value as? String, original, "typing did not register")
+        let edited = original + " and then some"
+        XCTAssertEqual(editor.value as? String, edited, "typing did not register")
 
-        let undo = app.buttons["undo-note-button"]
-        XCTAssertTrue(undo.waitForExistence(timeout: 3))
-        undo.tap()
+        let back = app.buttons["back-note-button"]
+        XCTAssertTrue(back.waitForExistence(timeout: 3))
+        back.tap()
 
-        XCTAssertEqual(editor.value as? String, original,
-                       "undo did not restore the text; tree:\n\(app.debugDescription)")
+        XCTAssertEqual(editor.value as? String, original + " and then ",
+                       "back should remove only the previous word; tree:\n\(app.debugDescription)")
+
+        let forward = app.buttons["forward-note-button"]
+        XCTAssertTrue(forward.waitForExistence(timeout: 3),
+                      "forward should appear after back is used")
+        forward.tap()
+
+        XCTAssertEqual(editor.value as? String, edited,
+                       "forward did not restore the removed word; tree:\n\(app.debugDescription)")
+        XCTAssertFalse(forward.exists, "forward should hide once restore history is exhausted")
     }
 
     @MainActor

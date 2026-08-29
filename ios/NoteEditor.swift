@@ -6,7 +6,7 @@ import SwiftUI
 /// duplicated; this owns all of it once.
 ///
 /// Chrome follows the note's state: an empty note offers only Cancel, and the
-/// undo and done controls appear as soon as there is something to keep.
+/// back and done controls appear as soon as there is something to keep.
 struct NoteEditor: View {
     enum Mode {
         /// Writing something new. Offers a random prompt for a blank page.
@@ -141,19 +141,31 @@ struct NoteEditor: View {
         .buttonStyle(.editorCapsule)
         .accessibilityIdentifier("cancel-edit-button")
 
-        Spacer(minLength: 0)
-
-        // Nothing to undo or keep on a blank page, so the design holds these
+        // Nothing to edit or keep on a blank page, so the design holds these
         // back until the note has content.
-        if hasContent {
-            Button { controller.undo() } label: {
+        if hasContent || controller.canGoForward {
+            Button { controller.goBack() } label: {
                 Image(systemName: "arrow.uturn.backward")
             }
             .buttonStyle(.editorIcon)
-            .disabled(!controller.canUndo)
-            .accessibilityLabel("Undo")
-            .accessibilityIdentifier("undo-note-button")
+            .disabled(!controller.canGoBack)
+            .accessibilityLabel("Back")
+            .accessibilityIdentifier("back-note-button")
 
+            if controller.canGoForward {
+                Button { controller.goForward() } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .buttonStyle(.editorIcon)
+                .accessibilityLabel("Forward")
+                .accessibilityIdentifier("forward-note-button")
+            }
+
+        }
+
+        Spacer(minLength: 0)
+
+        if hasContent {
             Button(action: save) {
                 Image(systemName: "checkmark")
             }
@@ -212,6 +224,7 @@ struct NoteEditor: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
+        .padding(.bottom, 8)
         .background(Material.Surface.tertiary)
     }
 

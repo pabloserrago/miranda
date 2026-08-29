@@ -54,6 +54,36 @@ extension NotePreviewContent {
         }
         return result
     }
+
+    /// The complete note is kept in one attributed string so selection can
+    /// continue from the title through any number of paragraphs. Individual
+    /// runs retain their visual role and links remain independently openable.
+    var selectableText: AttributedString {
+        func styled(_ line: String, font: Font, color: Color) -> AttributedString {
+            var value = Self.attributed(line)
+            value.font = font
+            value.foregroundColor = color
+
+            // Applying the base color styles every run, including links, so
+            // restore their stronger interactive treatment afterwards.
+            for run in value.runs where run.link != nil {
+                value[run.range].foregroundColor = Material.Text.accent
+            }
+            return value
+        }
+
+        var result = styled(title, font: AppFont.title, color: Material.Text.primary)
+
+        for paragraph in paragraphs {
+            var separator = AttributedString("\n\n")
+            separator.font = AppFont.body
+            result += separator
+
+            result += styled(paragraph, font: AppFont.body, color: Material.Text.secondary)
+        }
+
+        return result
+    }
 }
 
 /// The note as the design shows it: a bold title, supporting paragraphs beneath
@@ -64,24 +94,9 @@ struct NotePreviewText: View {
     var body: some View {
         let content = NotePreviewContent(text: text)
 
-        VStack(spacing: 20) {
-            if !content.title.isEmpty {
-                Text(NotePreviewContent.attributed(content.title))
-                    .font(AppFont.title)
-                    .foregroundColor(Material.Text.primary)
-                    .accessibilityIdentifier("note-preview-title")
-            }
-
-            if !content.paragraphs.isEmpty {
-                VStack(spacing: 12) {
-                    ForEach(Array(content.paragraphs.enumerated()), id: \.offset) { _, paragraph in
-                        Text(NotePreviewContent.attributed(paragraph))
-                            .font(AppFont.body)
-                            .foregroundColor(Material.Text.secondary)
-                    }
-                }
-            }
-        }
+        Text(content.selectableText)
+            .textSelection(.enabled)
+            .accessibilityIdentifier("note-preview-title")
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
     }
@@ -146,7 +161,7 @@ struct NoteDetailView: View {
             priorityActivationTask?.cancel()
             priorityActivationTask = nil
         }
-        .interactiveDismissDisabled()
+        .interactiveDismissDisabled(isEditing)
     }
 
     private var readingView: some View {
@@ -192,7 +207,9 @@ struct NoteDetailView: View {
             DragGesture(minimumDistance: 20)
                 .onEnded { value in
                     let isDownwardSwipe = value.translation.height > abs(value.translation.width)
-                    if isDownwardSwipe {
+                    if isDownwardSwipe, value.translation.height >= 80 {
+                        onClose()
+                    } else if isDownwardSwipe {
                         isDateVisible = true
                     }
                 }
@@ -256,6 +273,14 @@ struct NoteDetailView: View {
                     }
                 }
                 .accessibilityIdentifier("edit-note-button")
+
+                Button(role: .destructive) {
+                    deleteNote()
+                } label: {
+                    Label("Delete note", systemImage: "trash")
+                        .foregroundStyle(Material.Status.error)
+                }
+                .accessibilityIdentifier("delete-note-button")
             } label: {
                 Image(systemName: "ellipsis")
                     .scaleEffect(1.1)
@@ -278,6 +303,13 @@ struct NoteDetailView: View {
                 .background(Material.Control.fillPrimary)
                 .shadow(color: Material.Elevation.shadow.opacity(0.12), radius: 6, x: 0, y: 2)
         }
+    }
+
+    private func deleteNote() {
+        cards.removeAll { $0.id == card.id }
+        excludedFromPriorityIds.removeAll { $0 == card.id }
+        onSave()
+        onClose()
     }
 
     private func addToCalendar() {
@@ -402,7 +434,9 @@ struct NoteDetailView: View {
             else { onComplete(card) }
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: "checkmark").fontWeight(.heavy)
+                Image(systemName: "checkmark")
+                    .fontWeight(.heavy)
+                    .frame(width: 28, height: 28)
                 Text("Complete")
             }
             .frame(maxWidth: .infinity)
