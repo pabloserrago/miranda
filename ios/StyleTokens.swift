@@ -890,19 +890,23 @@ struct PriorityGlassButtonStyle: ButtonStyle {
         isOn ? Material.Status.warning : Material.Control.fillPrimary
     }
 
+    private var foreground: Color {
+        isOn ? Material.Text.onWarning : Material.Text.primary
+    }
+
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
         if #available(iOS 26.0, *) {
             configuration.label
                 .font(AppFont.body).fontWeight(.medium)
-                .foregroundStyle(Material.Text.onWarning)
+                .foregroundStyle(foreground)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 24)
                 .glassEffect(.regular.tint(tint).interactive(), in: Capsule())
         } else {
             configuration.label
                 .font(AppFont.body).fontWeight(.medium)
-                .foregroundStyle(Material.Text.onWarning)
+                .foregroundStyle(foreground)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 24)
                 .background(tint)
