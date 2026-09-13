@@ -111,6 +111,7 @@ struct ContentView: View {
     @AppStorage("actionTransformEnabled") private var actionTransformEnabled: Bool = false
     @AppStorage("hyphenSplitEnabled") private var hyphenSplitEnabled: Bool = false
     @AppStorage("completionAnimationEnabled") private var completionAnimationEnabled: Bool = true
+    @AppStorage("completionCelebrationCount") private var completionCelebrationCount: Int = 0
     @AppStorage(SharedCardManager.backgroundThemeKey, store: SharedCardManager.defaults)
     private var backgroundThemeRaw: String = BackgroundTheme.standard.rawValue
     init() {
@@ -1200,7 +1201,7 @@ struct ContentView: View {
     private var completionSheet: some View {
         VStack(spacing: 16) {
             Text("🐢").font(.system(size: 60))
-            Text("winning slow and steady!")
+            Text(CompletionMessages.message(forCompletionCount: completionCelebrationCount))
                 .font(AppFont.headline)
                 .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.center)
@@ -1377,6 +1378,7 @@ struct ContentView: View {
             priorityCardIds.removeAll { $0 == card.id }
         }
         maybePromptReview()
+        completionCelebrationCount += 1
         // The celebration is a full-screen animated flourish, so the system
         // setting overrides the user's preference for it.
         if completionAnimationEnabled && !Motion.isReduced(reduceMotion) {
