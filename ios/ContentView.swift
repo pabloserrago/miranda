@@ -80,6 +80,7 @@ struct ContentView: View {
     @State private var captureOnboardingDismissed: Bool = false
     @State private var excludedFromPriorityIds: [UUID] = []
     @State private var showRecentSheet: Bool = false
+    @State private var showPrioritySelectionSheet: Bool = false
     @State private var showReviewPrompt: Bool = false
     /// First-launch onboarding cover; completion is persisted via the
     /// "hasCompletedOnboarding" UserDefaults key (set in completeOnboarding).
@@ -285,6 +286,16 @@ struct ContentView: View {
                         .font(AppFont.headline)
                         .foregroundColor(Material.Text.primary)
                         .accessibilityIdentifier("home-title")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        presentPrioritySelectionSheet()
+                    } label: {
+                        Image(systemName: "lightbulb.min")
+                            .foregroundStyle(Material.Icon.action)
+                    }
+                    .accessibilityLabel("Choose Priorities")
+                    .accessibilityIdentifier("open-priority-selection-button")
                 }
             }
         }
@@ -519,6 +530,19 @@ struct ContentView: View {
         .sheet(isPresented: $showRecentSheet) {
             recentSheet
         }
+        .sheet(isPresented: $showPrioritySelectionSheet) {
+            PrioritySelectionSheet(
+                cards: cards.sorted { $0.timestamp > $1.timestamp },
+                selectedCardIDs: autoPriorityCardIds,
+                onToggle: togglePrioritySelection,
+                onSelectAll: selectAllPriorities,
+                onRemoveAll: removeAllPriorities,
+                onClose: { showPrioritySelectionSheet = false }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationBackground(Material.Surface.secondary)
+            .interactiveDismissDisabled()
+        }
         .sheet(isPresented: $showReviewPrompt) {
             ReviewPromptView()
         }
@@ -590,7 +614,7 @@ struct ContentView: View {
                     .padding(.horizontal, 40)
             }
 
-            Button { presentPriorityPicker() } label: {
+            Button { presentPrioritySelectionSheet() } label: {
                 Text("Turn On a Priority")
             }
             .primaryButtonStyle()
@@ -1388,6 +1412,51 @@ struct ContentView: View {
     }
 
     // MARK: - Priority
+
+    private func presentPrioritySelectionSheet() {
+        if showRecentSheet {
+            showRecentSheet = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                showPrioritySelectionSheet = true
+            }
+        } else {
+            showPrioritySelectionSheet = true
+        }
+    }
+
+    private func togglePrioritySelection(_ card: Card) {
+        withAnimation {
+            if autoPriorityCardIds.contains(card.id) {
+                excludedFromPriorityIds = PriorityNoteActions.excludeFromPriority(
+                    cardId: card.id,
+                    excludedIds: excludedFromPriorityIds
+                )
+            } else {
+                excludedFromPriorityIds = PriorityNoteActions.includeInPriority(
+                    cardId: card.id,
+                    excludedIds: excludedFromPriorityIds
+                )
+            }
+            syncPriorityOrder()
+        }
+        saveState()
+    }
+
+    private func selectAllPriorities() {
+        withAnimation {
+            excludedFromPriorityIds.removeAll()
+            syncPriorityOrder()
+        }
+        saveState()
+    }
+
+    private func removeAllPriorities() {
+        withAnimation {
+            excludedFromPriorityIds = cards.map(\.id)
+            syncPriorityOrder()
+        }
+        saveState()
+    }
 
     private func syncPriorityOrder() {
         let eligibleIds = Set(cards.filter { !excludedFromPriorityIds.contains($0.id) }.map { $0.id })

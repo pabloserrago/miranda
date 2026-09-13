@@ -1333,6 +1333,9 @@ struct BottomCTA: View {
                     Text(title)
                 }
                 .frame(maxWidth: .infinity, minHeight: 24)
+                // The styled capsule fills this frame, so its full visible
+                // width should accept taps—not only the icon and text.
+                .contentShape(Rectangle())
             }
             .primaryButtonStyle()
             .accessibilityIdentifier(identifier ?? "")
@@ -1341,6 +1344,7 @@ struct BottomCTA: View {
                 Button(action: secondaryAction) {
                     Text(secondaryTitle)
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.ghost)
                 .accessibilityIdentifier(secondaryIdentifier ?? "")

@@ -29,7 +29,7 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(editor.waitForExistence(timeout: 3))
         editor.tap()
         editor.typeText(noteText)
-        app.buttons["Save"].tap()
+        app.buttons["save-edit-button"].tap()
 
         // Step 2: shows the saved note inside the widget preview
         let continueButton = app.buttons["onboarding-continue"]
@@ -100,6 +100,26 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertFalse(app.buttons["onboarding-continue"].exists, "flow advanced without a saved note")
     }
 
+    @MainActor
+    func testBottomActionsAcceptTapsAwayFromTheirLabels() throws {
+        let app = launchOnboardingApp()
+
+        let addNoteButton = app.buttons["onboarding-add-first-note"]
+        XCTAssertTrue(addNoteButton.waitForExistence(timeout: 5))
+        addNoteButton.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: 0.5)).tap()
+        XCTAssertTrue(app.textViews.firstMatch.waitForExistence(timeout: 3), "primary action ignored an edge tap")
+
+        let editor = app.textViews.firstMatch
+        editor.tap()
+        editor.typeText(noteText)
+        app.buttons["save-edit-button"].tap()
+
+        let continueButton = app.buttons["onboarding-continue"]
+        XCTAssertTrue(continueButton.waitForExistence(timeout: 3))
+        continueButton.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons["onboarding-finish"].waitForExistence(timeout: 3), "secondary action ignored an edge tap")
+    }
+
     // MARK: - Helpers
 
     @MainActor
@@ -120,7 +140,7 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(editor.waitForExistence(timeout: 3))
         editor.tap()
         editor.typeText(noteText)
-        app.buttons["Save"].tap()
+        app.buttons["save-edit-button"].tap()
 
         XCTAssertTrue(app.buttons["onboarding-continue"].waitForExistence(timeout: 3))
     }

@@ -1,8 +1,8 @@
 import XCTest
 
 /// The home screen when notes exist but none are priorities: the CTA must open
-/// the priority picker (over the already-presented Recent sheet) and the
-/// picked note must land on the priority list.
+/// the dedicated priority-selection sheet (over the already-presented Recent
+/// sheet) and the picked note must land on the priority list.
 final class NoPriorityEmptyStateUITests: XCTestCase {
 
     private let waterPlantsNoteId = "22222222-2222-2222-2222-222222222222"
@@ -33,15 +33,15 @@ final class NoPriorityEmptyStateUITests: XCTestCase {
     }
 
     @MainActor
-    func testTurnOnPriorityOpensThePickerOverTheRecentSheet() throws {
+    func testTurnOnPriorityOpensTheSelectionSheetOverTheRecentSheet() throws {
         let app = launchAppWithoutPriorities()
         tapTurnOnPriority(in: app)
 
         // The Recent sheet is already presented at launch here; a second sheet
         // cannot be presented until it closes, so a silent no-op fails here.
         XCTAssertTrue(
-            app.navigationBars["Turn on a priority"].waitForExistence(timeout: 5),
-            "priority picker did not present; tree:\n\(app.debugDescription)"
+            app.navigationBars["Choose Priorities"].waitForExistence(timeout: 5),
+            "priority-selection sheet did not present; tree:\n\(app.debugDescription)"
         )
     }
 
@@ -49,16 +49,19 @@ final class NoPriorityEmptyStateUITests: XCTestCase {
     func testPickingANoteMakesItAPriority() throws {
         let app = launchAppWithoutPriorities()
         tapTurnOnPriority(in: app)
-        XCTAssertTrue(app.navigationBars["Turn on a priority"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Choose Priorities"].waitForExistence(timeout: 5))
 
-        let candidate = app.buttons
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Water the plants"))
-            .firstMatch
+        XCTAssertTrue(app.staticTexts["Priority"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Notes"].waitForExistence(timeout: 3))
+
+        let candidate = app.buttons["priority-selection-\(waterPlantsNoteId)"]
         XCTAssertTrue(
             candidate.waitForExistence(timeout: 3),
             "candidate note not listed in picker; tree:\n\(app.debugDescription)"
         )
         candidate.tap()
+        XCTAssertEqual(candidate.value as? String, "Priority")
+        app.buttons["close-priority-selection-button"].tap()
 
         let note = app.descendants(matching: .any)
             .matching(identifier: "priority-note-\(waterPlantsNoteId)")
