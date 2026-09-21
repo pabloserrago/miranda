@@ -115,6 +115,7 @@ struct NoteDetailView: View {
     let onSave: () -> Void
     let onComplete: (Card) -> Void
     let onCompletePriority: (Card) -> Void
+    let onDelete: (Card) -> Void
     let onClose: () -> Void
     let onNewNote: () -> Void
 
@@ -306,10 +307,8 @@ struct NoteDetailView: View {
     }
 
     private func deleteNote() {
-        cards.removeAll { $0.id == card.id }
-        excludedFromPriorityIds.removeAll { $0 == card.id }
-        onSave()
         onClose()
+        onDelete(card)
     }
 
     private func addToCalendar() {

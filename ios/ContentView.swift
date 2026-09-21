@@ -54,6 +54,25 @@ private struct PriorityRowHeightKey: PreferenceKey {
     }
 }
 
+private struct NoteActionSnapshot {
+    let cards: [Card]
+    let priorityCardIds: [UUID]
+    let excludedFromPriorityIds: [UUID]
+    let archivedNoteId: UUID
+}
+
+private enum NoteActionKind {
+    case completed
+    case deleted
+
+    var message: LocalizedStringKey {
+        switch self {
+        case .completed: "Note completed"
+        case .deleted: "Note deleted"
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
@@ -82,6 +101,10 @@ struct ContentView: View {
     @State private var showRecentSheet: Bool = false
     @State private var showPrioritySelectionSheet: Bool = false
     @State private var showReviewPrompt: Bool = false
+    @State private var showNoteActionToast: Bool = false
+    @State private var noteActionKind: NoteActionKind = .completed
+    @State private var noteActionSnapshot: NoteActionSnapshot?
+    @State private var noteActionToastTask: Task<Void, Never>?
     /// First-launch onboarding cover; completion is persisted via the
     /// "hasCompletedOnboarding" UserDefaults key (set in completeOnboarding).
     @State private var showOnboarding: Bool = false
@@ -301,6 +324,12 @@ struct ContentView: View {
             }
         }
         .tint(Material.Text.accent)
+        .toast(
+            isPresented: $showNoteActionToast,
+            message: noteActionKind.message,
+            actionTitle: "Undo",
+            action: undoLastNoteAction
+        )
         .onAppear {
             // Warm the Taptic Engine so the reorder lift thud plays without
             // delay (there is no press-time prepare anymore — touch-down side
@@ -376,6 +405,7 @@ struct ContentView: View {
                 onSave: saveState,
                 onComplete: completeCard,
                 onCompletePriority: completePriorityCard,
+                onDelete: deleteCard,
                 onClose: { selectedCard = nil },
                 onNewNote: {
                     selectedCard = nil
@@ -409,6 +439,7 @@ struct ContentView: View {
                 currentPriorityCard: priorityCards.first,
                 lastCapture: cards.max(by: { $0.timestamp < $1.timestamp }),
                 hasCaptures: !cards.isEmpty,
+                onRestoreArchivedNote: restoreArchivedNote,
                 onSendTestReminder: {
                     #if DEBUG
                     NotificationManager.shared.sendTestReminder(cards: widgetPriorityCards)
@@ -449,6 +480,7 @@ struct ContentView: View {
                         onSave: saveState,
                         onComplete: completeCard,
                         onCompletePriority: completePriorityCard,
+                        onDelete: deleteCard,
                         onClose: {
                             savedCard = nil
                             showCreateModal = false
@@ -796,6 +828,12 @@ struct ContentView: View {
 
     private var recentSheet: some View {
         recentSheetContent
+            .toast(
+                isPresented: $showNoteActionToast,
+                message: noteActionKind.message,
+                actionTitle: "Undo",
+                action: undoLastNoteAction
+            )
             .tint(Material.Accent.primary)
             .presentationDetents([.fraction(0.25), .medium, .large])
             .presentationBackgroundInteraction(.enabled(upThrough: .medium))
@@ -1213,8 +1251,15 @@ struct ContentView: View {
         .presentationDetents([.height(200)])
         .presentationDragIndicator(.visible)
         .presentationBackground(Material.Surface.secondary)
+        .toast(
+            isPresented: $showNoteActionToast,
+            message: noteActionKind.message,
+            actionTitle: "Undo",
+            action: undoLastNoteAction
+        )
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                guard showCompleteTortoise else { return }
                 showCompleteTortoise = false
                 schedulePriorityPickerIfNeededAfterCompletion()
             }
@@ -1338,6 +1383,7 @@ struct ContentView: View {
     }
 
     private func completeCard(_ card: Card) {
+        captureNoteAction(.completed, card: card)
         let timeToComplete = Date().timeIntervalSince(card.timestamp)
         Analytics.shared.trackCardCompleted(timeToComplete: timeToComplete)
         withAnimation {
@@ -1348,6 +1394,7 @@ struct ContentView: View {
     }
 
     private func deleteCard(_ card: Card) {
+        captureNoteAction(.deleted, card: card)
         withAnimation {
             let updated = PriorityNoteActions.removeCard(
                 id: card.id,
@@ -1371,6 +1418,7 @@ struct ContentView: View {
     }
 
     private func completePriorityCard(_ card: Card) {
+        captureNoteAction(.completed, card: card)
         let timeToComplete = Date().timeIntervalSince(card.timestamp)
         Analytics.shared.trackCardCompleted(timeToComplete: timeToComplete)
         withAnimation {
@@ -1394,6 +1442,42 @@ struct ContentView: View {
         }
     }
 
+    private func captureNoteAction(_ kind: NoteActionKind, card: Card) {
+        noteActionToastTask?.cancel()
+        let archivedNoteId = SharedCardManager.shared.archive(
+            card,
+            reason: kind == .completed ? .completed : .deleted
+        )
+        noteActionSnapshot = NoteActionSnapshot(
+            cards: cards,
+            priorityCardIds: priorityCardIds,
+            excludedFromPriorityIds: excludedFromPriorityIds,
+            archivedNoteId: archivedNoteId
+        )
+        noteActionKind = kind
+        showNoteActionToast = true
+        noteActionToastTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            showNoteActionToast = false
+            noteActionSnapshot = nil
+        }
+    }
+
+    private func undoLastNoteAction() {
+        guard let snapshot = noteActionSnapshot else { return }
+        noteActionToastTask?.cancel()
+        showCompleteTortoise = false
+        withAnimation {
+            cards = snapshot.cards
+            priorityCardIds = snapshot.priorityCardIds
+            excludedFromPriorityIds = snapshot.excludedFromPriorityIds
+        }
+        SharedCardManager.shared.removeArchivedNote(id: snapshot.archivedNoteId)
+        noteActionSnapshot = nil
+        saveState()
+    }
+
     private func maybePromptReview() {
         Task {
             guard await ReviewManager.shared.shouldShowPrompt() else { return }
@@ -1407,10 +1491,28 @@ struct ContentView: View {
     }
 
     private func clearAllCards() {
+        let archivedAt = Date()
+        cards.forEach {
+            SharedCardManager.shared.archive($0, reason: .deleted, at: archivedAt)
+        }
         withAnimation {
             cards.removeAll()
             priorityCardIds.removeAll()
         }
+    }
+
+    private func restoreArchivedNote(_ note: ArchivedNote) {
+        withAnimation {
+            if !cards.contains(where: { $0.id == note.card.id }) {
+                cards.append(note.card)
+            }
+            priorityCardIds.removeAll { $0 == note.card.id }
+            if !excludedFromPriorityIds.contains(note.card.id) {
+                excludedFromPriorityIds.append(note.card.id)
+            }
+        }
+        SharedCardManager.shared.removeArchivedNote(id: note.id)
+        saveState()
     }
 
     // MARK: - Priority
@@ -1585,6 +1687,9 @@ struct ContentView: View {
         let completedCards = SharedCardManager.shared.loadCompletedCards()
         guard !completedCards.isEmpty else { return }
         let completedIDs = Set(completedCards.map { $0.id })
+        cards.filter { completedIDs.contains($0.id) }.forEach {
+            SharedCardManager.shared.archive($0, reason: .completed)
+        }
         let beforeCount = cards.count
         cards.removeAll { completedIDs.contains($0.id) }
         priorityCardIds.removeAll { completedIDs.contains($0) }

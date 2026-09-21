@@ -1052,6 +1052,8 @@ struct NoteChromeRow<Content: View>: View {
 struct ToastModifier: ViewModifier {
     @Binding var isPresented: Bool
     let message: LocalizedStringKey
+    let actionTitle: LocalizedStringKey?
+    let action: (() -> Void)?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
@@ -1059,15 +1061,25 @@ struct ToastModifier: ViewModifier {
             content
             
             if isPresented {
-                Text(message)
+                HStack(spacing: 16) {
+                    Text(message)
+                    if let actionTitle, let action {
+                        Button(actionTitle) {
+                            action()
+                            isPresented = false
+                        }
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("toast-action-button")
+                    }
+                }
                     .font(AppFont.body)
-                    .foregroundColor(Material.Text.primary)
+                    .foregroundStyle(Material.Text.primary)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .background(Material.Surface.secondary)
                     .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
                     .shadow(color: Material.Elevation.shadow.opacity(0.15), radius: 8, x: 0, y: 4)
-                    .padding(.bottom, 50)
+                    .padding(.bottom, 25)
                     .transition(Motion.transition(
                         .move(edge: .bottom).combined(with: .opacity),
                         reduce: reduceMotion
@@ -1081,7 +1093,26 @@ struct ToastModifier: ViewModifier {
 
 extension View {
     func toast(isPresented: Binding<Bool>, message: LocalizedStringKey) -> some View {
-        modifier(ToastModifier(isPresented: isPresented, message: message))
+        modifier(ToastModifier(
+            isPresented: isPresented,
+            message: message,
+            actionTitle: nil,
+            action: nil
+        ))
+    }
+
+    func toast(
+        isPresented: Binding<Bool>,
+        message: LocalizedStringKey,
+        actionTitle: LocalizedStringKey,
+        action: @escaping () -> Void
+    ) -> some View {
+        modifier(ToastModifier(
+            isPresented: isPresented,
+            message: message,
+            actionTitle: actionTitle,
+            action: action
+        ))
     }
 }
 

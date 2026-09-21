@@ -8,6 +8,7 @@ struct SettingsView: View {
     let currentPriorityCard: Card?
     let lastCapture: Card?
     let hasCaptures: Bool
+    let onRestoreArchivedNote: (ArchivedNote) -> Void
     let onSendTestReminder: () -> Void
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) private var openURL
@@ -227,9 +228,25 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    
-                    // 5. Delete All
+
+                    Section {}
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .frame(height: 44)
+
+                    // 5. Notes
                     Section {
+                        NavigationLink(destination: ArchiveView(onRestore: onRestoreArchivedNote)) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "archivebox.fill")
+                                    .font(AppFont.icon)
+                                    .foregroundColor(Material.Text.primary)
+                                    .frame(width: 24, height: 24)
+                                Text("Archived")
+                            }
+                        }
+                        .settingsRowBackground(.top)
+
                         Button(role: .destructive, action: {
                             showDeleteConfirm = true
                         }) {
@@ -245,8 +262,19 @@ struct SettingsView: View {
                         }
                         .disabled(!hasCaptures)
                         .opacity(hasCaptures ? 1.0 : 0.5)
-                        .settingsRowBackground(.single)
+                        .settingsRowBackground(.bottom)
+                    } header: {
+                        Text("Notes")
+                            .font(AppFont.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Material.Text.primary)
+                            .textCase(nil)
                     }
+
+                    Section {}
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .frame(height: 44)
 
                     // 6. About
                     Section {
@@ -429,6 +457,155 @@ struct SettingsView: View {
             }
             .toast(isPresented: $showCopiedToast, message: "Version copied")
             .toast(isPresented: $showFeedbackSentToast, message: "Feedback sent")
+    }
+}
+
+// MARK: - Archive
+
+private enum ArchiveFilter: CaseIterable, Identifiable, Hashable {
+    case all
+    case completed
+    case search
+
+    var id: Self { self }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .all: "All"
+        case .completed: "Completed"
+        case .search: "Search"
+        }
+    }
+}
+
+struct ArchiveView: View {
+    let onRestore: (ArchivedNote) -> Void
+    @State private var notes: [ArchivedNote] = []
+    @State private var filter: ArchiveFilter = .all
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
+
+    var body: some View {
+        TabView(selection: $filter) {
+            Tab("All", systemImage: "archivebox.fill", value: ArchiveFilter.all) {
+                archiveContent(for: .all)
+            }
+
+            Tab("Completed", systemImage: "checkmark.circle.fill", value: ArchiveFilter.completed) {
+                archiveContent(for: .completed)
+            }
+
+            Tab(value: ArchiveFilter.search, role: .search) {
+                archiveSearchContent
+            }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+        .searchable(text: $searchText, prompt: "Search Archived")
+        .searchFocused($isSearchFocused)
+        .tint(Material.Accent.primary)
+        .background(Material.Surface.tertiary)
+        .navigationTitle("Archived")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            notes = SharedCardManager.shared.loadArchivedNotes()
+        }
+        .onChange(of: filter) { _, newFilter in
+            guard newFilter == .search else {
+                isSearchFocused = false
+                return
+            }
+            DispatchQueue.main.async {
+                isSearchFocused = true
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func archiveContent(for filter: ArchiveFilter) -> some View {
+        let visibleNotes = NoteArchive.filtered(notes, completedOnly: filter == .completed)
+        archiveList(
+            visibleNotes,
+            emptyTitle: filter == .completed ? "No completed notes" : "Archive is empty",
+            emptyIcon: "archivebox"
+        )
+    }
+
+    private var archiveSearchContent: some View {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let visibleNotes = query.isEmpty ? notes : notes.filter {
+            $0.card.simplifiedText.localizedCaseInsensitiveContains(query) ||
+            $0.card.originalText.localizedCaseInsensitiveContains(query) ||
+            $0.card.simplifiedText.localizedCaseInsensitiveContains(query)
+        }
+        return archiveList(
+            visibleNotes,
+            emptyTitle: "No archived notes found",
+            emptyIcon: "magnifyingglass"
+        )
+    }
+
+    @ViewBuilder
+    private func archiveList(
+        _ visibleNotes: [ArchivedNote],
+        emptyTitle: LocalizedStringKey,
+        emptyIcon: String
+    ) -> some View {
+        if visibleNotes.isEmpty {
+            ContentUnavailableView(
+                emptyTitle,
+                systemImage: emptyIcon,
+                description: Text("Deleted and completed notes stay here for 90 days.")
+            )
+        } else {
+            List {
+                Section {
+                    ForEach(Array(visibleNotes.enumerated()), id: \.element.id) { index, note in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(note.card.simplifiedText)
+                                .font(AppFont.body)
+                                .foregroundStyle(Material.Text.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            HStack(spacing: 6) {
+                                Text(note.reason == .completed ? "Completed" : "Deleted")
+                                Text("·")
+                                Text(note.archivedAt.formatted(date: .abbreviated, time: .omitted))
+                            }
+                            .font(AppFont.caption)
+                            .foregroundStyle(Material.Text.secondary)
+                        }
+                        .padding(.vertical, 8)
+                        .settingsRowBackground(rowPosition(at: index, count: visibleNotes.count))
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                restore(note)
+                            } label: {
+                                Label("Restore", systemImage: "arrow.up")
+                            }
+                            .tint(Material.Accent.primary)
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+        }
+    }
+
+    private func rowPosition(at index: Int, count: Int) -> SettingsRowPosition {
+        if count == 1 { return .single }
+        if index == 0 { return .top }
+        if index == count - 1 { return .bottom }
+        return .middle
+    }
+
+    private func restore(_ note: ArchivedNote) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        onRestore(note)
+        withAnimation {
+            notes.removeAll { $0.id == note.id }
+        }
     }
 }
 
@@ -695,7 +872,7 @@ struct CloudLabView: View {
 #endif
 
 #Preview {
-    SettingsView(onShowAnalytics: {}, onDeleteAll: {}, onResetOnboarding: {}, onEnableReminders: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true, onSendTestReminder: {})
+    SettingsView(onShowAnalytics: {}, onDeleteAll: {}, onResetOnboarding: {}, onEnableReminders: {}, currentPriorityCard: nil, lastCapture: nil, hasCaptures: true, onRestoreArchivedNote: { _ in }, onSendTestReminder: {})
 }
 
 #Preview("Dev Components") {

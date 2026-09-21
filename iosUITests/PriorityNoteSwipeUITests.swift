@@ -52,12 +52,29 @@ final class PriorityNoteSwipeUITests: XCTestCase {
     }
 
     @MainActor
-    func testSwipeLeftDeleteRemovesNote() throws {
+    func testSwipeLeftDeleteShowsToastAndUndoRestoresNote() throws {
         let app = launchSeededApp()
         let note = priorityNote(in: app)
         note.swipeLeft()
         app.buttons["Delete"].tap()
         XCTAssertTrue(waitForElementToDisappear(note, timeout: 3))
+        XCTAssertTrue(app.staticTexts["Note deleted"].waitForExistence(timeout: 2))
+
+        app.buttons["toast-action-button"].tap()
+        XCTAssertTrue(priorityNote(in: app).waitForExistence(timeout: 3))
+    }
+
+    @MainActor
+    func testSwipeLeftCompleteShowsToastAndUndoRestoresNote() throws {
+        let app = launchSeededApp()
+        let note = priorityNote(in: app)
+        note.swipeLeft()
+        app.buttons["Complete"].tap()
+        XCTAssertTrue(waitForElementToDisappear(note, timeout: 3))
+        XCTAssertTrue(app.staticTexts["Note completed"].waitForExistence(timeout: 2))
+
+        app.buttons["toast-action-button"].tap()
+        XCTAssertTrue(priorityNote(in: app).waitForExistence(timeout: 3))
     }
 
     @MainActor

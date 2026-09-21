@@ -1,5 +1,39 @@
 import Foundation
 
+enum ArchiveReason: String, Codable, CaseIterable, Equatable {
+    case completed
+    case deleted
+}
+
+struct ArchivedNote: Identifiable, Codable, Equatable {
+    let id: UUID
+    let card: Card
+    let reason: ArchiveReason
+    let archivedAt: Date
+
+    init(id: UUID = UUID(), card: Card, reason: ArchiveReason, archivedAt: Date = Date()) {
+        self.id = id
+        self.card = card
+        self.reason = reason
+        self.archivedAt = archivedAt
+    }
+}
+
+enum NoteArchive {
+    static let retentionInterval: TimeInterval = 90 * 24 * 60 * 60
+
+    static func recent(_ notes: [ArchivedNote], now: Date = Date()) -> [ArchivedNote] {
+        let cutoff = now.addingTimeInterval(-retentionInterval)
+        return notes
+            .filter { $0.archivedAt >= cutoff && $0.archivedAt <= now }
+            .sorted { $0.archivedAt > $1.archivedAt }
+    }
+
+    static func filtered(_ notes: [ArchivedNote], completedOnly: Bool) -> [ArchivedNote] {
+        completedOnly ? notes.filter { $0.reason == .completed } : notes
+    }
+}
+
 // Shared manager to store/load current card for both app and widget
 class SharedCardManager {
     static let shared = SharedCardManager()
@@ -182,6 +216,43 @@ class SharedCardManager {
         }
         
         return []
+    }
+
+    // MARK: — Note Archive
+
+    @discardableResult
+    func archive(_ card: Card, reason: ArchiveReason, at date: Date = Date()) -> UUID {
+        let note = ArchivedNote(card: stripCardEmoji(card), reason: reason, archivedAt: date)
+        var notes = loadArchivedNotes(now: date)
+        notes.removeAll { $0.card.id == card.id }
+        notes.append(note)
+        saveArchivedNotes(NoteArchive.recent(notes, now: date))
+        return note.id
+    }
+
+    func loadArchivedNotes(now: Date = Date()) -> [ArchivedNote] {
+        guard let defaults = sharedDefaults else { return [] }
+        let decoder = JSONDecoder()
+        let stored = defaults.data(forKey: "sharedArchivedNotes")
+            .flatMap { try? decoder.decode([ArchivedNote].self, from: $0) } ?? []
+        let recent = NoteArchive.recent(stored, now: now)
+        if recent.count != stored.count {
+            saveArchivedNotes(recent)
+        }
+        return recent
+    }
+
+    func removeArchivedNote(id: UUID) {
+        let notes = loadArchivedNotes().filter { $0.id != id }
+        saveArchivedNotes(notes)
+    }
+
+    private func saveArchivedNotes(_ notes: [ArchivedNote]) {
+        guard let defaults = sharedDefaults else { return }
+        if let data = try? JSONEncoder().encode(notes) {
+            defaults.set(data, forKey: "sharedArchivedNotes")
+            defaults.synchronize()
+        }
     }
     
     // MARK: — Completed Cards (Archive)
