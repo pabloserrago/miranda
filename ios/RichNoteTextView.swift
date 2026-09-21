@@ -11,6 +11,7 @@ final class NoteEditorController: ObservableObject {
     fileprivate weak var textView: UITextView?
     fileprivate var onProgrammaticTextChange: ((UITextView) -> Void)?
     private var forwardHistory: [(text: String, selection: NSRange)] = []
+    private var navigationRefreshScheduled = false
 
     func goBack() {
         guard let textView,
@@ -41,6 +42,20 @@ final class NoteEditorController: ObservableObject {
     }
 
     fileprivate func refreshNavigationState() {
+        guard !navigationRefreshScheduled else { return }
+        navigationRefreshScheduled = true
+
+        // UITextView delegate callbacks can arrive while SwiftUI is updating
+        // this representable. Publish after that update finishes so the editor
+        // chrome does not invalidate the view hierarchy re-entrantly.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.navigationRefreshScheduled = false
+            self.publishNavigationState()
+        }
+    }
+
+    private func publishNavigationState() {
         let available = textView.flatMap {
             Self.previousWordRange(in: $0.text, selection: $0.selectedRange)
         } != nil
