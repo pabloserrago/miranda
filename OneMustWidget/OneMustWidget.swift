@@ -142,7 +142,7 @@ struct CompactWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let card = cards.first {
-                Text(card.simplifiedText)
+                Text(card.displayTitle)
                     .font(AppFont.icon).fontWeight(.heavy)
                     .tracking(Material.Typography.Tracking.widgetCompact)
                     .lineLimit(3)
@@ -252,7 +252,7 @@ struct TaskRowView: View {
 
     var body: some View {
         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-            Text(card.simplifiedText)
+            Text(card.displayTitle)
                 .font(font)
                 .tracking(tracking)
                 .lineLimit(rank == 0 ? 2 : 1)
@@ -332,7 +332,7 @@ struct LargeTaskRow: View {
     
     var body: some View {
         Link(destination: URL(string: "miranda://card/\(card.id.uuidString)")!) {
-            Text(card.simplifiedText)
+            Text(card.displayTitle)
                 .font(font)
                 .tracking(tracking)
                 .lineLimit(rank == 0 ? 2 : 1)
@@ -401,7 +401,7 @@ struct LockScreenRectangularView: View {
                             .widgetAccentable()
                     }
 
-                    Text(card.simplifiedText)
+                    Text(card.displayTitle)
                         .font(.title3.weight(.semibold))
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
@@ -439,7 +439,7 @@ struct LockScreenInlineView: View {
     var body: some View {
         Group {
             if let card = cards.first {
-                Label(card.simplifiedText, systemImage: "checkmark.circle")
+                Label(card.displayTitle, systemImage: "checkmark.circle")
                     .widgetAccentable()
             } else {
                 Label("No priorities", systemImage: "tray")

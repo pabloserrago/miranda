@@ -557,7 +557,7 @@ struct ContentView: View {
             }
         } message: {
             if let card = pendingCard {
-                Text("\(card.emoji ?? "")  \(card.simplifiedText)")
+                Text("\(card.emoji ?? "")  \(card.displayTitle)")
             }
         }
         .sheet(isPresented: $showRecentSheet) {
@@ -1042,7 +1042,7 @@ struct ContentView: View {
             }
             selectedCard = card
         } label: {
-            Text(card.simplifiedText)
+            Text(card.displayTitle)
                 .font(AppFont.priority)
                 .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.leading)
@@ -1055,7 +1055,7 @@ struct ContentView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(card.simplifiedText)
+        .accessibilityLabel(card.displayTitle)
         .accessibilityIdentifier("priority-note-\(card.id.uuidString)")
         .accessibilityHint(allowDragReorder ? "Long press, then drag up or down to reorder" : "")
         // The lift-and-drag reorder is unreachable without precise pointing, so
@@ -1169,7 +1169,7 @@ struct ContentView: View {
     @ViewBuilder
     private func recentRow(_ card: Card) -> some View {
         Button { selectedCard = card } label: {
-            Text(card.simplifiedText)
+            Text(card.displayTitle)
                 .font(AppFont.body)
                 .foregroundColor(Material.Text.primary)
                 .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
@@ -1764,7 +1764,7 @@ struct PriorityPickerView: View {
                                     if let emoji = card.emoji {
                                         Text(emoji).font(.system(size: 32))
                                     }
-                                    Text(card.simplifiedText)
+                                    Text(card.displayTitle)
                                         .font(AppFont.body).fontWeight(.medium)
                                         .foregroundColor(Material.Text.primary)
                                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)

@@ -23,6 +23,24 @@ enum NoteTextStyler {
     private static let linkDetector = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.link.rawValue
     )
+    private static let headingExpression = try! NSRegularExpression(
+        pattern: #"(?m)^(#{1,6})[ \t]+(.+)$"#
+    )
+    private static let strongExpression = try! NSRegularExpression(
+        pattern: #"(\*\*|__)(?=\S)(.+?)(?<=\S)\1"#
+    )
+    private static let emphasisExpression = try! NSRegularExpression(
+        pattern: #"(?<!\*)\*(?=\S)(.+?)(?<=\S)\*(?!\*)|(?<!_)_(?=\S)(.+?)(?<=\S)_(?!_)"#
+    )
+    private static let strikeExpression = try! NSRegularExpression(
+        pattern: #"~~(?=\S)(.+?)(?<=\S)~~"#
+    )
+    private static let codeExpression = try! NSRegularExpression(
+        pattern: #"`([^`\n]+)`"#
+    )
+    private static let markdownLinkExpression = try! NSRegularExpression(
+        pattern: #"\[([^\]\n]+)\]\((https?://[^)\s]+|mailto:[^)\s]+)\)"#
+    )
 
     /// The first line, excluding its newline. Empty when the note starts on a
     /// blank line, because nothing has been titled yet.
@@ -86,10 +104,31 @@ enum NoteTextStyler {
         storage.beginEditing()
         storage.setAttributes(bodyAttributes(traits: traits), range: full)
 
-        let title = titleRange(in: text)
-        if title.length > 0 {
-            storage.addAttributes(titleAttributes(traits: traits), range: title)
+        let headings = matches(headingExpression, in: text)
+        let hasExplicitTitle = headings.contains { $0.range(at: 1).length == 1 }
+        if !hasExplicitTitle {
+            let title = titleRange(in: text)
+            if title.length > 0 {
+                storage.addAttributes(titleAttributes(traits: traits), range: title)
+            }
         }
+
+        for match in headings {
+            let level = match.range(at: 1).length
+            let content = match.range(at: 2)
+            let scale: AppFont.Scale = level == 1 ? .title : (level <= 3 ? .headline : .subhead)
+            storage.addAttributes([
+                .font: AppFont.uiFont(scale, compatibleWith: traits),
+                .foregroundColor: titleColor,
+            ], range: content)
+            let prefix = NSRange(
+                location: match.range.location,
+                length: content.location - match.range.location
+            )
+            conceal(prefix, in: storage, traits: traits)
+        }
+
+        applyInlineMarkdown(to: storage, text: text, traits: traits)
 
         // Underline only: a tap inside an editor should place the caret, so the
         // link is styled without an `.link` attribute that would open Safari.
@@ -101,5 +140,98 @@ enum NoteTextStyler {
             )
         }
         storage.endEditing()
+    }
+
+    private static func applyInlineMarkdown(
+        to storage: NSTextStorage,
+        text: String,
+        traits: UITraitCollection?
+    ) {
+        for match in matches(strongExpression, in: text) {
+            let content = match.range(at: 2)
+            storage.addAttribute(.font, value: font(in: storage, at: content.location, adding: .traitBold), range: content)
+            concealDelimiters(of: match.range, around: content, in: storage, traits: traits)
+        }
+
+        for match in matches(emphasisExpression, in: text) {
+            let content = match.range(at: 1).location != NSNotFound ? match.range(at: 1) : match.range(at: 2)
+            guard content.location != NSNotFound else { continue }
+            storage.addAttribute(.font, value: font(in: storage, at: content.location, adding: .traitItalic), range: content)
+            concealDelimiters(of: match.range, around: content, in: storage, traits: traits)
+        }
+
+        for match in matches(strikeExpression, in: text) {
+            let content = match.range(at: 1)
+            storage.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: content)
+            concealDelimiters(of: match.range, around: content, in: storage, traits: traits)
+        }
+
+        for match in matches(codeExpression, in: text) {
+            let content = match.range(at: 1)
+            let base = (storage.attribute(.font, at: content.location, effectiveRange: nil) as? UIFont)
+                ?? AppFont.uiFont(.body, compatibleWith: traits)
+            storage.addAttributes([
+                .font: UIFont.monospacedSystemFont(ofSize: base.pointSize, weight: .regular),
+                .backgroundColor: UIColor(Material.Surface.secondary),
+            ], range: content)
+            concealDelimiters(of: match.range, around: content, in: storage, traits: traits)
+        }
+
+        for match in matches(markdownLinkExpression, in: text) {
+            let label = match.range(at: 1)
+            storage.addAttributes([
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .foregroundColor: UIColor(Material.Text.accent),
+            ], range: label)
+            concealDelimiters(of: match.range, around: label, in: storage, traits: traits)
+        }
+    }
+
+    private static func matches(_ expression: NSRegularExpression, in text: String) -> [NSTextCheckingResult] {
+        expression.matches(
+            in: text,
+            range: NSRange(location: 0, length: (text as NSString).length)
+        )
+    }
+
+    private static func concealDelimiters(
+        of whole: NSRange,
+        around content: NSRange,
+        in storage: NSTextStorage,
+        traits: UITraitCollection?
+    ) {
+        conceal(NSRange(location: whole.location, length: content.location - whole.location), in: storage, traits: traits)
+        conceal(
+            NSRange(location: content.upperBound, length: whole.upperBound - content.upperBound),
+            in: storage,
+            traits: traits
+        )
+    }
+
+    /// Delimiters stay in the backing string so saving, undo and cursor offsets
+    /// remain lossless, but collapse visually to produce the WYSIWYG surface.
+    private static func conceal(
+        _ range: NSRange,
+        in storage: NSTextStorage,
+        traits: UITraitCollection?
+    ) {
+        guard range.length > 0 else { return }
+        storage.addAttributes([
+            .font: UIFont.systemFont(ofSize: 0.1),
+            .foregroundColor: UIColor.clear,
+        ], range: range)
+    }
+
+    private static func font(
+        in storage: NSTextStorage,
+        at location: Int,
+        adding trait: UIFontDescriptor.SymbolicTraits
+    ) -> UIFont {
+        let existing = (storage.attribute(.font, at: location, effectiveRange: nil) as? UIFont)
+            ?? AppFont.uiFont(.body)
+        guard let descriptor = existing.fontDescriptor.withSymbolicTraits(
+            existing.fontDescriptor.symbolicTraits.union(trait)
+        ) else { return existing }
+        return UIFont(descriptor: descriptor, size: existing.pointSize)
     }
 }

@@ -83,7 +83,7 @@ struct PrioritySelectionSheet: View {
                 .frame(width: 28, height: 28)
                 .accessibilityHidden(true)
 
-                Text(card.simplifiedText)
+                Text(card.displayTitle)
                     .font(AppFont.body)
                     .foregroundStyle(Material.Text.primary)
                     .multilineTextAlignment(.leading)
@@ -94,7 +94,7 @@ struct PrioritySelectionSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(card.simplifiedText)
+        .accessibilityLabel(card.displayTitle)
         .accessibilityValue(isPriority ? "Priority" : "Not a priority")
         .accessibilityHint(isPriority ? "Double tap to remove priority" : "Double tap to make priority")
         .accessibilityIdentifier("priority-selection-\(card.id.uuidString)")

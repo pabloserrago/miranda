@@ -9,6 +9,68 @@ import Testing
 /// colors them and makes them open.
 struct NotePreviewContentTests {
 
+    @Test func explicitH1BecomesCompactTitleWithoutMarkdownMarkers() {
+        let card = Card(
+            originalText: "# **Plan the trip**\nBook flights",
+            simplifiedText: "# **Plan the trip**\nBook flights",
+            emoji: nil,
+            timestamp: .now
+        )
+
+        #expect(card.displayTitle == "Plan the trip")
+    }
+
+    @Test func legacyFirstLineRemainsCompactTitle() {
+        #expect(MarkdownSummary.title(in: "Buy the tickets\nRemember passports") == "Buy the tickets")
+    }
+
+    @Test func h1WinsEvenWhenItIsNotTheFirstBlock() {
+        #expect(MarkdownSummary.title(in: "Intro paragraph\n\n# Actual title") == "Actual title")
+    }
+
+    @Test func firstParagraphIsFallbackWhenDocumentStartsWithOtherBlocks() {
+        let source = "> A quote\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n\nActual summary"
+        #expect(MarkdownSummary.title(in: source) == "Actual summary")
+    }
+
+    @Test func documentParsesTableQuoteAndLists() {
+        let document = MarkdownDocument(
+            """
+            # Project
+
+            > Keep it small
+
+            - First
+              - Nested
+
+            | Name | State |
+            | --- | :---: |
+            | Miranda | Ready |
+            """
+        )
+
+        #expect(document.blocks.count == 4)
+        guard case .heading(level: 1, text: "Project") = document.blocks[0] else {
+            Issue.record("Expected H1")
+            return
+        }
+        guard case .quote("Keep it small") = document.blocks[1] else {
+            Issue.record("Expected quote")
+            return
+        }
+        guard case let .unorderedList(items) = document.blocks[2] else {
+            Issue.record("Expected list")
+            return
+        }
+        #expect(items.map(\.depth) == [0, 1])
+        guard case let .table(headers, rows, _) = document.blocks[3] else {
+            Issue.record("Expected table")
+            return
+        }
+        #expect(headers == ["Name", "State"])
+        #expect(rows == [["Miranda", "Ready"]])
+    }
+
     // MARK: Title and paragraphs
 
     @Test func titleOnlyNoteHasNoParagraphs() {

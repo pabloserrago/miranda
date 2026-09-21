@@ -86,19 +86,15 @@ extension NotePreviewContent {
     }
 }
 
-/// The note as the design shows it: a bold title, supporting paragraphs beneath
-/// it, all centered.
+/// The complete Markdown document. Its parent decides whether the content fits
+/// or needs vertical scrolling; tables own only their horizontal scroll.
 struct NotePreviewText: View {
     let text: String
 
     var body: some View {
-        let content = NotePreviewContent(text: text)
-
-        Text(content.selectableText)
-            .textSelection(.enabled)
+        MarkdownDocumentView(source: text)
             .accessibilityIdentifier("note-preview-title")
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
+            .padding(.bottom, 24)
     }
 }
 

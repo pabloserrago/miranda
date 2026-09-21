@@ -174,7 +174,7 @@ struct WidgetPreview: View {
 
             // Miranda widget (larger card)
             VStack(spacing: 0) {
-                Text(card?.simplifiedText ?? String(localized: "Your priority"))
+                Text(card?.displayTitle ?? String(localized: "Your priority"))
                     .font(AppFont.widgetHero)
                     .tracking(Material.Typography.Tracking.widgetHero)
                     .foregroundColor(Material.Text.primary)
