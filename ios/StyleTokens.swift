@@ -1079,7 +1079,7 @@ struct ToastModifier: ViewModifier {
                     .background(Material.Surface.secondary)
                     .clipShape(RoundedRectangle(cornerRadius: Material.Shape.input))
                     .shadow(color: Material.Elevation.shadow.opacity(0.15), radius: 8, x: 0, y: 4)
-                    .padding(.bottom, 25)
+                    .padding(.bottom, 10)
                     .transition(Motion.transition(
                         .move(edge: .bottom).combined(with: .opacity),
                         reduce: reduceMotion

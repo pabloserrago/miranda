@@ -1046,12 +1046,6 @@
         }
       }
     },
-    "Archived" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Arxivades" } }, "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Arxivades" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Archiviert" } }, "es" : { "stringUnit" : { "state" : "translated", "value" : "Archivadas" } }, "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Archivadas" } }, "fr" : { "stringUnit" : { "state" : "translated", "value" : "Archivées" } }, "nl" : { "stringUnit" : { "state" : "translated", "value" : "Gearchiveerd" } }, "pt" : { "stringUnit" : { "state" : "translated", "value" : "Arquivadas" } }
-      }
-    },
     "Archive filter" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1154,6 +1148,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O arquivo está vazio"
+          }
+        }
+      }
+    },
+    "Archived" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arxivades"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arxivades"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiviert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivadas"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivées"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gearchiveerd"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivadas"
           }
         }
       }
@@ -7696,6 +7743,59 @@
         }
       }
     },
+    "No archived notes found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No s’han trobat notes arxivades"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No s’han trobat notes arxivades"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine archivierten Notizen gefunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron notas archivadas"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron notas archivadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune note archivée trouvée"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen gearchiveerde notities gevonden"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foram encontradas notas arquivadas"
+          }
+        }
+      }
+    },
     "No completed notes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8122,30 +8222,6 @@
             "value" : "Texto da nota"
           }
         }
-      }
-    },
-    "No archived notes found" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ca" : { "stringUnit" : { "state" : "translated", "value" : "No s’han trobat notes arxivades" } }, "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "No s’han trobat notes arxivades" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine archivierten Notizen gefunden" } }, "es" : { "stringUnit" : { "state" : "translated", "value" : "No se encontraron notas archivadas" } }, "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "No se encontraron notas archivadas" } }, "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aucune note archivée trouvée" } }, "nl" : { "stringUnit" : { "state" : "translated", "value" : "Geen gearchiveerde notities gevonden" } }, "pt" : { "stringUnit" : { "state" : "translated", "value" : "Não foram encontradas notas arquivadas" } }
-      }
-    },
-    "Restore" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Restaura" } }, "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Restaura" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Wiederherstellen" } }, "es" : { "stringUnit" : { "state" : "translated", "value" : "Restaurar" } }, "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Restaurar" } }, "fr" : { "stringUnit" : { "state" : "translated", "value" : "Restaurer" } }, "nl" : { "stringUnit" : { "state" : "translated", "value" : "Herstellen" } }, "pt" : { "stringUnit" : { "state" : "translated", "value" : "Restaurar" } }
-      }
-    },
-    "Search" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Cerca" } }, "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Cerca" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Suchen" } }, "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar" } }, "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Buscar" } }, "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rechercher" } }, "nl" : { "stringUnit" : { "state" : "translated", "value" : "Zoeken" } }, "pt" : { "stringUnit" : { "state" : "translated", "value" : "Pesquisar" } }
-      }
-    },
-    "Search Archived" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Cerca a l’arxiu" } }, "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Cerca a l’arxiu" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Archiv durchsuchen" } }, "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar en Archivadas" } }, "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Buscar en Archivadas" } }, "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rechercher dans les archives" } }, "nl" : { "stringUnit" : { "state" : "translated", "value" : "Doorzoek archief" } }, "pt" : { "stringUnit" : { "state" : "translated", "value" : "Pesquisar no arquivo" } }
       }
     },
     "Notes" : {
@@ -9346,6 +9422,59 @@
         }
       }
     },
+    "Restore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaura"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaura"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstellen"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar"
+          }
+        }
+      }
+    },
     "Save" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9558,6 +9687,112 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diz o alfabeto ao contrário a partir do G 🔤"
+          }
+        }
+      }
+    },
+    "Search" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeken"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesquisar"
+          }
+        }
+      }
+    },
+    "Search Archived" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca a l’arxiu"
+          }
+        },
+        "ca-ES" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca a l’arxiu"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en Archivadas"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en Archivadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans les archives"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doorzoek archief"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesquisar no arquivo"
           }
         }
       }
@@ -9887,6 +10122,14 @@
           }
         }
       }
+    },
+    "Show All" : {
+      "comment" : "A label that displays a list of archived notes.",
+      "isCommentAutoGenerated" : true
+    },
+    "Show Completed" : {
+      "comment" : "A checkmark icon.",
+      "isCommentAutoGenerated" : true
     },
     "Show recent notes" : {
       "extractionState" : "stale",

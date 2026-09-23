@@ -26,6 +26,12 @@
       },
       "shouldTranslate" : false
     },
+    "New Note" : {
+
+    },
+    "New Voice Note" : {
+
+    },
     "NSCalendarsWriteOnlyAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Write Only Usage Description",
       "extractionState" : "extracted_with_value",
@@ -155,6 +161,12 @@
           }
         }
       }
+    },
+    "Search Notes" : {
+
+    },
+    "Set Priority" : {
+
     }
   },
   "version" : "1.0"

@@ -2,6 +2,41 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>square.and.pencil</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New Note</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>miranda.new-note</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>mic.fill</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New Voice Note</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>miranda.new-voice-note</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>magnifyingglass</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Search Notes</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>miranda.search-notes</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>lightbulb</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Set Priority</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>miranda.set-priority</string>
+		</dict>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

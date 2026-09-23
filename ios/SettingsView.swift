@@ -429,6 +429,7 @@ struct SettingsView: View {
             .tint(Material.Text.accent)
             .scrollContentBackground(.hidden)
             .background(Material.Surface.tertiary)
+            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -462,62 +463,97 @@ struct SettingsView: View {
 
 // MARK: - Archive
 
-private enum ArchiveFilter: CaseIterable, Identifiable, Hashable {
+private enum ArchiveFilter: Identifiable, Hashable {
     case all
     case completed
-    case search
 
     var id: Self { self }
-
-    var title: LocalizedStringKey {
-        switch self {
-        case .all: "All"
-        case .completed: "Completed"
-        case .search: "Search"
-        }
-    }
 }
 
 struct ArchiveView: View {
     let onRestore: (ArchivedNote) -> Void
     @State private var notes: [ArchivedNote] = []
     @State private var filter: ArchiveFilter = .all
+    @State private var isSearching = false
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
-        TabView(selection: $filter) {
-            Tab("All", systemImage: "archivebox.fill", value: ArchiveFilter.all) {
-                archiveContent(for: .all)
-            }
-
-            Tab("Completed", systemImage: "checkmark.circle.fill", value: ArchiveFilter.completed) {
-                archiveContent(for: .completed)
-            }
-
-            Tab(value: ArchiveFilter.search, role: .search) {
+        Group {
+            if isSearching {
                 archiveSearchContent
+            } else {
+                archiveContent(for: filter)
             }
         }
-        .tabViewStyle(.sidebarAdaptable)
-        .searchable(text: $searchText, prompt: "Search Archived")
-        .searchFocused($isSearchFocused)
+        .safeAreaInset(edge: .bottom) {
+            if !isSearching {
+                archiveFilterBar
+            }
+        }
         .tint(Material.Accent.primary)
         .background(Material.Surface.tertiary)
         .navigationTitle("Archived")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        filter = .all
+                    } label: {
+                        Label("Show All", systemImage: filter == .all ? "checkmark" : "archivebox")
+                    }
+                    Button {
+                        filter = .completed
+                    } label: {
+                        Label("Show Completed", systemImage: filter == .completed ? "checkmark" : "checkmark.circle")
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(filter == .all ? "Show All" : "Show Completed")
+                        Image(systemName: "chevron.down")
+                            .font(.caption2)
+                    }
+                }
+                .accessibilityLabel("Archive filter")
+            }
+        }
         .onAppear {
             notes = SharedCardManager.shared.loadArchivedNotes()
         }
-        .onChange(of: filter) { _, newFilter in
-            guard newFilter == .search else {
-                isSearchFocused = false
-                return
-            }
+        .onChange(of: isSearching) { _, searching in
+            guard searching else { return }
             DispatchQueue.main.async {
                 isSearchFocused = true
             }
         }
+    }
+
+    private var archiveFilterBar: some View {
+        Button {
+            withAnimation(.snappy) {
+                isSearching = true
+            }
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: "magnifyingglass")
+                    .font(.title2)
+                Text("Search")
+                    .font(AppFont.caption)
+            }
+            .foregroundStyle(Material.Accent.primary)
+            .frame(width: 78, height: 54)
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .padding(4)
+        .background(.regularMaterial, in: Capsule())
+        .overlay {
+            Capsule()
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     @ViewBuilder
@@ -532,16 +568,56 @@ struct ArchiveView: View {
 
     private var archiveSearchContent: some View {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let visibleNotes = query.isEmpty ? notes : notes.filter {
+        let scopedNotes = NoteArchive.filtered(notes, completedOnly: filter == .completed)
+        let visibleNotes = query.isEmpty ? scopedNotes : scopedNotes.filter {
             $0.card.simplifiedText.localizedCaseInsensitiveContains(query) ||
-            $0.card.originalText.localizedCaseInsensitiveContains(query) ||
-            $0.card.simplifiedText.localizedCaseInsensitiveContains(query)
+            $0.card.originalText.localizedCaseInsensitiveContains(query)
         }
-        return archiveList(
-            visibleNotes,
-            emptyTitle: "No archived notes found",
-            emptyIcon: "magnifyingglass"
-        )
+        return VStack(spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(Material.Text.secondary)
+                TextField("Search Archived", text: $searchText)
+                    .textFieldStyle(.plain)
+                    .focused($isSearchFocused)
+                    .submitLabel(.search)
+                if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Material.Text.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
+                }
+
+                Button("Cancel") {
+                    isSearchFocused = false
+                    searchText = ""
+                    withAnimation(.snappy) {
+                        isSearching = false
+                    }
+                }
+                .font(AppFont.caption)
+                .buttonStyle(.plain)
+            }
+            .font(AppFont.body)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .background(.regularMaterial, in: Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+            }
+            .padding(.horizontal, 16)
+
+            archiveList(
+                visibleNotes,
+                emptyTitle: "No archived notes found",
+                emptyIcon: "magnifyingglass"
+            )
+        }
     }
 
     @ViewBuilder
@@ -576,11 +652,12 @@ struct ArchiveView: View {
                         }
                         .padding(.vertical, 8)
                         .settingsRowBackground(rowPosition(at: index, count: visibleNotes.count))
-                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button {
                                 restore(note)
                             } label: {
                                 Label("Restore", systemImage: "arrow.up")
+                                    .frame(minWidth: 72)
                             }
                             .tint(Material.Accent.primary)
                         }

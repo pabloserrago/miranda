@@ -74,6 +74,7 @@ private enum NoteActionKind {
 }
 
 struct ContentView: View {
+    @EnvironmentObject private var quickActionRouter: AppQuickActionRouter
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -126,6 +127,11 @@ struct ContentView: View {
     @State private var suppressNextPrioritySelectionId: UUID?
 
     @State private var scrollOffset: CGFloat = 0
+    @FocusState private var isSearchFieldFocused: Bool
+    @State private var isNativeSearchPresented: Bool = false
+    @State private var shouldFocusSearchWhenPresented: Bool = false
+    @State private var searchFocusTask: Task<Void, Never>?
+    @State private var quickActionPresentationTask: Task<Void, Never>?
 
     /// Minimum list content-offset delta (pt) before toggling Recent sheet visibility.
     private let recentSheetScrollThreshold: CGFloat = 12
@@ -347,6 +353,10 @@ struct ContentView: View {
             // never fires for the first foreground.
             Task { await Analytics.shared.refreshWidgetInventory() }
             showRecentSheet = !cards.isEmpty
+            handlePendingQuickAction()
+        }
+        .onChange(of: quickActionRouter.pendingAction) { _, _ in
+            handlePendingQuickAction()
         }
         .onChange(of: cards) { _, _ in
             saveState()
@@ -380,6 +390,7 @@ struct ContentView: View {
                 NotificationManager.shared.syncAuthorizationStatus()
                 AppIconManager.apply(AppIconOption(rawValue: selectedAppIconRaw) ?? .default, for: colorScheme)
                 Task { await Analytics.shared.refreshWidgetInventory() }
+                focusSearchIfReady()
             }
         }
         .onOpenURL { url in
@@ -932,6 +943,9 @@ struct ContentView: View {
                 .textFieldStyle(.plain)
                 .foregroundStyle(Material.Text.primary)
                 .submitLabel(.search)
+                .focused($isSearchFieldFocused)
+                .accessibilityIdentifier("recent-search-field")
+                .onAppear { focusSearchIfReady() }
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -980,7 +994,11 @@ struct ContentView: View {
             .overlay { recentEmptyState }
             .navigationTitle("Recent")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Find...")
+            .searchable(
+                text: $searchText,
+                isPresented: $isNativeSearchPresented,
+                prompt: "Find..."
+            )
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if audioInputEnabled {
@@ -1004,6 +1022,7 @@ struct ContentView: View {
                 }
             }
         }
+        .onAppear { focusSearchIfReady() }
     }
 
     // MARK: - Priority Row (gradient card)
@@ -1243,12 +1262,13 @@ struct ContentView: View {
                 .font(AppFont.headline)
                 .foregroundColor(Material.Text.primary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 32)
         }
         .accessibilityIdentifier("completion-celebration")
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        .presentationDetents([.height(200)])
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.top, 28)
+        .padding(.bottom, 76)
+        .presentationDetents([.height(220)])
         .presentationDragIndicator(.visible)
         .presentationBackground(Material.Surface.secondary)
         .toast(
@@ -1351,6 +1371,124 @@ struct ContentView: View {
         newCardText = ""
         startWithDictation = dictating
         showCreateModal = true
+    }
+
+    private func handlePendingQuickAction() {
+        guard let action = quickActionRouter.consumePendingAction() else { return }
+
+        if action == .searchNotes, showRecentSheet {
+            searchText = ""
+            shouldFocusSearchWhenPresented = true
+            focusSearchIfReady()
+            return
+        }
+
+        let needsDismissalDelay = selectedCard != nil
+            || showAnalytics || showSettings || showCreateModal
+            || showCompleteTortoise || showWidgetInstructions
+            || showPriorityPicker || showRecentSheet
+            || showPrioritySelectionSheet || showReviewPrompt
+            || showOnboarding || showDoNowDialog
+
+        quickActionPresentationTask?.cancel()
+        searchFocusTask?.cancel()
+        selectedCard = nil
+        showAnalytics = false
+        showSettings = false
+        showCreateModal = false
+        showCompleteTortoise = false
+        showWidgetInstructions = false
+        showPriorityPicker = false
+        showRecentSheet = false
+        showPrioritySelectionSheet = false
+        showReviewPrompt = false
+        showOnboarding = false
+        showDoNowDialog = false
+        isSearchFieldFocused = false
+        isNativeSearchPresented = false
+        shouldFocusSearchWhenPresented = false
+
+        quickActionPresentationTask = Task { @MainActor in
+            if needsDismissalDelay {
+                try? await Task.sleep(for: .milliseconds(450))
+                guard !Task.isCancelled else { return }
+            }
+
+            switch action {
+            case .newNote:
+                openCreateEditor()
+            case .newVoiceNote:
+                openCreateEditor(dictating: true)
+            case .searchNotes:
+                searchText = ""
+                shouldFocusSearchWhenPresented = true
+                showRecentSheet = true
+            case .setPriority:
+                presentPrioritySelectionSheet()
+            }
+        }
+    }
+
+    private func focusSearchIfReady() {
+        guard shouldFocusSearchWhenPresented, scenePhase == .active else { return }
+
+        searchFocusTask?.cancel()
+        searchFocusTask = Task { @MainActor in
+            if #available(iOS 26.0, *) {
+                // The custom glass search bar uses a regular TextField rather
+                // than `searchable`. FocusState requests made while the app is
+                // returning from the Home Screen can be dropped, so retry the
+                // actual UIKit responder until the presented field is ready.
+                for _ in 0..<20 {
+                    guard !Task.isCancelled,
+                          shouldFocusSearchWhenPresented,
+                          scenePhase == .active else { return }
+                    isSearchFieldFocused = true
+                    if focusPresentedSearchField() {
+                        shouldFocusSearchWhenPresented = false
+                        return
+                    }
+                    try? await Task.sleep(for: .milliseconds(100))
+                }
+            } else {
+                isNativeSearchPresented = true
+                shouldFocusSearchWhenPresented = false
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private func focusPresentedSearchField() -> Bool {
+        let windows = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .filter { !$0.isHidden }
+
+        for window in windows {
+            if let field = Self.searchField(in: window) {
+                return field.becomeFirstResponder()
+            }
+        }
+        return false
+    }
+
+    private static func searchField(in view: UIView) -> UITextField? {
+        if view.accessibilityIdentifier == "recent-search-field" {
+            if let field = view as? UITextField { return field }
+            return firstTextField(in: view)
+        }
+        for subview in view.subviews {
+            if let field = searchField(in: subview) { return field }
+        }
+        return nil
+    }
+
+    private static func firstTextField(in view: UIView) -> UITextField? {
+        if let field = view as? UITextField { return field }
+        for subview in view.subviews {
+            if let field = firstTextField(in: subview) { return field }
+        }
+        return nil
     }
 
     private func createCard() {
@@ -1789,6 +1927,7 @@ struct PriorityPickerView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(AppQuickActionRouter.shared)
 }
 
 // Recent sheet panel background. On iOS 26 we deliberately apply NO override so the
