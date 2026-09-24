@@ -23,6 +23,12 @@ struct LocalizationTests {
     /// because their translations differ from English in every target language.
     static let anchorKeys = ["Settings", "Cancel", "What's on your mind?"]
 
+    /// Recently added UI copy that must not fall back to English.
+    static let recentKeys = ["Show", "Show:"]
+
+    /// Home Screen quick-action titles stored in the InfoPlist strings table.
+    static let quickActionKeys = ["New Note", "New Voice Note", "Search Notes", "Set Priority"]
+
     /// Every `AppShortcut` utterance declared by `MirandaShortcuts`, in the
     /// `${applicationName}` form the catalog uses.
     static let siriPhrases = [
@@ -70,6 +76,21 @@ struct LocalizationTests {
                 !value.hasPrefix("[\(code)]"),
                 "'\(key)' in \(code) is a translate.py --dry-run placeholder: \(value)"
             )
+        }
+    }
+
+    @Test(arguments: Self.translatedLocales)
+    func recentStringsAreTranslated(code: String) throws {
+        let bundle = try #require(localizedBundle(for: code))
+
+        for key in Self.recentKeys {
+            let value = bundle.localizedString(forKey: key, value: nil, table: nil)
+            #expect(value != key, "Recent string '\(key)' is untranslated in \(code)")
+        }
+
+        for key in Self.quickActionKeys {
+            let value = bundle.localizedString(forKey: key, value: nil, table: "InfoPlist")
+            #expect(value != key, "Quick action '\(key)' is untranslated in \(code)")
         }
     }
 

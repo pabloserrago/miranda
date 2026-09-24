@@ -27,10 +27,30 @@
       "shouldTranslate" : false
     },
     "New Note" : {
-
+      "localizations" : {
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Nota nova" } },
+        "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Nota nova" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neue Notiz" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Note" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nueva nota" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Nueva nota" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouvelle note" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Nieuwe notitie" } },
+        "pt" : { "stringUnit" : { "state" : "translated", "value" : "Nova nota" } }
+      }
     },
     "New Voice Note" : {
-
+      "localizations" : {
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Nota de veu nova" } },
+        "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Nota de veu nova" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neue Sprachnotiz" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Voice Note" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nueva nota de voz" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Nueva nota de voz" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouvelle note vocale" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Nieuwe spraaknotitie" } },
+        "pt" : { "stringUnit" : { "state" : "translated", "value" : "Nova nota de voz" } }
+      }
     },
     "NSCalendarsWriteOnlyAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Write Only Usage Description",
@@ -163,10 +183,30 @@
       }
     },
     "Search Notes" : {
-
+      "localizations" : {
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Cerca notes" } },
+        "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Cerca notes" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Notizen suchen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search Notes" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar notas" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Buscar notas" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rechercher des notes" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Notities zoeken" } },
+        "pt" : { "stringUnit" : { "state" : "translated", "value" : "Pesquisar notas" } }
+      }
     },
     "Set Priority" : {
-
+      "localizations" : {
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Defineix la prioritat" } },
+        "ca-ES" : { "stringUnit" : { "state" : "translated", "value" : "Defineix la prioritat" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Priorität festlegen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set Priority" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Establecer prioridad" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Establecer prioridad" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Définir la priorité" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Prioriteit instellen" } },
+        "pt" : { "stringUnit" : { "state" : "translated", "value" : "Definir prioridade" } }
+      }
     }
   },
   "version" : "1.0"
